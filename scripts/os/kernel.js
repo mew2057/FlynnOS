@@ -75,7 +75,7 @@ function krnOnCPUClockPulse()
     if (_KernelInterruptQueue.getSize() > 0)    
     {
         // Process the first interrupt on the interrupt queue.
-        // TODO: Implement a priority queye based on the IRQ number/id to enforce interrupt priority.
+        // TODO: Implement a priority queue based on the IRQ number/id to enforce interrupt priority.
         var interrput = _KernelInterruptQueue.dequeue();
         krnInterruptHandler(interrput.irq, interrput.params);        
     }
