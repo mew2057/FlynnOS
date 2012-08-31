@@ -14,7 +14,13 @@ function Deque () {
 }
 
 Deque.prototype.popBack = function () {
-    return this.d.pop();     
+    var retVal = null;
+    
+    if (this.d.length >0) {
+        retVal =  this.d.pop();     
+    }    
+    
+    return retVal;
 }
 
 Deque.prototype.pushBack = function (element) {
@@ -22,7 +28,13 @@ Deque.prototype.pushBack = function (element) {
 }
 
 Deque.prototype.popFront = function () {
-    return this.d.shift();
+    var retVal = null;
+    
+    if (this.d.length >0) {
+        retVal =  this.d.shift();
+    }    
+    
+    return retVal;
 }
 
 Deque.prototype.pushFront = function (element) {
