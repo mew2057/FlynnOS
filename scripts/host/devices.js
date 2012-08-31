@@ -55,6 +55,6 @@ function simOnKeypress(event)
         // Note the pressed key code in the params (Mozilla-specific).
         var params = new Array(event.which, event.shiftKey);
         // Enqueue this interrupt on the kernal interrupt queue so that it gets to the Interrupt handler.
-        _KernelInterruptQueue.enqueue( new Interrput(KEYBOARD_IRQ, params) );
+        _KernelInterruptDeque.pushBack( new Interrput(KEYBOARD_IRQ, params) );
     }
 }

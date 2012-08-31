@@ -43,7 +43,7 @@ var _Trace = true;
 // OS queues
 var _KernelInterruptQueue = null;
 var _KernelBuffers = null;
-var _KernelInputQueue = null;
+var _KernelInputDeque = null;
 
 // Standard input and output
 var _StdIn  = null;

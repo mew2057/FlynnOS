@@ -44,6 +44,8 @@ function krnKbdDispatchKeyPress(params)
             chr = String.fromCharCode(keyCode);
         }
         // TODO: Check for caps-lock and handle as shifted if so.
+        _KernelInputDeque.pushBack(chr); 
+
     }    
     else if ( ((keyCode >= 48) && (keyCode <= 57)) ||   // digits 
                (keyCode == 32)                     ||   // space               
@@ -52,8 +54,5 @@ function krnKbdDispatchKeyPress(params)
         chr = String.fromCharCode(keyCode);
         _KernelInputDeque.pushBack(chr); 
     }
-    else if ((keyCode == 8))  // backspace
-    {
-        
-    }
+  
 }
