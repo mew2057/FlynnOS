@@ -84,6 +84,12 @@ function shellInit()
 
     // processes - list the running processes and their IDs
     // kill <id> - kills the specified process id.
+    
+    sc = new ShellCommand();
+    sc.command = "date";
+    sc.description = "- displays the current date and time.";
+    sc.function = shellDate;
+    this.cocommandList[this.commandList.length]=sc;
 
     //
     // Display the initial prompt.
@@ -356,5 +362,17 @@ function shellPrompt(args)
     else
     {
         _StdIn.putText("Usage: prompt <string>  Please supply a string.");
+    }
+}
+
+function shellDate(args)
+{
+    if (args.length > 0)
+    {
+        
+    }
+    else
+    {
+        _StdIn.putText("TODO add");
     }
 }
