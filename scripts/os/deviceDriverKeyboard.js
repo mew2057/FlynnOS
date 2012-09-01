@@ -26,10 +26,11 @@ function krnKbdDriverEntry()
 
 function krnKbdDispatchKeyPress(params)
 {
-    // Parse the params.    TODO: Check that they are valid and osTrapError if not.
-    var keyCode = params[0];
+    // Parse the params.
     var isShifted = params[1];
+    
     krnTrace("Key code:" + keyCode + " shifted:" + isShifted);
+    
     var chr = "";
     // Check to see if we even want to deal with the key that was pressed.
     if ( ((keyCode >= 65) && (keyCode <= 90)) ||   // A..Z
@@ -47,13 +48,18 @@ function krnKbdDispatchKeyPress(params)
         _KernelInputQueue.enqueue(chr); 
 
     }    
-    else if ( ((keyCode >= 48) && (keyCode <= 57)) ||   // digits 
-               (keyCode == 32)                     ||   // space   
-               (keyCode == 8)                      ||   // backspace
-               (keyCode == 13) )                        // enter
+    else if ( ((keyCode >= 48) && (keyCode <= 57))    ||   // digits 
+               (keyCode == 32)                        ||   // space   
+               (keyCode == 8)                         ||   // backspace
+               ((keyCode >= 186) && (keyCode <= 192)) ||
+               (keyCode == 13) )                           // enter
     {
         chr = String.fromCharCode(keyCode);
         _KernelInputQueue.enqueue(chr); 
     }
-   
+    else 
+    {
+        // If the key code isn't valid then trap.
+        krnTrapError("Key Code:\"" + keyCode + "\" was not defined." );    
+    }
 }

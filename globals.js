@@ -61,6 +61,10 @@ var _SarcasticMode = false;
 //
 var krnKeyboardDriver = null;
 
+// Date Constants
+var DAYS = [ "Sunday", "Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday" ];
+var MONTHS = [ "Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"];
+
 // User Data
 var _UserName = "flynn";
 var _UserLocation = "Off the Grid.";

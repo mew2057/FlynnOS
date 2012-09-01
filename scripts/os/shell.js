@@ -391,10 +391,11 @@ function shellDate(args)
 {
     if (args.length > 0)
     {
-        
+        // Put some controls to mimic unix
     }
     else
     {
-        _StdIn.putText(_OSclock.toString());
+        var now = new Date();        
+        _StdIn.putText(now.toLocaleString());
     }
 }
