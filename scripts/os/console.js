@@ -14,7 +14,7 @@ function Console()
     this.CurrentFontSize  = DEFAULT_FONT_SIZE;
     this.CurrentXPosition = 0;
     this.CurrentYPosition = DEFAULT_FONT_SIZE;
-    this.buffer = "";
+    this.buffer           = new Deque();              // I opted to use a deque to make handling escape characters easier.
     
     // Methods
     this.init        = consoleInit;
@@ -44,46 +44,64 @@ function consoleResetXY()
 
 function consoleHandleInput()
 {
-    while (_KernelInputDeque.getSize() > 0)
+    while (_KernelInputQueue.getSize() > 0)
     {
         // Get the next character from the kernel input queue.
-        var chr = _KernelInputDeque.popFront();
+        var chr = _KernelInputQueue.dequeue();
         // Check to see if it's "special" (enter or ctrl-c) or "normal" (anything else that the keyboard device driver gave us).
         if (chr == String.fromCharCode(13))  //     Enter key   
         {
             // The enter key marks the end of a console command, so ...
             // ... tell the shell ... 
-            _OsShell.handleInput(this.buffer);
+            _OsShell.handleInput(this.buffer.toString());
             // ... and reset our buffer.
-            this.buffer = "";
+            this.buffer = new Deque();
         }
         // TODO: Write a case for Ctrl-C.
         else
         {
             // This is a "normal" character, so ...
             // ... draw it on the screen...
-            this.putText(chr);
-            // ... and add it to our buffer.
-            this.buffer += chr;
+            if( this.putText(chr) ) {
+                // ...If the character wasn't an escape character add it to the buffer.
+                this.buffer.pushBack(chr);
+            }
         }
     }
 }
 
 function consolePutText(txt)    
 {
+    var added = false;
     // My first inclination here was to write two functions: putChar() and putString().
     // Then I remembered that Javascript is (sadly) untyped and it won't differentiate 
     // between the two.  So rather than be like PHP and write two (or more) functions that
     // do the same thing, thereby encouraging confusion and decreasing readability, I 
     // decided to write one function and use the term "text" to connote string or char.
-    if (txt != "")
+    if (txt != "" && txt != "\b")
     {
         // Draw the text at the current X and Y coordinates.
         DRAWING_CONTEXT.drawText(this.CurrentFont, this.CurrentFontSize, this.CurrentXPosition, this.CurrentYPosition, txt);
+        
     	// Move the current X position.
         var offset = DRAWING_CONTEXT.measureText(this.CurrentFont, this.CurrentFontSize, txt);
-        this.CurrentXPosition = this.CurrentXPosition + offset;    
+        this.CurrentXPosition = this.CurrentXPosition + offset;   
+        
+        added = true;
     }
+    else if (txt != "" && txt == "\b") 
+    {
+        txt = this.buffer.popBack();
+
+        // Move the current X position.
+        var offset = DRAWING_CONTEXT.measureText(this.CurrentFont, this.CurrentFontSize, txt);
+        this.CurrentXPosition = this.CurrentXPosition - offset;    
+        
+        // Draw the text at the current X and Y coordinates.
+        DRAWING_CONTEXT.eraseText(this.CurrentFont, this.CurrentFontSize, this.CurrentXPosition, this.CurrentYPosition, txt);
+    }
+    
+    return added;
 }
 
 function consoleAdvanceLine()

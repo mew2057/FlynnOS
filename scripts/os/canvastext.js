@@ -172,16 +172,16 @@ CanvasTextFunctions.draw = function(ctx,font,size,x,y,str)
 			{
 				penUp = 1;
 				continue;
-		    }
+            }
 		    if ( penUp) 
 			{
 				ctx.moveTo( x + a[0]*mag, y - a[1]*mag);
 				penUp = false;
-		    } 
+            } 
 			else 
 			{
 				ctx.lineTo( x + a[0]*mag, y - a[1]*mag);
-		    }
+                }
 		}
 		ctx.stroke();
 		x += c.width*mag;
@@ -190,9 +190,32 @@ CanvasTextFunctions.draw = function(ctx,font,size,x,y,str)
     return total;
 };
 
+CanvasTextFunctions.erase = function(ctx,font,size,x,y,str) 
+{
+    var boxHeight = - (DEFAULT_FONT_SIZE + FONT_HEIGHT_MARGIN);
+    var adjustedY = y + ctx.fontDescent(font, size) +1;
+
+    ctx.save();
+    
+    for( var chr in str)
+    {
+        var c = CanvasTextFunctions.letter( chr );
+		if (!c)
+		{
+			continue;	
+		}  
+
+        ctx.clearRect(x,adjustedY ,c.width, boxHeight);
+    }
+    
+    ctx.restore();
+}
+
+
 CanvasTextFunctions.enable = function(ctx) 
 {
     ctx.drawText = function(font,size,x,y,text) { return CanvasTextFunctions.draw( ctx, font,size,x,y,text); };
+    ctx.eraseText = function(font,size,x,y,text) { return CanvasTextFunctions.erase( ctx,font, size,x,y,text); };
     ctx.measureText = function(font,size,text) { return CanvasTextFunctions.measure( font,size,text); };
     ctx.fontAscent = function(font,size) { return CanvasTextFunctions.ascent(font,size); };
     ctx.fontDescent = function(font,size) { return CanvasTextFunctions.descent(font,size); };

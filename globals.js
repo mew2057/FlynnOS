@@ -43,7 +43,7 @@ var _Trace = true;
 // OS queues
 var _KernelInterruptQueue = null;
 var _KernelBuffers = null;
-var _KernelInputDeque = null;
+var _KernelInputQueue = null;
 
 // Standard input and output
 var _StdIn  = null;
@@ -60,3 +60,7 @@ var _SarcasticMode = false;
 // Global Device Driver Objects - page 12
 //
 var krnKeyboardDriver = null;
+
+// User Data
+var _UserName = "flynn";
+var _UserLocation = "Off the Grid.";

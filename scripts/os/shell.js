@@ -29,69 +29,80 @@ function shellInit()
     // ver
     sc = new ShellCommand();
     sc.command = "ver";
-    sc.description = "- Displays the current version data."
-    sc.function = shellVer;
+    sc.description = "- Displays the current version data.";
+    sc.funct = shellVer;
     this.commandList[this.commandList.length] = sc;
     
     // help
     sc = new ShellCommand();
     sc.command = "help";
-    sc.description = "- This is the help command. Seek help."
-    sc.function = shellHelp;
+    sc.description = "- This is the help command. Seek help.";
+    sc.funct = shellHelp;
     this.commandList[this.commandList.length] = sc;
     
     // shutdown
     sc = new ShellCommand();
     sc.command = "shutdown";
-    sc.description = "- Shuts down the virtual OS but leaves the underlying hardware simulation running."
-    sc.function = shellShutdown;
+    sc.description = "- Shuts down the virtual OS but leaves the underlying hardware simulation running.";
+    sc.funct = shellShutdown;
     this.commandList[this.commandList.length] = sc;
 
     // cls
     sc = new ShellCommand();
     sc.command = "cls";
-    sc.description = "- Clears the screen and resets the cursosr position."
-    sc.function = shellCls;
+    sc.description = "- Clears the screen and resets the cursosr position.";
+    sc.funct = shellCls;
     this.commandList[this.commandList.length] = sc;
 
     // man <topic>
     sc = new ShellCommand();
     sc.command = "man";
     sc.description = "<topic> - Displays the MANual page for <topic>.";
-    sc.function = shellMan;
+    sc.funct = shellMan;
     this.commandList[this.commandList.length] = sc;
     
     // trace <on | off>
     sc = new ShellCommand();
     sc.command = "trace";
     sc.description = "<on | off> - Turns the OS trace on or off.";
-    sc.function = shellTrace;
+    sc.funct = shellTrace;
     this.commandList[this.commandList.length] = sc;
 
     // rot13 <string>
     sc = new ShellCommand();
     sc.command = "rot13";
     sc.description = "<string> - Does rot13 obfuscation on <string>.";
-    sc.function = shellRot13;
+    sc.funct = shellRot13;
     this.commandList[this.commandList.length] = sc;
 
     // prompt <string>
     sc = new ShellCommand();
     sc.command = "prompt";
     sc.description = "<string> - Sets the prompt.";
-    sc.function = shellPrompt;
+    sc.funct = shellPrompt;
     this.commandList[this.commandList.length] = sc;
 
     // processes - list the running processes and their IDs
     // kill <id> - kills the specified process id.
 
-    /*
+    sc = new ShellCommand();
+    sc.command = "whoami";
+    sc.description = "- Displays the current User Name.";
+    sc.funct = shellWhoAmI;
+    this.commandList[this.commandList.length] = sc;
+    
+    sc = new ShellCommand();
+    sc.command = "whereami";
+    sc.description = "- Displays current user location.";
+    sc.funct = shellWhereAmI;
+    this.commandList[this.commandList.length] = sc;
+
     sc = new ShellCommand();
     sc.command = "date";
-    sc.description = "- displays the current date and time.";
-    sc.function = shellDate;
-    this.cocommandList[this.commandList.length]=sc;
-*/
+    sc.description = "- Displays the current date and time.";
+    sc.funct = shellDate;
+    this.commandList[this.commandList.length]=sc;
+
     //
     // Display the initial prompt.
     this.putPrompt();
@@ -125,7 +136,7 @@ function shellHandleInput(buffer)
         if (this.commandList[index].command === cmd)
         {
             found = true;
-            fn = this.commandList[index].function;
+            fn = this.commandList[index].funct;
         }
         else
         {
@@ -216,7 +227,7 @@ function ShellCommand()
     // Properties
     this.command = "";
     this.description = "";
-    this.function = "";
+    this.funct = "";
 }
 
 //
@@ -366,6 +377,16 @@ function shellPrompt(args)
     }
 }
 
+function shellWhoAmI()
+{
+    _StdIn.putText(_UserName);   
+}
+
+function shellWhereAmI()
+{
+    _StdIn.putText(_UserLocation);   
+}
+
 function shellDate(args)
 {
     if (args.length > 0)
@@ -374,6 +395,6 @@ function shellDate(args)
     }
     else
     {
-        _StdIn.putText("TODO add");
+        _StdIn.putText(_OSclock.toString());
     }
 }
