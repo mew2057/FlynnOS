@@ -17,12 +17,22 @@ function krnBootstrap()      // Page 8.
 {
     simLog("bootstrap", "host");  // Use simLog because we ALWAYS want this, even if _Trace is off.
 
+    
+
+
     // Initialize our global queues.
     _KernelInterruptQueue = new Queue();  // A (currently) non-priority queue for interrupt requests (IRQs).
     _KernelBuffers = new Array();         // Buffers... for the kernel.
     _KernelInputQueue = new Queue();      // Where device input lands before being processed out somewhere.
     _Console = new Console();             // The console output device.
 
+
+    // Load the Display Device Driver.
+    krnTrace("Loading the display device driver.");
+    krnDisplayDriver = new DeviceDriverDisplay();    
+    krnDisplayDriver.driverEntry();
+    krnTrace(krnDisplayDriver.status);
+    
     // Initialize the Console.
     _Console.init();
 
@@ -30,12 +40,16 @@ function krnBootstrap()      // Page 8.
     _StdIn  = _Console;
     _StdOut = _Console;
 
+
     // Load the Keyboard Device Driver
     krnTrace("Loading the keyboard device driver.");
-    krnKeyboardDriver = new DeviceDriverKeyboard();     // Construct it.
+    krnKeyboardDriver = new DeviceDriverKeyboard();     // Construct it. 
+
     krnKeyboardDriver.driverEntry();                    // Call the driverEntry() initialization routine.
     krnTrace(krnKeyboardDriver.status);
-
+    
+    
+    
     // 
     // ... more?
     //
@@ -183,6 +197,10 @@ function krnTrace(msg)
 function krnTrapError(msg)
 {
     simLog("OS ERROR - TRAP: " + msg);
+    
+    _Console.warningScreen();
+    _StdIn.putText("OS ERROR - TRAP: " + msg);
     // TODO: Display error on console, perhaps in some sort of colored screen. (Perhaps blue?)
+    
     krnShutdown();
 }

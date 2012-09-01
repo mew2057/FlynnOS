@@ -273,7 +273,9 @@ function shellApology()
 
 function shellVer(args)
 {
-    _StdIn.putText(APP_NAME + " version " + APP_VERSION + "  " + APP_DESCRIPTION);    
+    _StdIn.putText(APP_NAME + " version " + APP_VERSION);    
+    _StdIn.advanceLine();
+    _StdIn.putText(APP_DESCRIPTION);
 }
 
 function shellHelp(args)
@@ -396,6 +398,6 @@ function shellDate(args)
     else
     {
         var now = new Date();        
-        _StdIn.putText(now.toLocaleString());
+        _StdIn.putText(now.toLocaleString().split("(")[0]);
     }
 }

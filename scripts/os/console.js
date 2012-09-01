@@ -17,12 +17,13 @@ function Console()
     this.buffer           = new Deque();              // I opted to use a deque to make handling escape characters easier.
     
     // Methods
-    this.init        = consoleInit;
-    this.clearScreen = consoleClearScreen;
-    this.resetXY     = consoleResetXY;
-    this.handleInput = consoleHandleInput;
-    this.putText     = consolePutText;
-    this.advanceLine = consoleAdvanceLine;
+    this.init          = consoleInit;
+    this.clearScreen   = consoleClearScreen;
+    this.resetXY       = consoleResetXY;
+    this.handleInput   = consoleHandleInput;
+    this.putText       = consolePutText;
+    this.advanceLine   = consoleAdvanceLine;
+    this.warningScreen = consoleWarningScreen;
 }
 
 function consoleInit()
@@ -34,6 +35,15 @@ function consoleInit()
 function consoleClearScreen()
 {
 	DRAWING_CONTEXT.clearRect(0, 0, CANVAS.width, CANVAS.height);
+}
+
+function consoleWarningScreen()
+{
+    DRAWING_CONTEXT.fillStyle = "blue"
+    DRAWING_CONTEXT.fillRect(0,0,CANVAS.width,CANVAS.height); 
+    DRAWING_CONTEXT.fillStyle = "white";
+    
+    this.consoleResetXY();
 }
 
 function consoleResetXY()

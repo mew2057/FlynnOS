@@ -21,14 +21,9 @@
 //
 function simInit()
 {
-	// Get a global reference to the canvas.  TODO: Move this stuff into a Display Device Driver, maybe?
-	CANVAS  = document.getElementById('display');
-	// Get a global reference to the drawing context.
-	DRAWING_CONTEXT = CANVAS.getContext('2d');
-	// Enable the added-in canvas text functions (see canvastext.js for provenance and details).
-	CanvasTextFunctions.enable(DRAWING_CONTEXT);
-	// Clear the log text box.
-	document.getElementById("taLog").value="";
+    // Clear the log text box.
+    document.getElementById("taLog").value="";   
+    
 	// Set focus on the start button.
    document.getElementById("btnStartOS").focus();     // TODO: This does not seem to work.  Why?
 }
