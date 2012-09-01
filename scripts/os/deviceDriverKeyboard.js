@@ -26,11 +26,11 @@ function krnKbdDriverEntry()
 
 function krnKbdDispatchKeyPress(params)
 {
-    // Parse the params.
+    // Parse the params.    
+    var keyCode = params[0];
     var isShifted = params[1];
-    
+
     krnTrace("Key code:" + keyCode + " shifted:" + isShifted);
-    
     var chr = "";
     // Check to see if we even want to deal with the key that was pressed.
     if ( ((keyCode >= 65) && (keyCode <= 90)) ||   // A..Z
@@ -48,18 +48,74 @@ function krnKbdDispatchKeyPress(params)
         _KernelInputQueue.enqueue(chr); 
 
     }    
-    else if ( ((keyCode >= 48) && (keyCode <= 57))    ||   // digits 
-               (keyCode == 32)                        ||   // space   
+    else if (  (keyCode == 32)                        ||   // space   
                (keyCode == 8)                         ||   // backspace
-               ((keyCode >= 186) && (keyCode <= 192)) ||
                (keyCode == 13) )                           // enter
     {
-        chr = String.fromCharCode(keyCode);
+        
+        chr = String.fromCharCode(keyCode);    
+        _KernelInputQueue.enqueue(chr); 
+    }
+    else if ( (keyCode >= 48) && (keyCode <= 57) )           // digits: Separating this keeps down cyclomatic complexity (albeit by a minor factor)
+    {
+        chr = String.fromCharCode(keyCode);   
+        chr = DIGIT_PUNCTUATIONS[chr];
         _KernelInputQueue.enqueue(chr); 
     }
     else 
     {
-        // If the key code isn't valid then trap.
-        krnTrapError("Key Code:\"" + keyCode + "\" was not defined." );    
+        var unicode = null;        
+  
+        switch (keyCode)
+        {
+            case 186:
+                unicode = isShifted?58:59;
+                break;
+            case 187:
+                unicode = isShifted?43:61;
+                break; 
+            case 188:
+                unicode = isShifted?60:44;
+                break;
+            case 189:
+                unicode = isShifted?95:45;
+                break;
+            case 190:
+                unicode = isShifted?62:46;
+                break;
+            case 191:
+                unicode = isShifted?63:47;
+                break;
+            case 192:
+                unicode = isShifted?126:96;
+                break;
+            case 219:
+                unicode = isShifted?123:91;
+                break;
+            case 220:
+                unicode = isShifted?124:92;
+                break;
+            case 221:
+                unicode = isShifted?125:93;
+                break;
+            case 222:
+                unicode = isShifted?34:39;
+                break;
+        }
+        
+        if ( unicode )
+        {
+            chr = String.fromCharCode(unicode);
+        }
+        
+        if (chr == "" && keyCode != 16)
+        {
+            // If the key code isn't valid then trap.
+            krnTrapError("Key Code:\"" + keyCode + "\" was not defined." );   
+        }
+        else if (keyCode!= 16)
+        {
+            _KernelInputQueue.enqueue(chr); 
+        }         
     }
 }

@@ -78,29 +78,34 @@ function consolePutText(txt)
     // between the two.  So rather than be like PHP and write two (or more) functions that
     // do the same thing, thereby encouraging confusion and decreasing readability, I 
     // decided to write one function and use the term "text" to connote string or char.
-    if (txt != "" && txt != "\b")
+    if (txt != "")
     {
-        // Draw the text at the current X and Y coordinates.
-        DRAWING_CONTEXT.drawText(this.CurrentFont, this.CurrentFontSize, this.CurrentXPosition, this.CurrentYPosition, txt);
-        
-    	// Move the current X position.
-        var offset = DRAWING_CONTEXT.measureText(this.CurrentFont, this.CurrentFontSize, txt);
-        this.CurrentXPosition = this.CurrentXPosition + offset;   
-        
-        added = true;
-    }
-    else if (txt != "" && txt == "\b") 
-    {
-        txt = this.buffer.popBack();
+        switch (txt)
+        {
+            case "\b":
+                txt = this.buffer.popBack();
 
-        // Move the current X position.
-        var offset = DRAWING_CONTEXT.measureText(this.CurrentFont, this.CurrentFontSize, txt);
-        this.CurrentXPosition = this.CurrentXPosition - offset;    
+                // Move the current X position.
+                var offset = DRAWING_CONTEXT.measureText(this.CurrentFont, this.CurrentFontSize, txt);
+                this.CurrentXPosition = this.CurrentXPosition - offset;    
         
-        // Draw the text at the current X and Y coordinates.
-        DRAWING_CONTEXT.eraseText(this.CurrentFont, this.CurrentFontSize, this.CurrentXPosition, this.CurrentYPosition, txt);
+                // Erase the text at the current X and Y coordinates and one before.
+                DRAWING_CONTEXT.eraseText(this.CurrentFont, this.CurrentFontSize, this.CurrentXPosition, this.CurrentYPosition, txt);
+                break;
+            
+            default:
+                // Draw the text at the current X and Y coordinates.
+                DRAWING_CONTEXT.drawText(this.CurrentFont, this.CurrentFontSize, this.CurrentXPosition, this.CurrentYPosition, txt);
+        
+                // Move the current X position.
+                var offset = DRAWING_CONTEXT.measureText(this.CurrentFont, this.CurrentFontSize, txt);
+                this.CurrentXPosition = this.CurrentXPosition + offset;   
+        
+                added = true;
+        }
+       
     }
-    
+  
     return added;
 }
 

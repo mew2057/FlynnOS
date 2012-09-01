@@ -13,14 +13,13 @@
 //
 var APP_NAME = "FlynnOS";  // 'cause I was at a loss for a better name.
 var APP_VERSION = "0.1"
+var APP_DESCRIPTION = "Welcome to The Grid: A digital frontier."
 
 var CPU_CLOCK_INTERVAL = 100;   // in ms, or milliseconds, so 1000 = 1 second.
 
 var TIMER_IRQ    = 0;  // Pages 23 (timer), 9 (interrupts), and 561 (interrupt priority). 
                        // NOTE: The timer is different from hardware clock pulses. Don't confuse these.
 var KEYBOARD_IRQ = 1;  
-
-
 //
 // Global Variables
 //
@@ -64,6 +63,9 @@ var krnKeyboardDriver = null;
 // Date Constants
 var DAYS = [ "Sunday", "Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday" ];
 var MONTHS = [ "Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"];
+
+// Digit Punctuation.
+var DIGIT_PUNCTUATIONS= [')','!','@','#','$','%','^','&','*','(']
 
 // User Data
 var _UserName = "flynn";
