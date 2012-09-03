@@ -8,6 +8,11 @@
         FlynnOS - Welcome to The Grid.
    </title>
 
+    <!-- The canvas drawing script that gives the page that Tron Legacy feel. -->
+   <script type="text/javascript" src="scripts/canvasAnimations.js"></script>    
+
+    
+
    <!-- Globals CONSTANTS and _Variables. Must included be first. -->
    <script type="text/javascript" src="globals.js"></script>	
 
@@ -25,7 +30,6 @@
    <script type="text/javascript" src="scripts/os/deviceDriverDisplay.js"></script>
    <script type="text/javascript" src="scripts/os/queue.js"></script>
    <script type="text/javascript" src="scripts/os/deque.js"></script>
-
    <script type="text/javascript" src="scripts/os/shell.js"></script>
    <script type="text/javascript" src="scripts/os/kernel.js"></script>
 
@@ -33,7 +37,13 @@
    <script type="text/javascript" src="scripts/utils.js"></script>	
 </head>
 
-<body onload="simInit();">
+<body onload="simInit();canvasInit();">
+
+<canvas id="taskBar"
+        width="1500px"
+        height="100px">
+             Why not get yourself a real browser?
+</canvas>
 
 <table id="tableDisplay" style="border:1px solid white;">
     <tr>
@@ -76,6 +86,7 @@
                     height="500px"
                     tabindex="3">
             </canvas>
+            
         </td>
         
         <td id="tdLog">

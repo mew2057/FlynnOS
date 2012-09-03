@@ -198,8 +198,7 @@ function krnTrapError(msg)
 {
     simLog("OS ERROR - TRAP: " + msg);
     
-    _Console.warningScreen();
-    _StdIn.putText("OS ERROR - TRAP: " + msg);
+    _Console.warningScreen("OS ERROR - TRAP: " + msg);
     // TODO: Display error on console, perhaps in some sort of colored screen. (Perhaps blue?)
     
     krnShutdown();

@@ -37,13 +37,15 @@ function consoleClearScreen()
 	DRAWING_CONTEXT.clearRect(0, 0, CANVAS.width, CANVAS.height);
 }
 
-function consoleWarningScreen()
+function consoleWarningScreen(msg)
 {
     DRAWING_CONTEXT.fillStyle = "blue"
     DRAWING_CONTEXT.fillRect(0,0,CANVAS.width,CANVAS.height); 
     DRAWING_CONTEXT.fillStyle = "white";
     
-    this.consoleResetXY();
+    consoleResetXY();
+    
+    consolePutText(msg);
 }
 
 function consoleResetXY()

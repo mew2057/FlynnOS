@@ -2,7 +2,7 @@
 
 body
 {
-	background-color: #909193;	/* The bottom color of background.jpg. */
+	background-color: #010c0e;	/* The bottom color of background.jpg. */
 	background-image: url(images/background.jpg);
 	background-repeat: repeat-x;
 	font-family: Helvetica, Verdana, Arial, sans-serif;
@@ -72,6 +72,11 @@ td.heading
 	background-color: #DFDBC3;
 	border: 2px solid red; 
 	cursor: default;
+}
+
+#taskBar
+{
+    opacity: .75;   
 }
 
 .subheading

@@ -29,7 +29,6 @@ function krnDispDriverEntry()
     this.status = "loaded";
 }
 
-
 function krnDispDispatch(params)
 {
     alert ("do something");

@@ -102,6 +102,12 @@ function shellInit()
     sc.description = "- Displays the current date and time.";
     sc.funct = shellDate;
     this.commandList[this.commandList.length]=sc;
+    
+    sc = new ShellCommand();
+    sc.command = "status";
+    sc.description = "<string>- Sets the current kernel status.";
+    sc.funct = shellStatus;
+    this.commandList[this.commandList.length]=sc;
 
     //
     // Display the initial prompt.
@@ -399,5 +405,17 @@ function shellDate(args)
     {
         var now = new Date();        
         _StdIn.putText(now.toLocaleString().split("(")[0]);
+    }
+}
+
+function shellStatus (args)
+{
+    if (args.length > 0)
+    {
+        _KernelStatus = args[0];   
+    }
+    else
+    {
+        _StdIn.putText("Usage: status <string>  Please supply a string.");
     }
 }

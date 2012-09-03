@@ -29,6 +29,8 @@ var _OSclock = 0;       // Page 23.
 
 var _Mode = 0;   // 0 = Kernel Mode, 1 = User Mode.  See page 21.
 
+var _KernelStatus = ""; // The kernel status field specified by iProject1
+
 // TODO: Fix the naming convention for these next five global vars.
 var CANVAS = null;              // Initialized in hostInit().
 var DRAWING_CONTEXT = null;     // Initialized in hostInit().
@@ -54,6 +56,8 @@ var _OsShell = null;
 
 // At least this OS is not trying to kill you. (Yet.)
 var _SarcasticMode = false;
+
+
 
 //
 // Global Device Driver Objects - page 12

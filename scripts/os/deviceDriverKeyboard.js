@@ -33,8 +33,7 @@ function krnKbdDispatchKeyPress(params)
     krnTrace("Key code:" + keyCode + " shifted:" + isShifted);
     var chr = "";
     // Check to see if we even want to deal with the key that was pressed.
-    if ( ((keyCode >= 65) && (keyCode <= 90)) ||   // A..Z
-         ((keyCode >= 97) && (keyCode <= 123)) )   // a..z
+    if ( ((keyCode >= 65) && (keyCode <= 90)) )   // A..Z
     {
         // Determine the character we want to display.  
         // Assume it's lowercase...
@@ -48,19 +47,32 @@ function krnKbdDispatchKeyPress(params)
         _KernelInputQueue.enqueue(chr); 
 
     }    
-    else if (  (keyCode == 32)                        ||   // space   
-               (keyCode == 8)                         ||   // backspace
-               (keyCode == 13) )                           // enter
+    else if (  (keyCode == 32)                        ||    // space   
+               (keyCode == 8)                         ||    // backspace
+               (keyCode == 13) )                            // enter
     {
         
         chr = String.fromCharCode(keyCode);    
         _KernelInputQueue.enqueue(chr); 
     }
-    else if ( (keyCode >= 48) && (keyCode <= 57) )           // digits: Separating this keeps down cyclomatic complexity (albeit by a minor factor)
+    else if ( (keyCode >= 48) && (keyCode <= 57) )          // digits: Separating this keeps down cyclomatic complexity (albeit by a minor factor)
     {
         chr = String.fromCharCode(keyCode);   
-        chr = DIGIT_PUNCTUATIONS[chr];
+        
+        if(isShifted)
+        {
+            chr = DIGIT_PUNCTUATIONS[chr];
+        }
+        
         _KernelInputQueue.enqueue(chr); 
+    }
+    else if ( (keyCode >= 96) && (keyCode <= 111 ) )        // Numpad keys.
+    {
+        var subFactor = keyCode <= 105?48:64;   // I found that the keycodes adhered to a set offset from the unicode value in their respective ranges.
+        
+        chr = String.fromCharCode(keyCode - subFactor); 
+        _KernelInputQueue.enqueue(chr);         
+
     }
     else 
     {
@@ -101,9 +113,11 @@ function krnKbdDispatchKeyPress(params)
             case 222:
                 unicode = isShifted?34:39;
                 break;
+            default:
+                break;
         }
         
-        if ( unicode )
+        if ( unicode ) // If the unicode character was loaded, we're in business.
         {
             chr = String.fromCharCode(unicode);
         }
