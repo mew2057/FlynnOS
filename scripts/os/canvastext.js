@@ -152,7 +152,6 @@ CanvasTextFunctions.draw = function(ctx,font,size,x,y,str)
     ctx.save();
     ctx.lineCap = "round";
     ctx.lineWidth = 2.0 * mag;
-	ctx.strokeStyle = CANVAS_OUTLINES;
 
     for (var i = 0; i < len; i++) 
 	{

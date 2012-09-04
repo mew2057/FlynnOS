@@ -101,6 +101,9 @@ function drawTaskBar ()
     
     TASKBAR_CONTEXT = TASKBAR_CANVAS.getContext("2d");
     
+    TASKBAR_CONTEXT.fillStyle = CANVAS_BACKGROUNDS;
+    TASKBAR_CONTEXT.strokeStyle = CANVAS_OUTLINES;
+    
     // Set the taskbar font.
     TASKBAR_CONTEXT.font = TASKBAR_FONT;    
     
@@ -179,10 +182,7 @@ function updateTaskBar()
 }
 
 function drawRoundedBox (context, rectWidth, rectHeight, cornerRadius)
-{    
-    context.fillStyle = CANVAS_BACKGROUNDS;
-    context.strokeStyle = CANVAS_OUTLINES;
-    
+{        
     context.save();    
     context.beginPath();
     

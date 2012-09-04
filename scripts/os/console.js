@@ -40,13 +40,18 @@ function consoleClearScreen()
 
 function consoleWarningScreen(msg)
 {
-    DRAWING_CONTEXT.fillStyle = "blue"
-    DRAWING_CONTEXT.fillRect(0,0,CANVAS.width,CANVAS.height); 
-    DRAWING_CONTEXT.fillStyle = "white";
+    DRAWING_CONTEXT.save();
     
-    consoleResetXY();
+    DRAWING_CONTEXT.fillStyle = CANVAS_TRAP_BACKGROUNDS;
+    DRAWING_CONTEXT.strokeStyle = CANVAS_TRAP_OUTLINES;
     
-    consolePutText(msg);
+    drawRoundedBox(DRAWING_CONTEXT,CANVAS.width,CANVAS.height,CANVAS_RADIUS);
+    
+    this.resetXY();
+    this.putText(msg);
+
+    DRAWING_CONTEXT.restore();
+
 }
 
 function consoleResetXY()

@@ -26,8 +26,9 @@ function krnDispDriverEntry()
 	// Enable the added-in canvas text functions (see canvastext.js for provenance and details).
 	CanvasTextFunctions.enable(DRAWING_CONTEXT);
     
-    DRAWING_CONTEXT.fillStyle = CANVAS_OUTLINES;
-    
+    DRAWING_CONTEXT.fillStyle = CANVAS_BACKGROUNDS;
+    DRAWING_CONTEXT.strokeStyle = CANVAS_OUTLINES;
+
     // Emulates starting the monitor.
     drawRoundedBox(DRAWING_CONTEXT, CANVAS.width,CANVAS.height,CANVAS_RADIUS);
 
