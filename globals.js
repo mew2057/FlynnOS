@@ -34,6 +34,9 @@ var _KernelStatus = ""; // The kernel status field specified by iProject1
 // TODO: Fix the naming convention for these next five global vars.
 var CANVAS = null;              // Initialized in hostInit().
 var DRAWING_CONTEXT = null;     // Initialized in hostInit().
+var TASKBAR_CANVAS = null;      // Initialized in canvasAnimations.
+var TASKBAR_CONTEXT = null;     // Initialized in canvasAnimations.
+
 var DEFAULT_FONT = "sans";      // Ignored, just a place-holder in this version.
 var DEFAULT_FONT_SIZE = 13;     
 var FONT_HEIGHT_MARGIN = 4;     // Additional space added to font size when advancing a line.

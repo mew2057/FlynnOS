@@ -6,15 +6,14 @@
    <link rel="stylesheet" href="flynnos.css" type="text/css" media="screen" />
    <title>
         FlynnOS - Welcome to The Grid.
-   </title>
-
-    <!-- The canvas drawing script that gives the page that Tron Legacy feel. -->
-   <script type="text/javascript" src="scripts/canvasAnimations.js"></script>    
-
-    
+   </title>  
 
    <!-- Globals CONSTANTS and _Variables. Must included be first. -->
    <script type="text/javascript" src="globals.js"></script>	
+
+   <!-- The canvas drawing script that gives the page that Tron Legacy feel. -->
+   <script type="text/javascript" src="scripts/canvasAnimations.js"></script>    
+
 
    <!-- Host (Hardware Simulation) Routines -->
    <script type="text/javascript" src="scripts/host/control.js"></script>
@@ -39,11 +38,13 @@
 
 <body onload="simInit();canvasInit();">
 
-<canvas id="taskBar"
-        width="1500px"
-        height="100px">
-             Why not get yourself a real browser?
-</canvas>
+<div id="task">
+    <canvas id="taskBar"
+            width="1500px"
+            height="100px">
+                 Why not get yourself a real browser?           
+    </canvas>    
+</div>
 
 <table id="tableDisplay" style="border:1px solid white;">
     <tr>
@@ -110,9 +111,8 @@
 <table width="100%" border="0" cellspacing="0" cellpadding="0">
     <tr valign="top">
         <td align="center" class="footer">
-            Copyright &copy; 2008 - 2012 No Rights Reserved. - 
-            Reproduction is prohibited without the express written consent of 
-            Ted Codd, Stevie Ray Vaughan, and Ian Fleming.
+            Copyleft 1983 No Rights Reserved. - 
+            Reproduction is wholeheartedly endorsed by Kevin Flynn.
         </td>
     </tr>
 </table>

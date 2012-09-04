@@ -56,15 +56,8 @@ function simLog(msg, source)
 //
 // Control Events
 //
-function simBtnStartOS_click(btn)
-{
-    // Disable the start button...
-    btn.disabled = true;
-    
-    // .. enable the Emergency Halt and Reset buttons ...
-    document.getElementById("btnHaltOS").disabled = false;
-    document.getElementById("btnReset").disabled = false;
-    
+function simBtnStartOS_click()
+{    
     // .. set focus on the OS console display ... 
     document.getElementById("display").focus();
     
@@ -78,7 +71,7 @@ function simBtnStartOS_click(btn)
     krnBootstrap();
 }
 
-function simBtnHaltOS_click(btn)
+function simBtnHaltOS_click()
 {
     simLog("emergency halt", "host");
     simLog("Attempting Kernel shutdown.", "host");
@@ -89,7 +82,7 @@ function simBtnHaltOS_click(btn)
     // TODO: Is there anything else we need to do here?
 }
 
-function simBtnReset_click(btn)
+function simBtnReset_click()
 {
     // The easiest and most thorough way to do this is to reload (not refresh) the document.
     location.reload(true);  
