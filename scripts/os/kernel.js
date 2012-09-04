@@ -101,6 +101,9 @@ function krnOnCPUClockPulse()
     {
        krnTrace("Idle");
     }
+    
+    // Update the status and time in the task bar.
+    updateTaskBar();
 }
 
 

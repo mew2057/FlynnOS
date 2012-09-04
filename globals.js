@@ -29,7 +29,7 @@ var _OSclock = 0;       // Page 23.
 
 var _Mode = 0;   // 0 = Kernel Mode, 1 = User Mode.  See page 21.
 
-var _KernelStatus = ""; // The kernel status field specified by iProject1
+var _KernelStatus = "Default"; // The kernel status field specified by iProject1
 
 // TODO: Fix the naming convention for these next five global vars.
 var CANVAS = null;              // Initialized in hostInit().
@@ -37,7 +37,9 @@ var DRAWING_CONTEXT = null;     // Initialized in hostInit().
 var TASKBAR_CANVAS = null;      // Initialized in canvasAnimations.
 var TASKBAR_CONTEXT = null;     // Initialized in canvasAnimations.
 
-var DEFAULT_FONT = "sans";      // Ignored, just a place-holder in this version.
+var TASKBAR_FONT = "normal 20px monospace";
+
+var DEFAULT_FONT = "monospace";      // Ignored, just a place-holder in this version.
 var DEFAULT_FONT_SIZE = 13;     
 var FONT_HEIGHT_MARGIN = 4;     // Additional space added to font size when advancing a line.
 
@@ -59,8 +61,6 @@ var _OsShell = null;
 
 // At least this OS is not trying to kill you. (Yet.)
 var _SarcasticMode = false;
-
-
 
 //
 // Global Device Driver Objects - page 12

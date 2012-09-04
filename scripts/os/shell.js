@@ -108,6 +108,12 @@ function shellInit()
     sc.description = "<string>- Sets the current kernel status.";
     sc.funct = shellStatus;
     this.commandList[this.commandList.length]=sc;
+    
+    sc = new ShellCommand();
+    sc.command = "load";
+    sc.description = " - Loads the contents of the program box.";
+    sc.funct = shellLoad;
+    this.commandList[this.commandList.length]=sc;
 
     //
     // Display the initial prompt.
@@ -412,10 +418,30 @@ function shellStatus (args)
 {
     if (args.length > 0)
     {
-        _KernelStatus = args[0];   
+        var tempStatus = args[0];
+        
+        for (var index=1; index < args.length; index++)
+        {
+            tempStatus += " " + args[index];   
+        }
+        
+        if(tempStatus.length > 42 )
+        {
+            _StdIn.putText("Please no status greater in length than the answer" +
+                            "to the question of life the universe and everything (42).");
+        }
+        else
+        {
+            _KernelStatus = tempStatus   
+        }
     }
     else
     {
         _StdIn.putText("Usage: status <string>  Please supply a string.");
     }
+}
+
+function shellLoad (args)
+{
+    // TODO add error checking.
 }

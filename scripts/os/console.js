@@ -106,6 +106,10 @@ function consolePutText(txt)
                 break;
             
             default:
+                if(this.CurrentXPosition + txt.length * this.CurrentFontSize > CANVAS.width)
+                {
+                    consoleAdvanceLine();
+                }
                 // Draw the text at the current X and Y coordinates.
                 DRAWING_CONTEXT.drawText(this.CurrentFont, this.CurrentFontSize, this.CurrentXPosition, this.CurrentYPosition, txt);
         
@@ -126,4 +130,11 @@ function consoleAdvanceLine()
     this.CurrentXPosition = 0;
     this.CurrentYPosition += DEFAULT_FONT_SIZE + FONT_HEIGHT_MARGIN;
     // TODO: Handle scrolling.
+}
+
+function consoleBackUpLine()
+{
+    this.CurrentXPosition = 0;
+    this.CurrentYPosition += DEFAULT_FONT_SIZE + FONT_HEIGHT_MARGIN;
+
 }

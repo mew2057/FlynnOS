@@ -63,7 +63,6 @@ function drawButton (context, button)
 {
     if( button.hoverImage)
     {
-        context.fillStyle = canvasOutlines;
         context.fillRect(button.x,button.y,button.width,button.height); 
         context.drawImage(button.hoverImage, button.x, button.y);
     }
@@ -100,66 +99,94 @@ function canvasInit()
 // Does the initial draw of the task bar and buttons.
 function drawTaskBar ()
 {
-    TASKBAR_CANVAS = document.getElementById("taskBar");
-    TASKBAR_CONTEXT = TASKBAR_CANVAS.getContext("2d");
-    
-    var rectWidth = 1000;
+    var rectWidth = 1250;
     var rectHeight = 50;
     var rectX = 15;
     var rectY = 15;
     var radius = 15;
     var button = null;
     
+    TASKBAR_CANVAS = document.getElementById("taskBar");
+    
+    TASKBAR_CONTEXT = TASKBAR_CANVAS.getContext("2d");
+    
+    // Set the taskbar font.
+    TASKBAR_CONTEXT.font = TASKBAR_FONT;
+
+    
+    
     drawRoundedBox(TASKBAR_CONTEXT,rectWidth,rectHeight,rectX,rectY,radius);
     
     // Load the power button.
+    button = new Button();    
+    button.x = 30;
+    button.y = 25;
+    button.width = button.height = 25;
+    
     var powerButton=new Image();
     var powerSelectButton=new Image();
 
-    powerButton.onload = function() {};
+    powerButton.onload = function() {TASKBAR_CONTEXT.drawImage(powerButton,30,25)};
+    
     powerButton.src = "images/power.png";
     
     powerSelectButton.onload = function() {};
     powerSelectButton.src = "images/power_select.png";
     
-    button = new Button();    
-    button.x = 30;
-    button.y = 25;
-    button.width = button.height = 25;
+
     button.hoverImage = powerSelectButton;
     button.staticImage = powerButton;
     button.funct = simBtnStartOS_click;
     button.functToggle = simBtnHaltOS_click;
     
-    alert(refreshSelectButton);
     drawButton(TASKBAR_CONTEXT, button);
 
     buttons.push(button);
-      
+    //-------------------------
+    
     // Load the refresh buttons.
+    button = new Button();     
+    button.x = 70;
+    button.y = 25;
+    button.width = button.height = 25;
+    
     var refreshButton= new Image();
     var refreshSelectButton= new Image();
     
-    refreshButton.onload = function() {};
+    refreshButton.onload = function() {TASKBAR_CONTEXT.drawImage(refreshButton,70,25)};
     refreshButton.src = "images/refresh.png";
 
     refreshSelectButton.onload = function() {};
     refreshSelectButton.src = "images/refresh_select.png";
 
-    button = new Button();     
-    button.x = 80;
-    button.y = 25;
-    button.width = button.height = 25;
+  
     button.hoverImage = refreshSelectButton;
     button.staticImage = refreshButton;
     button.funct = simBtnReset_click;
     
-    //drawButton(TASKBAR_CONTEXT, button);
-   //
+    drawButton(TASKBAR_CONTEXT, button);
+   
     buttons.push(button);
+    
+    //-------------------------
 
+    updateTaskBar();
     TASKBAR_CANVAS.addEventListener('mousemove',checkButtons,false);
     TASKBAR_CANVAS.addEventListener('mousedown',buttonClick,false);
+
+}
+
+function updateTaskBar()
+{
+    
+    var startX =TASKBAR_CANVAS.width/2.5;
+    
+    TASKBAR_CONTEXT.fillStyle = canvasBackgrounds;
+    TASKBAR_CONTEXT.fillRect(startX, 20, 625,40);
+    
+    TASKBAR_CONTEXT.fillStyle = canvasOutlines;
+    TASKBAR_CONTEXT.fillText("Status: " + _KernelStatus, startX,35);
+    TASKBAR_CONTEXT.fillText("Time:   "  + (new Date().toLocaleString().split("(")[0]), startX,55);
 
 }
 
@@ -194,6 +221,3 @@ function drawRoundedBox (context, rectWidth, rectHeight, rectX, rectY, cornerRad
  
     context.restore();
 }
-
-
-

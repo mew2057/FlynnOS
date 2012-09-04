@@ -24,8 +24,6 @@ function simInit()
     // Clear the log text box.
     document.getElementById("taLog").value="";   
     
-	// Set focus on the start button.
-   document.getElementById("btnStartOS").focus();     // TODO: This does not seem to work.  Why?
 }
 
 function simLog(msg, source)

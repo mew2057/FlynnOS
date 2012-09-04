@@ -1,4 +1,4 @@
-/* alanbos.css */
+/* flynnos.css */
 
 body
 {
@@ -100,20 +100,7 @@ td.heading
 	border: 1px solid blue;	
 }
 
-.small_button
-{
-	width: 60px;
-}
 
-.normal_button
-{
-	width: 100px;
-}
-
-.large_button
-{
-	width: 180px;
-}
 
 .footer 
 {

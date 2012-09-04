@@ -26,6 +26,12 @@ function krnKbdDriverEntry()
 
 function krnKbdDispatchKeyPress(params)
 {
+    
+    if( params.length < 2)
+    {
+        krnTrapError("Something horrible has happened in the Kernel's Interrupt"+
+                        "Service Handler in passing paramerters to the keyboard driver." );     
+    }
     // Parse the params.    
     var keyCode = params[0];
     var isShifted = params[1];
