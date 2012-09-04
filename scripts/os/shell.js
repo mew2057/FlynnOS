@@ -215,7 +215,7 @@ function shellExecute(fn, args)
     // .. call the command function passing in the args...
     fn(args);
     // Check to see if we need to advance the line again
-    if (_StdIn.CurrentXPosition > 0)
+    if (_StdIn.CurrentXPosition > CANVAS_OFFSET)
     {
         _StdIn.advanceLine();
     }
@@ -443,5 +443,14 @@ function shellStatus (args)
 
 function shellLoad (args)
 {
-    // TODO add error checking.
+    var program = document.getElementById('taExtProgs').value.toLowerCase();
+    
+    if (!checkForHex(program))
+    {
+        _StdIn.putText("Please verify that your program only has Hexidecimal characters or whitespace.");
+    }
+    else
+    {
+        _KernelLoadedProgram = program;
+    }
 }

@@ -31,6 +31,8 @@ var _Mode = 0;   // 0 = Kernel Mode, 1 = User Mode.  See page 21.
 
 var _KernelStatus = "Default"; // The kernel status field specified by iProject1
 
+var _KernelLoadedProgram = ""; //XXX This will change in future versions.
+
 // TODO: Fix the naming convention for these next five global vars.
 var CANVAS = null;              // Initialized in hostInit().
 var DRAWING_CONTEXT = null;     // Initialized in hostInit().
@@ -40,7 +42,8 @@ var TASKBAR_CONTEXT = null;     // Initialized in canvasAnimations.
 var TASKBAR_FONT = "normal 20px monospace";
 var CANVAS_BACKGROUNDS = "#02181d";
 var CANVAS_OUTLINES = "#b5ffff";
-var CANVAS_RADIUS = 15;
+var CANVAS_RADIUS =  15;
+var CANVAS_OFFSET = CANVAS_RADIUS;
 var CONSOLE_BASE_Y_OFFSET = 2;
 
 

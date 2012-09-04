@@ -18,6 +18,12 @@ function trim(str)      // Use a regular expression to remove leading and traili
 	
 }
 
+function checkForHex(str)
+{
+    //TODO refine
+    return str.match(/^[0123456789abcdef ]*$/);
+}
+
 function rot13(str)     // An easy-to understand implementation of the famous and common Rot13 obfuscator.
 {                       // You can do this in three lines with a complex regular experssion, but I'd have
     var retVal = "";    // trouble explaining it in the future.  There's a lot to be said for obvious code.
