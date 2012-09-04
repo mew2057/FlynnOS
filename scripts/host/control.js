@@ -59,6 +59,13 @@ function simBtnStartOS_click()
     // .. set focus on the OS console display ... 
     document.getElementById("display").focus();
     
+    var boxes = document.getElementsByClassName("textBox"); 
+    
+    for( var index =0; index < boxes.length; index ++)
+    {
+        boxes[index].style.visibility = 'visible';
+    }
+    
     // ... Create and initialize the CPU ...
     _CPU = new cpu();
     _CPU.init();

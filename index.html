@@ -38,46 +38,34 @@
 
 <body onload="simInit();canvasInit();">
 
-<div id="task">
+<!-- Canvasi: The plural form of canvas for people who forgot canvases is totaly valid and had cacti on the mind apparently -->
+<div id="canvasi">
+     
     <canvas id="taskBar"
-            width="1500px"
-            height="100px">
-                 Why not get yourself a real browser?           
+            width="1250px"
+            height="50px">
+                 Why not get yourself a real browser?                         
     </canvas>    
+    <canvas id="display"
+            width="500px"
+            height="500px"
+            tabindex="3">
+                Seriously, I mean chrome is pretty nice and I designed this in it.
+    </canvas>
+    <textarea name="taLog"
+              class="textBox"
+              id = "taLog"
+              rows="15"
+              cols="48"
+    ></textarea>
+    
+    <textarea name="extProgs"
+              id = "extProgs"
+              class="textBox"
+              rows="15"
+              cols="48" 
+    ></textarea>   
 </div>
-
-<table id="tableDisplay" style="border:1px solid white;">
-    <tr>
-       
-        <td class="label">
-            Control Log
-        </td>
-    </tr>
-    <tr valign="top">
-        <td id="tdDisplay">
-            <canvas id="display"
-                    width="500px"
-                    height="500px"
-                    tabindex="3">
-            </canvas>
-            
-        </td>
-        
-        <td id="tdLog">
-            <textarea name="taLog"
-                      id = "taLog"
-                      rows="32"
-                      cols="48"
-            ></textarea>
-            
-            <textarea name="extProgs"
-                id = "extProgs"
-                rows="32"
-                cols="48"
-            ></textarea>
-        </td>
-    </tr>
-</table>
 
 <p></p>
 

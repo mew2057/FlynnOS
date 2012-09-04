@@ -12,8 +12,8 @@ function Console()
     // Properties
     this.CurrentFont      = DEFAULT_FONT;
     this.CurrentFontSize  = DEFAULT_FONT_SIZE;
-    this.CurrentXPosition = 0;
-    this.CurrentYPosition = DEFAULT_FONT_SIZE;
+    this.CurrentXPosition = CANVAS_RADIUS;
+    this.CurrentYPosition = DEFAULT_FONT_SIZE + CONSOLE_BASE_Y_OFFSET;
     this.buffer           = new Deque();              // I opted to use a deque to make handling escape characters easier.
     
     // Methods
@@ -34,7 +34,8 @@ function consoleInit()
 
 function consoleClearScreen()
 {
-	DRAWING_CONTEXT.clearRect(0, 0, CANVAS.width, CANVAS.height);
+    drawRoundedBox(DRAWING_CONTEXT, CANVAS.width,CANVAS.height,CANVAS_RADIUS);
+
 }
 
 function consoleWarningScreen(msg)
@@ -50,8 +51,8 @@ function consoleWarningScreen(msg)
 
 function consoleResetXY()
 {
-    this.CurrentXPosition = 0;
-    this.CurrentYPosition = this.CurrentFontSize;    
+    this.CurrentXPosition = CANVAS_RADIUS;
+    this.CurrentYPosition = this.CurrentFontSize + CONSOLE_BASE_Y_OFFSET;
 }
 
 function consoleHandleInput()
@@ -99,6 +100,7 @@ function consolePutText(txt)
 
                 // Move the current X position.
                 var offset = DRAWING_CONTEXT.measureText(this.CurrentFont, this.CurrentFontSize, txt);
+                            
                 this.CurrentXPosition = this.CurrentXPosition - offset;    
         
                 // Erase the text at the current X and Y coordinates and one before.
@@ -106,10 +108,7 @@ function consolePutText(txt)
                 break;
             
             default:
-                if(this.CurrentXPosition + txt.length * this.CurrentFontSize > CANVAS.width)
-                {
-                    consoleAdvanceLine();
-                }
+
                 // Draw the text at the current X and Y coordinates.
                 DRAWING_CONTEXT.drawText(this.CurrentFont, this.CurrentFontSize, this.CurrentXPosition, this.CurrentYPosition, txt);
         
@@ -127,14 +126,14 @@ function consolePutText(txt)
 
 function consoleAdvanceLine()
 {
-    this.CurrentXPosition = 0;
+    this.CurrentXPosition = CANVAS_RADIUS;
     this.CurrentYPosition += DEFAULT_FONT_SIZE + FONT_HEIGHT_MARGIN;
     // TODO: Handle scrolling.
 }
 
 function consoleBackUpLine()
 {
-    this.CurrentXPosition = 0;
+    this.CurrentXPosition = CANVAS_RADIUS;
     this.CurrentYPosition += DEFAULT_FONT_SIZE + FONT_HEIGHT_MARGIN;
 
 }

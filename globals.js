@@ -38,6 +38,11 @@ var TASKBAR_CANVAS = null;      // Initialized in canvasAnimations.
 var TASKBAR_CONTEXT = null;     // Initialized in canvasAnimations.
 
 var TASKBAR_FONT = "normal 20px monospace";
+var CANVAS_BACKGROUNDS = "#02181d";
+var CANVAS_OUTLINES = "#b5ffff";
+var CANVAS_RADIUS = 15;
+var CONSOLE_BASE_Y_OFFSET = 2;
+
 
 var DEFAULT_FONT = "monospace";      // Ignored, just a place-holder in this version.
 var DEFAULT_FONT_SIZE = 13;     

@@ -152,7 +152,7 @@ CanvasTextFunctions.draw = function(ctx,font,size,x,y,str)
     ctx.save();
     ctx.lineCap = "round";
     ctx.lineWidth = 2.0 * mag;
-	ctx.strokeStyle = "black";
+	ctx.strokeStyle = CANVAS_OUTLINES;
 
     for (var i = 0; i < len; i++) 
 	{
@@ -204,7 +204,7 @@ CanvasTextFunctions.erase = function(ctx,font,size,x,y,str)
 			continue;	
 		}  
 
-        ctx.clearRect(x,adjustedY ,c.width, boxHeight);
+        ctx.fillRect(x,adjustedY ,c.width, boxHeight);
     }
     
     ctx.restore();

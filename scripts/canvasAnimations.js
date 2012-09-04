@@ -1,6 +1,4 @@
-var canvasBackgrounds = "#02181d";
-var canvasOutlines = "#b5ffff";
-
+// This code is not confirmed/tested!
 var buttons=[];
 
 function Button ()
@@ -14,7 +12,6 @@ function Button ()
     this.hoverStatus = false;
     this.funct = null;
     this.functToggle = null;
-    
 }
 
 Button.prototype.collide = function (posX,posY)
@@ -61,17 +58,16 @@ function checkButtons (event)
 
 function drawButton (context, button)
 {
+    /*TODO get working
     if( button.hoverImage)
     {
-        context.fillRect(button.x,button.y,button.width,button.height); 
         context.drawImage(button.hoverImage, button.x, button.y);
     }
     else
     {
         // Fill in the image rectangle (so the image will appear to change).
-        context.fillRect(button.x,button.y,button.width,button.height); 
         context.drawImage(button.staticImage, button.x, button.y);
-    }
+    }*/
 }
 
 function buttonClick()
@@ -85,25 +81,20 @@ function buttonClick()
     }    
 }
 
+// END UNTESTED CODE!
+
 /*
     http://www.html5canvastutorials.com/
 */
 function canvasInit()
 {
     drawTaskBar();
-    
     //setInterval(drawCanvas(),40);
 }
-
 
 // Does the initial draw of the task bar and buttons.
 function drawTaskBar ()
 {
-    var rectWidth = 1250;
-    var rectHeight = 50;
-    var rectX = 15;
-    var rectY = 15;
-    var radius = 15;
     var button = null;
     
     TASKBAR_CANVAS = document.getElementById("taskBar");
@@ -111,22 +102,20 @@ function drawTaskBar ()
     TASKBAR_CONTEXT = TASKBAR_CANVAS.getContext("2d");
     
     // Set the taskbar font.
-    TASKBAR_CONTEXT.font = TASKBAR_FONT;
-
+    TASKBAR_CONTEXT.font = TASKBAR_FONT;    
     
-    
-    drawRoundedBox(TASKBAR_CONTEXT,rectWidth,rectHeight,rectX,rectY,radius);
+    drawRoundedBox(TASKBAR_CONTEXT,TASKBAR_CANVAS.width,TASKBAR_CANVAS.height,CANVAS_RADIUS);
     
     // Load the power button.
     button = new Button();    
-    button.x = 30;
-    button.y = 25;
+    button.x = 15;
+    button.y = 15;
     button.width = button.height = 25;
     
     var powerButton=new Image();
     var powerSelectButton=new Image();
 
-    powerButton.onload = function() {TASKBAR_CONTEXT.drawImage(powerButton,30,25)};
+    powerButton.onload = function() {TASKBAR_CONTEXT.drawImage(powerButton,15,15)};
     
     powerButton.src = "images/power.png";
     
@@ -146,14 +135,14 @@ function drawTaskBar ()
     
     // Load the refresh buttons.
     button = new Button();     
-    button.x = 70;
-    button.y = 25;
+    button.x = 50;
+    button.y = 15;
     button.width = button.height = 25;
     
     var refreshButton= new Image();
     var refreshSelectButton= new Image();
     
-    refreshButton.onload = function() {TASKBAR_CONTEXT.drawImage(refreshButton,70,25)};
+    refreshButton.onload = function() {TASKBAR_CONTEXT.drawImage(refreshButton,50,15)};
     refreshButton.src = "images/refresh.png";
 
     refreshSelectButton.onload = function() {};
@@ -169,8 +158,7 @@ function drawTaskBar ()
     buttons.push(button);
     
     //-------------------------
-
-    updateTaskBar();
+    
     TASKBAR_CANVAS.addEventListener('mousemove',checkButtons,false);
     TASKBAR_CANVAS.addEventListener('mousedown',buttonClick,false);
 
@@ -181,36 +169,36 @@ function updateTaskBar()
     
     var startX =TASKBAR_CANVAS.width/2.5;
     
-    TASKBAR_CONTEXT.fillStyle = canvasBackgrounds;
-    TASKBAR_CONTEXT.fillRect(startX, 20, 625,40);
+    TASKBAR_CONTEXT.fillStyle = CANVAS_BACKGROUNDS;
+    TASKBAR_CONTEXT.fillRect(startX, 5, 625,40);
     
-    TASKBAR_CONTEXT.fillStyle = canvasOutlines;
-    TASKBAR_CONTEXT.fillText("Status: " + _KernelStatus, startX,35);
-    TASKBAR_CONTEXT.fillText("Time:   "  + (new Date().toLocaleString().split("(")[0]), startX,55);
+    TASKBAR_CONTEXT.fillStyle = CANVAS_OUTLINES;
+    TASKBAR_CONTEXT.fillText("Status: " + _KernelStatus, startX,20);
+    TASKBAR_CONTEXT.fillText("Time:   "  + (new Date().toLocaleString().split("(")[0]), startX,40);
 
 }
 
-function drawRoundedBox (context, rectWidth, rectHeight, rectX, rectY, cornerRadius)
+function drawRoundedBox (context, rectWidth, rectHeight, cornerRadius)
 {    
-    context.fillStyle = canvasBackgrounds;
-    context.strokeStyle = canvasOutlines;
+    context.fillStyle = CANVAS_BACKGROUNDS;
+    context.strokeStyle = CANVAS_OUTLINES;
     
     context.save();    
     context.beginPath();
     
-    context.moveTo(rectX+cornerRadius,rectY);
+    context.moveTo(cornerRadius,0);
 
     // Top line and top right corner.
-    context.arcTo(rectX+rectWidth,rectY,rectX+rectWidth,rectY+cornerRadius,cornerRadius);
+    context.arcTo(rectWidth,0,rectWidth,cornerRadius,cornerRadius);
 
     // Right line and bottom right corner.
-    context.arcTo(rectX+rectWidth,rectY+rectHeight,rectX+rectWidth-cornerRadius,rectY+rectHeight,cornerRadius); 
+    context.arcTo(rectWidth,rectHeight,rectWidth-cornerRadius,rectHeight,cornerRadius); 
 
     // Bottom line and bottom left corner.
-    context.arcTo(rectX,rectY+rectHeight,rectX,rectY+rectHeight-cornerRadius,cornerRadius);
+    context.arcTo(0,rectHeight,0,rectHeight-cornerRadius,cornerRadius);
 
     // Right line and top left corner.
-    context.arcTo(rectX,rectY,rectX+cornerRadius,rectY,cornerRadius);
+    context.arcTo(0,0,cornerRadius,0,cornerRadius);
 
     
     context.closePath();    

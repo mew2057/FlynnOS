@@ -20,12 +20,17 @@ function DeviceDriverDisplay()                     // Add or override specific a
 function krnDispDriverEntry()
 {
     // Get a global reference to the canvas.  
-	CANVAS  = document.getElementById('display');
-	// Get a global reference to the drawing context.
+    CANVAS  = document.getElementById('display');
+    // Get a global reference to the drawing context.
 	DRAWING_CONTEXT = CANVAS.getContext('2d');
 	// Enable the added-in canvas text functions (see canvastext.js for provenance and details).
 	CanvasTextFunctions.enable(DRAWING_CONTEXT);
     
+    DRAWING_CONTEXT.fillStyle = CANVAS_OUTLINES;
+    
+    // Emulates starting the monitor.
+    drawRoundedBox(DRAWING_CONTEXT, CANVAS.width,CANVAS.height,CANVAS_RADIUS);
+
     this.status = "loaded";
 }
 
