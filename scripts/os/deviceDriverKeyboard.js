@@ -27,17 +27,25 @@ function krnKbdDriverEntry()
 function krnKbdDispatchKeyPress(params)
 {
     
-    if( params.length < 2)
+    if (params.length < 2)
     {
         krnTrapError("Something horrible has happened in the Kernel's Interrupt"+
                         "Service Handler in passing paramerters to the keyboard driver." );     
     }
+    
     // Parse the params.    
     var keyCode = params[0];
     var isShifted = params[1];
+    
+    if (isNaN(keyCode))
+    {
+        krnTrapError("An invalid keycode was passed to the keyboard's isr: " + keyCode);     
+    }
 
     krnTrace("Key code:" + keyCode + " shifted:" + isShifted);
+    
     var chr = "";
+    
     // Check to see if we even want to deal with the key that was pressed.
     if ( ((keyCode >= 65) && (keyCode <= 90)) )   // A..Z
     {

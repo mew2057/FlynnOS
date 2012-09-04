@@ -132,7 +132,23 @@ function consolePutText(txt)
 function consoleAdvanceLine()
 {
     this.CurrentXPosition = CANVAS_OFFSET;
-    this.CurrentYPosition += DEFAULT_FONT_SIZE + FONT_HEIGHT_MARGIN;
+
+    
+    if(this.CurrentYPosition > CANVAS.height -CONSOLE_MIN_HEIGHT)
+    {
+        var image = DRAWING_CONTEXT.getImageData(CANVAS_OFFSET, 
+                                                CONSOLE_BASE_Y_OFFSET + DEFAULT_FONT_SIZE + FONT_HEIGHT_MARGIN,
+                                                CANVAS.width - 2* CANVAS_OFFSET,
+                                                CANVAS.height - CONSOLE_MIN_HEIGHT);
+        DRAWING_CONTEXT.putImageData(image,CANVAS_OFFSET,CONSOLE_BASE_Y_OFFSET);
+        
+        
+    }
+    else
+    {
+            this.CurrentYPosition += DEFAULT_FONT_SIZE + FONT_HEIGHT_MARGIN;
+
+    }
     // TODO: Handle scrolling.
 }
 

@@ -190,8 +190,9 @@ CanvasTextFunctions.draw = function(ctx,font,size,x,y,str)
 
 CanvasTextFunctions.erase = function(ctx,font,size,x,y,str) 
 {
-    var boxHeight = - (DEFAULT_FONT_SIZE + FONT_HEIGHT_MARGIN);
-    var adjustedY = y + ctx.fontDescent(font, size) +1;
+    // I found that these worked best (still playing with the best way to calculate these.
+    var boxHeight = - (DEFAULT_FONT_SIZE + FONT_HEIGHT_MARGIN + 3);
+    var adjustedY = y + ctx.fontDescent(font, size) +2;
 
     ctx.save();
     
@@ -203,7 +204,7 @@ CanvasTextFunctions.erase = function(ctx,font,size,x,y,str)
 			continue;	
 		}  
 
-        ctx.fillRect(x,adjustedY ,c.width, boxHeight);
+        ctx.fillRect(x-1,adjustedY ,c.width, boxHeight);
     }
     
     ctx.restore();

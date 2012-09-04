@@ -9,10 +9,13 @@
 function Shell()
 {
     // Properties
-    this.promptStr   = ">";
-    this.commandList = [];
-    this.curses      = "[fuvg],[cvff],[shpx],[phag],[pbpxfhpxre],[zbgureshpxre],[gvgf]";
-    this.apologies   = "[sorry]";
+    this.promptStr     = ">";
+    this.commandList   = [];
+    this.curses        = "[fuvg],[cvff],[shpx],[phag],[pbpxfhpxre],[zbgureshpxre],[gvgf]";
+    this.apologies     = "[sorry]";
+    this.commandBuffer = new Deque();
+    
+    
     // Methods
     this.init        = shellInit;
     this.putPrompt   = shellPutPrompt;
@@ -158,6 +161,14 @@ function shellHandleInput(buffer)
     if (found)
     {
         this.execute(fn, args);
+        
+        // Do the command buffer logic.
+        this.commandBuffer.pushBack(userCommand);   // This is for a command history.
+        
+        if(this.commandBuffer.length > SHELL_COMMAND_BUFFER_LIMIT)
+        {
+            this.commandBuffer.popFront();    
+        }
     }
     else
     {
@@ -447,7 +458,7 @@ function shellLoad (args)
     
     if (!checkForHex(program))
     {
-        _StdIn.putText("Please verify that your program only has Hexidecimal characters or whitespace.");
+        _StdIn.putText("Please verify that your program only has Hexidecimal characters or non continuous whitespace.");
     }
     else
     {

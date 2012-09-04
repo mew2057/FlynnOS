@@ -39,6 +39,10 @@ var DRAWING_CONTEXT = null;     // Initialized in hostInit().
 var TASKBAR_CANVAS = null;      // Initialized in canvasAnimations.
 var TASKBAR_CONTEXT = null;     // Initialized in canvasAnimations.
 
+var DEFAULT_FONT = "monospace";      // Ignored, just a place-holder in this version.
+var DEFAULT_FONT_SIZE = 13;     
+var FONT_HEIGHT_MARGIN = 4;     // Additional space added to font size when advancing a line.
+
 var TASKBAR_FONT = "normal 20px monospace";
 var CANVAS_BACKGROUNDS = "#02181d";
 var CANVAS_OUTLINES = "#b5ffff";
@@ -46,12 +50,10 @@ var CANVAS_TRAP_BACKGROUNDS =  "#ff7920" ;
 var CANVAS_TRAP_OUTLINES = "#fcde0e";
 var CANVAS_RADIUS =  15;
 var CANVAS_OFFSET = CANVAS_RADIUS;
-var CONSOLE_BASE_Y_OFFSET = 2;
+var CONSOLE_BASE_Y_OFFSET = 5;
+var CONSOLE_MIN_HEIGHT = 25;
 
 
-var DEFAULT_FONT = "monospace";      // Ignored, just a place-holder in this version.
-var DEFAULT_FONT_SIZE = 13;     
-var FONT_HEIGHT_MARGIN = 4;     // Additional space added to font size when advancing a line.
 
 // Default the OS trace to be on.
 var _Trace = true;
@@ -60,6 +62,10 @@ var _Trace = true;
 var _KernelInterruptQueue = null;
 var _KernelBuffers = null;
 var _KernelInputQueue = null;
+
+// Buffer limits.
+var SHELL_COMMAND_BUFFER_LIMIT = 20;
+var CONSOLE_BUFFER_LIMIT = 0;
 
 // Standard input and output
 var _StdIn  = null;

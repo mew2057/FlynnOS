@@ -26,6 +26,7 @@ function krnDispDriverEntry()
 	// Enable the added-in canvas text functions (see canvastext.js for provenance and details).
 	CanvasTextFunctions.enable(DRAWING_CONTEXT);
     
+    // Sets the fill style and stroke style of the console.
     DRAWING_CONTEXT.fillStyle = CANVAS_BACKGROUNDS;
     DRAWING_CONTEXT.strokeStyle = CANVAS_OUTLINES;
 
