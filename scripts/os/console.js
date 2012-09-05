@@ -14,8 +14,7 @@ function Console()
     this.CurrentFontSize  = DEFAULT_FONT_SIZE;
     this.CurrentXPosition = CANVAS_OFFSET;
     this.CurrentYPosition = DEFAULT_FONT_SIZE 
-                          + CONSOLE_BASE_Y_OFFSET;     // The addition of the offset prevents overlap with the border.
-                          
+                          + CONSOLE_BASE_Y_OFFSET;     // The addition of the offset prevents overlap with the border.                          
     this.buffer           = new Deque();            // I opted to use a deque to make handling escape characters easier.
     
     // Methods
@@ -143,7 +142,6 @@ function consolePutText(txt)
 
                 added = true;           
         }
-       
     }
   
     return added;
@@ -171,12 +169,4 @@ function consoleAdvanceLine()
             this.CurrentYPosition += DEFAULT_FONT_SIZE + FONT_HEIGHT_MARGIN;
 
     }
-    // TODO: Handle scrolling.
-}
-
-function consoleBackUpLine()
-{
-    this.CurrentXPosition = CANVAS_OFFSET;
-    this.CurrentYPosition += DEFAULT_FONT_SIZE + FONT_HEIGHT_MARGIN;
-
 }

@@ -18,16 +18,25 @@ function trim(str)      // Use a regular expression to remove leading and traili
 	
 }
 
+/**
+ * Checks a string to see if it matches the hex assembly specified in class.
+ * @param str The string to be parsed.
+ */
 function checkForHex(str)
 {
     var retVal = false; 
 
+    // If there are too many contiguous whitespaces just ignore it outright.
+    // XXX Should this be this way?
     if (!str.match(/[ ]{2,}/))
     {
+        // Get the tokens and set up a fail flag
         var tokens=str.split(" ");
         var failFlag = false;
         
-        for (var index = 0, length=tokens.length; index<length;index++)
+        // Iterate over the tokens and check for any non hex characters 
+        // or tokens exceeding 2 characters.
+        for (var index in tokens)
         {
             if(!tokens[index].match(/[0123456789abcdef]{2}/))
             {
@@ -35,10 +44,7 @@ function checkForHex(str)
             }
         }
         
-        if (!failFlag)
-        {
-            retVal = true;   
-        }
+        retVal = !failFlag;   
     } 
     
     return retVal;
