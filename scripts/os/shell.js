@@ -458,7 +458,7 @@ function shellLoad (args)
     
     if (!checkForHex(program))
     {
-        _StdIn.putText("Please verify that your program only has Hexidecimal characters or non continuous whitespace.");
+        _StdIn.putText("Please verify that your program only has paired Hexidecimal characters or non continuous whitespace.");
     }
     else
     {

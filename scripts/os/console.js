@@ -113,15 +113,33 @@ function consolePutText(txt)
                 break;
             
             default:
+                //I split the string into tokens, as it makes it trival to handle newline                
+                var tokens = txt.split(" ");    
+                
+                var offsetChar = tokens.length > 1 ? ' ':'' // If we have a string each token should be assumed to have a space at the end.
+                
+                var offsetLength = DRAWING_CONTEXT.measureText(this.CurrentFont, this.CurrentFontSize, offsetChar);
+                
+                var offset = 0;
+                
+                for (var index in tokens)
+                {
+                    offset = DRAWING_CONTEXT.measureText(this.CurrentFont, this.CurrentFontSize, tokens[index]);
+                    
+                    if(this.CurrentXPosition + offset > CANVAS.width - CANVAS_OFFSET)
+                    {
+                        this.advanceLine();
+                    }
+                    
+                     // Draw the text at the current X and Y coordinates.
+                    DRAWING_CONTEXT.drawText(this.CurrentFont, this.CurrentFontSize, this.CurrentXPosition, this.CurrentYPosition, tokens[index]);
+            
+                    // Move the current X position.                    
+                    this.CurrentXPosition = this.CurrentXPosition + offset + offsetLength;   
+        
+                }
 
-                // Draw the text at the current X and Y coordinates.
-                DRAWING_CONTEXT.drawText(this.CurrentFont, this.CurrentFontSize, this.CurrentXPosition, this.CurrentYPosition, txt);
-        
-                // Move the current X position.
-                var offset = DRAWING_CONTEXT.measureText(this.CurrentFont, this.CurrentFontSize, txt);
-                this.CurrentXPosition = this.CurrentXPosition + offset;   
-        
-                added = true;
+                added = true;           
         }
        
     }
@@ -136,10 +154,12 @@ function consoleAdvanceLine()
     
     if(this.CurrentYPosition > CANVAS.height -CONSOLE_MIN_HEIGHT)
     {
+        // XXXThis is a cluster you know what. I'm working on standardizing things, and this is just a rough in.
         var image = DRAWING_CONTEXT.getImageData(CANVAS_OFFSET, 
                                                 CONSOLE_BASE_Y_OFFSET + DEFAULT_FONT_SIZE + FONT_HEIGHT_MARGIN,
                                                 CANVAS.width - 2* CANVAS_OFFSET,
-                                                CANVAS.height - CONSOLE_MIN_HEIGHT);
+                                                CANVAS.height - 2* (CONSOLE_BASE_Y_OFFSET + DEFAULT_FONT_SIZE));
+                                                
         DRAWING_CONTEXT.putImageData(image,CANVAS_OFFSET,CONSOLE_BASE_Y_OFFSET);
         
         
