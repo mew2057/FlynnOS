@@ -1,5 +1,4 @@
 /* flynnos.css */
-
 body
 {
 	background-color: #010c0e;	/* The bottom color of background.jpg. */
@@ -10,35 +9,6 @@ body
 	font-weight: normal;
 	font-style: normal;
 }
-
-h1 
-{ 
-    color: black;
-	font-size:   24pt;
-	font-weight: normal;
-	font-style: normal;	
-    border-bottom: 1px solid #dad8ed;  
-}
-
-h2
-{
-	font-family: Helvetica, Verdana, Arial, sans-serif;
-	font-size:   16pt;
-	font-weight: normal;
-	font-style: normal;	
-}
-
-p.breadcrumbs
-{
-    font-family: Verdana, Arial, Helvetica, sans-serif;
-    font-size: 10pt;
-    font-weight: normal;
-    line-height: normal;
-    color: green;
-    position: relative;
-    top: -16px;
-}
-
 
 td.section
 {
@@ -55,60 +25,16 @@ td.heading
 	font-style: normal;
 }
 
-#frame
-{
-    width: 800px;
-	height:1000px;
-    margin-left: auto;
-    margin-right: auto;
-    background-color: white;
-    padding: 10px;			/* set in init() */
-    border-width: 6px;		/* set in init() */
-    border-style: double;
-    border-color: #dad8ed;  /* "circles" light-blueish */
-}
-
-
 #taskBar
 {
     opacity: .75;   
 }
 
-.subheading
-{
-	font-weight: normal;
-	font-style: italic;
-}
-
-.instructions
-{
-	font-size:10pt;
-	font-weight: normal;
-	font-style: normal;	
-}
-
-.widget
-{
-	width:100%;
-	position: relative;	
-	background-color: #dad8ed; /* was #99ffff */;
-	border: 1px solid blue;	
-}
-
-
-
 .footer 
 {
-    color: white;
+    color: #b5ffff;
     font-family: Arial, Helvetica, sans-serif;
 	font-size: 8pt;
-}
-
-.label
-{
-    color: white;
-    font-family: Arial, Helvetica, sans-serif;
-	font-size: 12pt;
 }
 
 .textBox

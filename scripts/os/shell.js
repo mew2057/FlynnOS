@@ -425,6 +425,9 @@ function shellDate(args)
     }
 }
 
+/**
+ * Sets the global status that will be reflected in the task bar on the next os cycle.
+ */
 function shellStatus (args)
 {
     if (args.length > 0)
@@ -452,13 +455,17 @@ function shellStatus (args)
     }
 }
 
+/**
+ *  Loads the hex from the input text area.
+ */
 function shellLoad (args)
 {
     var program = document.getElementById('taExtProgs').value.toLowerCase();
     
     if (!checkForHex(program))
     {
-        _StdIn.putText("Please verify that your program only has paired Hexidecimal characters or non continuous whitespace.");
+        _StdIn.putText("Please verify that your program only has paired Hexidecimal characters " +
+                        "and non continuous whitespace.");
     }
     else
     {

@@ -13,8 +13,10 @@ function Console()
     this.CurrentFont      = DEFAULT_FONT;
     this.CurrentFontSize  = DEFAULT_FONT_SIZE;
     this.CurrentXPosition = CANVAS_OFFSET;
-    this.CurrentYPosition = DEFAULT_FONT_SIZE + CONSOLE_BASE_Y_OFFSET;
-    this.buffer           = new Deque();              // I opted to use a deque to make handling escape characters easier.
+    this.CurrentYPosition = DEFAULT_FONT_SIZE 
+                          + CONSOLE_BASE_Y_OFFSET;     // The addition of the offset prevents overlap with the border.
+                          
+    this.buffer           = new Deque();            // I opted to use a deque to make handling escape characters easier.
     
     // Methods
     this.init          = consoleInit;
@@ -154,7 +156,7 @@ function consoleAdvanceLine()
     
     if(this.CurrentYPosition > CANVAS.height -CONSOLE_MIN_HEIGHT)
     {
-        // XXXThis is a cluster you know what. I'm working on standardizing things, and this is just a rough in.
+        // XXX This is a cluster you know what. I'm working on standardizing things, and this is just a rough in.
         var image = DRAWING_CONTEXT.getImageData(CANVAS_OFFSET, 
                                                 CONSOLE_BASE_Y_OFFSET + DEFAULT_FONT_SIZE + FONT_HEIGHT_MARGIN,
                                                 CANVAS.width - 2* CANVAS_OFFSET,
@@ -162,7 +164,7 @@ function consoleAdvanceLine()
                                                 
         DRAWING_CONTEXT.putImageData(image,CANVAS_OFFSET,CONSOLE_BASE_Y_OFFSET);
         
-        
+   
     }
     else
     {
