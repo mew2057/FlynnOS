@@ -15,9 +15,7 @@
 //
 function krnBootstrap()      // Page 8.
 {
-    simLog("bootstrap", "host");  // Use simLog because we ALWAYS want this, even if _Trace is off.
-
-    
+    simLog("bootstrap", "host");  // Use simLog because we ALWAYS want this, even if _Trace is off.    
 
 
     // Initialize our global queues.

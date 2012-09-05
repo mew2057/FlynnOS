@@ -24,21 +24,21 @@ function trim(str)      // Use a regular expression to remove leading and traili
  */
 function checkForHex(str)
 {
-    var retVal = false; 
+    var retVal = false;
+    var trimmedString = str.trim();
 
     // If there are too many contiguous whitespaces just ignore it outright.
-    // XXX Should this be this way?
-    if (!str.match(/[ ]{2,}/))
+    if (!trimmedString.match(/[ ]{2,}/))
     {
         // Get the tokens and set up a fail flag
-        var tokens=str.split(" ");
+        var tokens=trimmedString.split(" ");
         var failFlag = false;
         
         // Iterate over the tokens and check for any non hex characters 
         // or tokens exceeding 2 characters.
         for (var index in tokens)
         {
-            if(!tokens[index].match(/[0123456789abcdef]{2}/))
+            if(!tokens[index].match(/^[0123456789abcdef]{2}$/))
             {
                 failFlag = true;
             }

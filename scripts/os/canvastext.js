@@ -129,6 +129,7 @@ CanvasTextFunctions.descent = function(font, size)
 
 CanvasTextFunctions.measure = function(font, size, str) 
 {
+    
     var total = 0;
     var len = str.length;
 
@@ -140,6 +141,7 @@ CanvasTextFunctions.measure = function(font, size, str)
 			total += c.width * size / 25.0;
 		}
     }
+
     return total;
 };
 

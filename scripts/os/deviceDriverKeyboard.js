@@ -139,7 +139,7 @@ function krnKbdDispatchKeyPress(params)
         if (chr == "" && keyCode != 16)
         {
             // If the key code isn't valid then trap.
-            krnTrapError("Key Code:\"" + keyCode + "\" was not defined." );   
+            krnTrace("Key Code:\"" + keyCode + "\" was not defined" );   
         }
         else if (keyCode!= 16)
         {

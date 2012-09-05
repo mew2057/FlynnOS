@@ -1,9 +1,9 @@
 /* flynnos.css */
 body
 {
-	background-color: #010c0e;	/* The bottom color of background.jpg. */
-	background-image: url(images/background.jpg);
-	background-repeat: repeat-x;
+	background-color: #040809;	/* The bottom color of background.jpg. */
+	/*background-image: url(images/background.jpg);
+	background-repeat: repeat-x;*/
 	font-family: Helvetica, Verdana, Arial, sans-serif;
 	font-size: 10pt;
 	font-weight: normal;
@@ -44,4 +44,5 @@ td.heading
     border: solid 3px;
     border-radius: 15px;   
     visibility: hidden;
+    opacity: .75;   
 }

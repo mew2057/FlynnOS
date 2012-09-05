@@ -38,5 +38,5 @@ function krnDispDriverEntry()
 
 function krnDispDispatch(params)
 {
-    alert ("do something");
+    //do something
 }

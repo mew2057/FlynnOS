@@ -95,7 +95,6 @@ function drawTaskBar ()
     // Add the mouse events.
     TASKBAR_CANVAS.addEventListener('mousemove',checkTaskButtons,false);
     TASKBAR_CANVAS.addEventListener('mousedown',taskButtonClick,false);
-
 }
 
 
@@ -104,8 +103,7 @@ function drawTaskBar ()
  * updates and redraws the taskbar's text fields (e.g the status and time).
  */
 function updateTaskBar()
-{
-    
+{   
     var startX =TASKBAR_CANVAS.width/2.5;
     
     TASKBAR_CONTEXT.fillStyle = CANVAS_BACKGROUNDS;
@@ -261,7 +259,7 @@ function drawTaskButton (button)
  * Checks to see which button (if any) should be triggered by the mouse down 
  * event in the taskbar.
  */
-function taskButtonClick()
+function taskButtonClick(event)
 {
     for ( var buttonIndex = 0; buttonIndex < buttons.length; buttonIndex ++ )
     {
@@ -270,7 +268,7 @@ function taskButtonClick()
             // Allows for the power button to be on and off.
             buttons[buttonIndex].swapFunct()();
             
-            // This provides visual feedback to teh user on click.
+            // This provides visual feedback to the user on click.
             buttons[buttonIndex].hoverStatus = false;      
             drawTaskButton(buttons[buttonIndex]);
         }

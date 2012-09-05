@@ -15,7 +15,8 @@ function Console()
     this.CurrentXPosition = CANVAS_OFFSET;
     this.CurrentYPosition = DEFAULT_FONT_SIZE 
                           + CONSOLE_BASE_Y_OFFSET;     // The addition of the offset prevents overlap with the border.                          
-    this.buffer           = new Deque();            // I opted to use a deque to make handling escape characters easier.
+    this.buffer           = new Deque();               // I opted to use a deque to make handling escape characters easier.
+    this.endLineBuffer    = new Deque();               // Used in consoleBackUpLine for returning the cursor for deletes.
     
     // Methods
     this.init          = consoleInit;
@@ -24,7 +25,10 @@ function Console()
     this.handleInput   = consoleHandleInput;
     this.putText       = consolePutText;
     this.advanceLine   = consoleAdvanceLine;
+    this.backUpLine    = consoleBackUpLine;
     this.warningScreen = consoleWarningScreen;
+    this.splitToken    = consoleSplitToken;
+    
 }
 
 function consoleInit()
@@ -102,15 +106,29 @@ function consolePutText(txt)
         switch (txt)
         {
             case "\b":
+                
+                // This prevents null pointer exceptions.
+                if(this.buffer.length() == 0)
+                {
+                    break;   
+                }
+                
                 txt = this.buffer.popBack();
 
                 // Move the current X position.
                 var offset = DRAWING_CONTEXT.measureText(this.CurrentFont, this.CurrentFontSize, txt);
                             
                 this.CurrentXPosition = this.CurrentXPosition - offset;    
-        
+                
                 // Erase the text at the current X and Y coordinates and one before.
                 DRAWING_CONTEXT.eraseText(this.CurrentFont, this.CurrentFontSize, this.CurrentXPosition, this.CurrentYPosition, txt);
+                
+                // This code handles backspace when the type is on the second line.
+                if(this.CurrentXPosition < CANVAS_OFFSET)
+                {
+                    this.backUpLine();
+                }
+
                 break;
             
             default:
@@ -126,31 +144,52 @@ function consolePutText(txt)
                 for (var index in tokens)
                 {
                     offset = DRAWING_CONTEXT.measureText(this.CurrentFont, this.CurrentFontSize, tokens[index]);
-                    
-                    if(this.CurrentXPosition + offset > CANVAS.width - CANVAS_OFFSET)
+
+                    if(this.CurrentXPosition + offset > CANVAS.width - CANVAS_OFFSET &&
+                        offset < CANVAS.width - CANVAS_OFFSET)
                     {
                         this.advanceLine();
                     }
-                    
+                    else if (offset > CANVAS.width - CANVAS_OFFSET)
+                    {
+                        this.splitToken(tokens[index]);
+                        continue; 
+                    }
+                  
                      // Draw the text at the current X and Y coordinates.
                     DRAWING_CONTEXT.drawText(this.CurrentFont, this.CurrentFontSize, this.CurrentXPosition, this.CurrentYPosition, tokens[index]);
-            
+                
                     // Move the current X position.                    
                     this.CurrentXPosition = this.CurrentXPosition + offset + offsetLength;   
-        
-                }
-
-                added = true;           
+                        
+            }
+            added = true;           
         }
     }
   
     return added;
 }
 
+/**
+ * Splits a supplied token into a character array and prints each character on the console 
+ * (this preventsline overflow).
+ * @param token The token to split and output.
+ */
+function consoleSplitToken(token)
+{    
+    var chars = token.split("");
+    
+    for (var index in chars)
+    {
+        this.putText(chars[index]);  
+    }    
+}
+
 function consoleAdvanceLine()
 {
+    this.endLineBuffer.pushBack(this.CurrentXPosition);
+    
     this.CurrentXPosition = CANVAS_OFFSET;
-
     
     if(this.CurrentYPosition > CANVAS.height -CONSOLE_MIN_HEIGHT)
     {
@@ -161,12 +200,16 @@ function consoleAdvanceLine()
                                                 CANVAS.height - 2* (CONSOLE_BASE_Y_OFFSET + DEFAULT_FONT_SIZE));
                                                 
         DRAWING_CONTEXT.putImageData(image,CANVAS_OFFSET,CONSOLE_BASE_Y_OFFSET);
-        
-   
     }
     else
     {
             this.CurrentYPosition += DEFAULT_FONT_SIZE + FONT_HEIGHT_MARGIN;
-
     }
+}
+
+function consoleBackUpLine()
+{
+    this.CurrentXPosition = this.endLineBuffer.popBack();
+    this.CurrentYPosition -= (DEFAULT_FONT_SIZE + FONT_HEIGHT_MARGIN);
+
 }

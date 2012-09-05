@@ -29,7 +29,7 @@ var _OSclock = 0;       // Page 23.
 
 var _Mode = 0;   // 0 = Kernel Mode, 1 = User Mode.  See page 21.
 
-var _KernelStatus = "Default"; // The kernel status field specified by iProject1
+var _KernelStatus = "default"; // The kernel status field specified by iProject1
 
 var _KernelLoadedProgram = ""; //XXX This will change in future versions.
 

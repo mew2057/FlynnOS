@@ -95,3 +95,18 @@ function simBtnReset_click()
     // be reloaded from the server. If it is false or not specified, the browser may reload the 
     // page from its cache, which is not what we want.
 }
+
+/**
+ *  Loads the program from the textarea. 
+ */
+function simLoadProgram()
+{   
+    var program = document.getElementById('taExtProgs').value.toLowerCase();
+
+    if(!checkForHex(program))
+    {
+        program = null;  
+    }
+    
+    return program;
+}

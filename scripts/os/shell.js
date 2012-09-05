@@ -117,6 +117,12 @@ function shellInit()
     sc.description = " - Loads the contents of the program box.";
     sc.funct = shellLoad;
     this.commandList[this.commandList.length]=sc;
+    
+    sc = new ShellCommand();
+    sc.command = "osod";
+    sc.description = " - Anger the MCP.";
+    sc.funct = shellOSOD
+    this.commandList[this.commandList.length]=sc;
 
     //
     // Display the initial prompt.
@@ -441,7 +447,7 @@ function shellStatus (args)
         
         if(tempStatus.length > 42 )
         {
-            _StdIn.putText("Please no status greater in length than the answer" +
+            _StdIn.putText("Please no status greater in length than the answer " +
                             "to the question of life the universe and everything (42).");
         }
         else
@@ -460,15 +466,20 @@ function shellStatus (args)
  */
 function shellLoad (args)
 {
-    var program = document.getElementById('taExtProgs').value.toLowerCase();
+    var program=simLoadProgram();
     
-    if (!checkForHex(program))
+    if(program)
     {
-        _StdIn.putText("Please verify that your program only has paired Hexidecimal characters " +
-                        "and non continuous whitespace.");
+          _KernelLoadedProgram = program;
     }
     else
     {
-        _KernelLoadedProgram = program;
+       _StdIn.putText("Please verify that your program only has paired Hexidecimal characters " +
+                        "and non continuous whitespace.");   
     }
+}
+
+function shellOSOD(args)
+{
+    krnTrapError("I'm warning you. You're entering a big error, " + _UserName +".");   
 }

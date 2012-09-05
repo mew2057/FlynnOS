@@ -11,6 +11,10 @@ function Deque () {
     this.d = [];
 }
 
+Deque.prototype.length = function() {
+    return this.d.length;   
+}
+
 Deque.prototype.popBack = function () {
     var retVal = null;
     
