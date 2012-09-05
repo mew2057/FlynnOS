@@ -41,7 +41,7 @@ var TASKBAR_CONTEXT = null;     // Initialized in canvasAnimations.
 
 var DEFAULT_FONT = "monospace";      // Ignored, just a place-holder in this version.
 var DEFAULT_FONT_SIZE = 13;     
-var FONT_HEIGHT_MARGIN = 4;     // Additional space added to font size when advancing a line.
+var FONT_HEIGHT_MARGIN = 8;     // Additional space added to font size when advancing a line.
 
 var TASKBAR_FONT = "normal 20px monospace";
 var CANVAS_BACKGROUNDS = "#02181d";
