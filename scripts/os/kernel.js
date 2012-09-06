@@ -198,9 +198,7 @@ function krnTrace(msg)
 function krnTrapError(msg)
 {
     simLog("OS ERROR - TRAP: " + msg);
-    
-    _Console.warningScreen("OS ERROR - TRAP: " + msg);
-    // TODO: Display error on console, perhaps in some sort of colored screen. (Perhaps blue?)
-    
+     
+    _Console.trapScreen("I'M WARNING YOU. YOU'RE ENTERING A BIG ERROR, " + _UserName.toUpperCase() + ": " + msg);    
     krnShutdown();
 }

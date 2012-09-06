@@ -48,7 +48,7 @@ CanvasTextFunctions.letters = {
     '>': { width: 24, points: [[4,18],[20,9],[4,0]] },
     '?': { width: 18, points: [[3,16],[3,17],[4,19],[5,20],[7,21],[11,21],[13,20],[14,19],[15,17],[15,15],[14,13],[13,12],[9,10],[9,7],[-1,-1],[9,2],[8,1],[9,0],[10,1],[9,2]] },
     '@': { width: 27, points: [[18,13],[17,15],[15,16],[12,16],[10,15],[9,14],[8,11],[8,8],[9,6],[11,5],[14,5],[16,6],[17,8],[-1,-1],[12,16],[10,14],[9,11],[9,8],[10,6],[11,5],[-1,-1],[18,16],[17,8],[17,6],[19,5],[21,5],[23,7],[24,10],[24,12],[23,15],[22,17],[20,19],[18,20],[15,21],[12,21],[9,20],[7,19],[5,17],[4,15],[3,12],[3,9],[4,6],[5,4],[7,2],[9,1],[12,0],[15,0],[18,1],[20,2],[21,3],[-1,-1],[19,16],[18,8],[18,6],[19,5]] },
-    'A': { width: 18, points: [[9,21],[1,0],[-1,-1],[9,21],[17,0],[-1,-1],[4,7],[14,7]] },
+    'A': { width: 19, points: [[9,21],[1,0],[-1,-1],[9,21],[17,0],[-1,-1],[4,7],[14,7]] },
     'B': { width: 21, points: [[4,21],[4,0],[-1,-1],[4,21],[13,21],[16,20],[17,19],[18,17],[18,15],[17,13],[16,12],[13,11],[-1,-1],[4,11],[13,11],[16,10],[17,9],[18,7],[18,4],[17,2],[16,1],[13,0],[4,0]] },
     'C': { width: 21, points: [[18,16],[17,18],[15,20],[13,21],[9,21],[7,20],[5,18],[4,16],[3,13],[3,8],[4,5],[5,3],[7,1],[9,0],[13,0],[15,1],[17,3],[18,5]] },
     'D': { width: 21, points: [[4,21],[4,0],[-1,-1],[4,21],[11,21],[14,20],[16,18],[17,16],[18,13],[18,8],[17,5],[16,3],[14,1],[11,0],[4,0]] },
@@ -129,19 +129,17 @@ CanvasTextFunctions.descent = function(font, size)
 
 CanvasTextFunctions.measure = function(font, size, str) 
 {
-    
     var total = 0;
     var len = str.length;
 
     for (var i = 0; i < len; i++) 
-	{
+    {
 		var c = CanvasTextFunctions.letter(str.charAt(i));
 		if (c) 
 		{
 			total += c.width * size / 25.0;
 		}
     }
-
     return total;
 };
 
@@ -190,24 +188,19 @@ CanvasTextFunctions.draw = function(ctx,font,size,x,y,str)
     return total;
 };
 
+/**
+ * Handles the erasure.
+ */
 CanvasTextFunctions.erase = function(ctx,font,size,x,y,str) 
 {
-    // I found that these worked best (still playing with the best way to calculate these.
-    var boxHeight = - (DEFAULT_FONT_SIZE + FONT_HEIGHT_MARGIN + 3);
-    var adjustedY = y + ctx.fontDescent(font, size) +2;
+    // I found that these calculations worked best.
+    var boxHeight = - (DEFAULT_FONT_SIZE + FONT_HEIGHT_MARGIN);
+    var adjustedY = y + ctx.fontDescent(font, size) + 2;  // 2 fudges outliers.
 
     ctx.save();
     
-    for( var chr in str)
-    {
-        var c = CanvasTextFunctions.letter( chr );
-		if (!c)
-		{
-			continue;	
-		}  
-
-        ctx.fillRect(x-1,adjustedY ,c.width, boxHeight);
-    }
+    // Simply fills over the characters supplied in the calculated range.
+    ctx.fillRect(x-1,adjustedY ,CanvasTextFunctions.letter( str ).width, boxHeight);
     
     ctx.restore();
 }

@@ -408,27 +408,30 @@ function shellPrompt(args)
     }
 }
 
-function shellWhoAmI()
+/**
+ * As a user your identity is quite well know by the likes of the programs.
+ */
+function shellWhoAmI(args)
 {
     _StdIn.putText(_UserName);   
 }
 
-function shellWhereAmI()
+/**
+ * A simple Whereami (since flynn is in hiding off the grid you are off of it).
+ */
+function shellWhereAmI(args)
 {
     _StdIn.putText(_UserLocation);   
 }
 
+/**
+ * Pulls the date and time from javascript's date class and outputs it to the 
+ * console.
+ */
 function shellDate(args)
 {
-    if (args.length > 0)
-    {
-        // Put some controls to mimic unix
-    }
-    else
-    {
-        var now = new Date();        
-        _StdIn.putText(now.toLocaleString().split("(")[0]);
-    }
+    var now = new Date();        
+    _StdIn.putText(now.toLocaleString().split("(")[0]);
 }
 
 /**
@@ -462,7 +465,9 @@ function shellStatus (args)
 }
 
 /**
- *  Loads the hex from the input text area.
+ * Loads the hex from the input text area through the  simLoadProgram function 
+ * in the host control script. Also performs a check of the code to ensure it 
+ * complies to the standard repeating pattern of two hex digits and a space. 
  */
 function shellLoad (args)
 {
@@ -470,7 +475,7 @@ function shellLoad (args)
     
     if(program)
     {
-          _KernelLoadedProgram = program;
+          _KernelLoadedProgram = program;   
     }
     else
     {
@@ -479,7 +484,11 @@ function shellLoad (args)
     }
 }
 
+/**
+ * Executes a trap and brings up the Orange screen of death, summoning the 
+ * Master Control Program to Derez any offending program or user...
+ */
 function shellOSOD(args)
 {
-    krnTrapError("I'm warning you. You're entering a big error, " + _UserName +".");   
+    krnTrapError("I'm going to have to put you on the game grid.");   
 }

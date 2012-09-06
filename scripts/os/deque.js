@@ -5,6 +5,7 @@
     ensure proper behavior when dealing with deques. 
     Follows the style conventions put forth in 
     http://javascript.crockford.com/code.html .
+    The code is all pretty standard.
   
   --------------*/
 function Deque () {

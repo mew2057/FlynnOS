@@ -14,6 +14,7 @@ function DeviceDriverKeyboard()                     // Add or override specific 
     // Override the base method pointers.
     this.driverEntry = krnKbdDriverEntry;
     this.isr = krnKbdDispatchKeyPress;
+    this.isCapsLocked = false;  
     // "Constructor" code.
 }
 
@@ -26,29 +27,31 @@ function krnKbdDriverEntry()
 
 function krnKbdDispatchKeyPress(params)
 {
+    // Parse the params.    
+    var keyCode = params[0];
+    var isShifted = params[1];
+    var isControlled = params[2];
     
-    if (params.length < 2)
+    if (params.length < 3)
     {
         krnTrapError("Something horrible has happened in the Kernel's Interrupt"+
                         "Service Handler in passing paramerters to the keyboard driver." );     
     }
     
-    // Parse the params.    
-    var keyCode = params[0];
-    var isShifted = params[1];
-    
     if (isNaN(keyCode))
     {
-        krnTrapError("An invalid keycode was passed to the keyboard's isr: " + keyCode);     
+        krnTrapError("An invalid keycode was passed to the keyboard driver's isr: " + keyCode);     
     }
 
-    krnTrace("Key code:" + keyCode + " shifted:" + isShifted);
+    krnTrace("Key code:" + keyCode + " shifted:" + isShifted + " controlled:" + isControlled );
     
     var chr = "";
     
     // Check to see if we even want to deal with the key that was pressed.
     if ( ((keyCode >= 65) && (keyCode <= 90)) )   // A..Z
     {
+        isShifted = isShifted || this.isCapsLocked;
+        
         // Determine the character we want to display.  
         // Assume it's lowercase...
         chr = String.fromCharCode(keyCode + 32);
@@ -57,7 +60,6 @@ function krnKbdDispatchKeyPress(params)
         {
             chr = String.fromCharCode(keyCode);
         }
-        // TODO: Check for caps-lock and handle as shifted if so.
         _KernelInputQueue.enqueue(chr); 
 
     }    
@@ -88,7 +90,12 @@ function krnKbdDispatchKeyPress(params)
         _KernelInputQueue.enqueue(chr);         
 
     }
-    else 
+    else if ( (keyCode == 20) )                             //CAPS
+    {
+        //Toggle the caps lock.
+        this.isCapsLocked = !this.isCapsLocked;
+    }
+    else                                                    //Misc
     {
         var unicode = null;        
   
@@ -131,17 +138,18 @@ function krnKbdDispatchKeyPress(params)
                 break;
         }
         
-        if ( unicode ) // If the unicode character was loaded, we're in business.
+        // If the unicode character was loaded, we're in business.
+        if ( unicode ) 
         {
             chr = String.fromCharCode(unicode);
         }
         
-        if (chr == "" && keyCode != 16)
+        if (chr == "" && keyCode != 16 && keyCode != 17)
         {
             // If the key code isn't valid then trap.
             krnTrace("Key Code:\"" + keyCode + "\" was not defined" );   
         }
-        else if (keyCode!= 16)
+        else if (keyCode!= 16 && keyCode != 17)
         {
             _KernelInputQueue.enqueue(chr); 
         }         
