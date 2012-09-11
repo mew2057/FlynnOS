@@ -89,3 +89,6 @@ var DIGIT_PUNCTUATIONS= [')','!','@','#','$','%','^','&','*','(']
 // User Data
 var _UserName = "flynn";
 var _UserLocation = "Off the Grid.";
+
+// The limit to the number of characters in the log div.
+var LOG_CHAR_LIMIT = 6000;

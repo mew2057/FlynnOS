@@ -22,7 +22,7 @@
 function simInit()
 {
     // Clear the log text box.
-    document.getElementById("taLog").value="";   
+    $("#logDiv").text("");
     
 }
 
@@ -42,11 +42,18 @@ function simLog(msg, source)
 
     // Build the log string.   
     var str = "({ clock:" + clock + ", source:" + source + ", msg:" + msg + ", now:" + now  + " })"  + "\n";    
-    // WAS: var str = "[" + clock   + "]," + "[" + now    + "]," + "[" + source + "]," +"[" + msg    + "]"  + "\n";
 
     // Update the log console.
-    taLog = document.getElementById("taLog");
-    taLog.value = str + taLog.value;
+    
+    // The length of the div exceeds the globally defined character limit   
+    // wipe out the final half of characters.(note this is actually the "first")
+    // Please note this purposefully ignores tags on the check.
+    if( $("#logDiv").text().length > LOG_CHAR_LIMIT)
+    {
+        var txt = $("#logDiv").html();
+        $("#logDiv").html(txt.substr(0, txt.indexOf("\n", LOG_CHAR_LIMIT/2)));
+    }
+    $("#logDiv").prepend(str + "<br/>");
     // Optionally udpate a log database or some streaming service.
 }
 
@@ -58,13 +65,7 @@ function simBtnStartOS_click()
 {    
     // .. set focus on the OS console display ... 
     document.getElementById("display").focus();
-    
-    var boxes = document.getElementsByClassName("textBox"); 
-    
-    for( var index =0; index < boxes.length; index ++)
-    {
-        boxes[index].style.visibility = 'visible';
-    }
+
     
     // ... Create and initialize the CPU ...
     _CPU = new cpu();
@@ -101,7 +102,9 @@ function simBtnReset_click()
  */
 function simLoadProgram()
 {   
-    var program = document.getElementById('taExtProgs').value.toLowerCase();
+    // I enforce characters between hex pairs on one line, but spaces and new 
+    // lines make for sticky situations handled by this line of code.
+    var program = document.getElementById('taExtProgs').value.toLowerCase().replace(/[ ]*\n[ ]*/g," ");
 
     if(!checkForHex(program))
     {

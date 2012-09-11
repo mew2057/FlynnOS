@@ -2,6 +2,7 @@
    Shell.js
    
    The OS Shell - The "command line interface" (CLI) or interpreter for the console.
+   Whenever possible the shell quotes the Master Control Program at you.
    ------------ */
 
 // TODO: Write a base class / prototype for system services and let Shell inherit from it.
@@ -121,7 +122,13 @@ function shellInit()
     sc = new ShellCommand();
     sc.command = "osod";
     sc.description = " - Anger the MCP.";
-    sc.funct = shellOSOD
+    sc.funct = shellOSOD;
+    this.commandList[this.commandList.length]=sc;
+
+    sc = new ShellCommand();
+    sc.command ="bit";
+    sc.description = " <string> - Recieve sage advice from Bit.";
+    sc.funct = shellBit;
     this.commandList[this.commandList.length]=sc;
 
     //
@@ -278,7 +285,7 @@ function shellInvalidCommand()
     _StdIn.putText("Invalid Command. ");
     if (_SarcasticMode)
     {
-        _StdIn.putText("Duh. Go back to your Speak & Spell.");
+        _StdIn.putText("Want me to slow down your power cycles for you?");
     }
     else
     {
@@ -288,15 +295,13 @@ function shellInvalidCommand()
 
 function shellCurse()
 {
-    _StdIn.putText("Oh, so that's how it's going to be, eh? Fine.");
-    _StdIn.advanceLine();
-    _StdIn.putText("Bitch.");
+    _StdIn.putText("You're getting brutal, "+ _UserName + ". Brutal and needlessly sadistic.");
     _SarcasticMode = true;
 }
 
 function shellApology()
 {
-    _StdIn.putText("Okay. I forgive you. This time.");
+    _StdIn.putText(_UserName + ", I am so very disappointed in you.");
     _SarcasticMode = false;
 }
 
@@ -319,7 +324,8 @@ function shellHelp(args)
 
 function shellShutdown(args)
 {
-     _StdIn.putText("Shutting down...");
+     _StdIn.putText("You've enjoyed all the power you've been given, haven't you?" +
+        "I wonder how you'd take to working in a pocket calculator. ");
      // Call Kernal shutdown routine.
     krnShutdown();   
     // TODO: Stop the final prompt from being displayed.  If possible.  Not a high priority.  (Damn OCD!)
@@ -471,16 +477,36 @@ function shellStatus (args)
  */
 function shellLoad (args)
 {
-    var program=simLoadProgram();
-    
-    if(program)
+    if(args.length == 0)
     {
-          _KernelLoadedProgram = program;   
+        var program=simLoadProgram();
+        
+        if(program)
+        {
+              _KernelLoadedProgram = program;  
+              _StdIn.putText( "I feel a presence. Another warrior is on the mesa.");
+        }
+        else
+        {
+           _StdIn.putText("Please verify that your program only has paired Hexidecimal characters " +
+                            "and non continuous whitespace.");   
+        }
     }
     else
     {
-       _StdIn.putText("Please verify that your program only has paired Hexidecimal characters " +
-                        "and non continuous whitespace.");   
+        // This is more of an easter egg than anything appreciable
+        if (args[0] == "tron")
+        {
+           _StdIn.putText("I fight for the user!."); 
+        }
+        else if (args[0] == "sark")
+        {
+            _StdIn.putText("There's nothing special about you. You're just an ordinary program..");     
+        }
+        else
+        {
+            _StdIn.putText("Program was not rezzed.");   
+        }
     }
 }
 
@@ -491,4 +517,24 @@ function shellLoad (args)
 function shellOSOD(args)
 {
     krnTrapError("I'm going to have to put you on the game grid.");   
+}
+
+/**
+ * Asks the program bit a question.
+ * If no question mark is detected at the end of the statement 0 is always returned.
+ * Otherwise bit's response is derived by the mod 2 of the length of the first arg.
+ * Note: bit is this guy: http://images.wikia.com/tron/images/b/bc/Bitidle.png
+ */
+function shellBit(args)
+{    
+    var response = 0;
+    
+    if( args.length > 0)
+    {    
+        var question = args[args.length -1].search(/\?/) != -1 ? 1 : 0;
+    
+        response = args[0].length % 2 * question;
+    }
+        
+    _StdIn.putText("Bit: " + response );   
 }

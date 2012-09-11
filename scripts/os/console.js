@@ -1,10 +1,12 @@
 /* ------------
    Console.js
 
-   Requires globals.js
+   Requires globals.js, deque.js, canvasAnimations.js
 
    The OS Console - stdIn and stdOut by default.
-   Note: This is not the Shell.  The Shell is the "command line interface" (CLI) or interpreter for this console.
+   Note: This is not the Shell.  The Shell is the "command line interface" (CLI)
+   or interpreter for this console.
+   My console doesn't go to the bottom of the border, preventing border clobbering.
    ------------ */
 
 function Console()
@@ -15,7 +17,7 @@ function Console()
     this.CurrentXPosition = CANVAS_OFFSET;
     this.CurrentYPosition = DEFAULT_FONT_SIZE 
                           + CANVAS_BASE_Y_OFFSET;     // The addition of the offset prevents overlap with the border.                          
-    this.buffer           = new Deque();               // I opted to use a deque to make handling escape characters easier.
+    this.buffer           = new Deque();               // I opted to use a deque to make handling backspace simpler.
     this.lineEndings      = new Deque();               // This is to keep track of the ending x position of a line in input
                                                        // to make cross line deletion simpler.
     
@@ -39,6 +41,8 @@ function consoleInit()
 {
     consoleClearScreen();
     consoleResetXY();
+    //Ensures the aesthetic is constant.
+    changeAllColors(CANVAS_OUTLINES,CANVAS_BACKGROUNDS); 
 }
 
 /**
@@ -60,7 +64,10 @@ function consoleTrapScreen(msg)
     DRAWING_CONTEXT.fillStyle = CANVAS_TRAP_BACKGROUNDS;
     DRAWING_CONTEXT.strokeStyle = CANVAS_TRAP_OUTLINES;
     
+    // This redraws the box in orange (color set in globals.js).
     drawRoundedBox(DRAWING_CONTEXT,CANVAS.width,CANVAS.height,CANVAS_RADIUS);
+    
+    changeAllColors(CANVAS_TRAP_OUTLINES,CANVAS_TRAP_BACKGROUNDS);
     
     this.resetXY();
     this.putText(msg);
@@ -147,15 +154,17 @@ function consolePutText(txt, input)
 
                 // Move the current X position.
                 var offset = DRAWING_CONTEXT.measureText(DEFAULT_FONT, 
-                    DEFAULT_FONT_SIZE,txt);                            
+                    DEFAULT_FONT_SIZE,txt);     
+                    
                 this.CurrentXPosition = this.CurrentXPosition - offset;    
                 
                 // Erase the text supplied (typically one character).
                 DRAWING_CONTEXT.eraseText(this.CurrentFont, this.CurrentFontSize, 
                     this.CurrentXPosition, this.CurrentYPosition, txt);
                 
-                // This code handles backspace when the type is on the second line.
-                if(this.CurrentXPosition <= CANVAS_OFFSET)
+                // This code handles backspace when the type is on the second line. 
+                // The plus 1 handles a bounding condition.
+                if(this.CurrentXPosition <= CANVAS_OFFSET + 1)
                 {
                     this.backUpLine();
                 }
@@ -243,7 +252,7 @@ function consoleSplitToken(token)
     
     for (var index in chars)
     {
-       this.putText(chars[index])
+       this.putText(chars[index]);
     }    
 }
 
@@ -266,14 +275,23 @@ function consoleAdvanceLine(input)
     // If the current prompt is 3 lines from the base of the console do a shift.
     if(this.CurrentYPosition >= CANVAS.height - 3 * 
         (DEFAULT_FONT_SIZE + FONT_HEIGHT_MARGIN))
-    {                                            
-        var image = DRAWING_CONTEXT.getImageData(CANVAS_OFFSET - 1,                  // Minus 1 to catch any outliers.
-            DEFAULT_FONT_SIZE + CANVAS_BASE_Y_OFFSET + FONT_HEIGHT_MARGIN,          // Do the initial y offset.
-            CANVAS.width - 2 * CANVAS_OFFSET, CANVAS.height - 3 * CANVAS_OFFSET);   
+    {                                
+        // Minus 1 to catch any outliers.
+        var imgX = CANVAS_OFFSET - 1 
+        
+        // Calculate the starting Y of the second line.
+        var imgY = DEFAULT_FONT_SIZE + CANVAS_BASE_Y_OFFSET + FONT_HEIGHT_MARGIN;
+        
+        // Calculate the actual text width accounting for offsets.
+        var imgWidth = CANVAS.width - 2 * CANVAS_OFFSET;
+        
+        //Calculate the the total height of the copyable canvas.
+        var imgHeight= CANVAS.height - 3 * CANVAS_OFFSET;
+        
+        var image = DRAWING_CONTEXT.getImageData(imgX, imgY,imgWidth,imgHeight );   
 
         // Shifts the console up one line.
-        DRAWING_CONTEXT.putImageData(image,CANVAS_OFFSET - 1, 
-            CANVAS_BASE_Y_OFFSET);
+        DRAWING_CONTEXT.putImageData(image, imgX, CANVAS_BASE_Y_OFFSET);
     }
     else
     {
@@ -286,7 +304,7 @@ function consoleAdvanceLine(input)
  */
 function consoleBackUpLine()
 {
+    // Pop the back of the line ending Deque to set up the 
     this.CurrentXPosition = this.lineEndings.popBack();        
     this.CurrentYPosition -= (DEFAULT_FONT_SIZE + FONT_HEIGHT_MARGIN);
 }
-

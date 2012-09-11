@@ -14,6 +14,7 @@ function DeviceDriverKeyboard()                     // Add or override specific 
     // Override the base method pointers.
     this.driverEntry = krnKbdDriverEntry;
     this.isr = krnKbdDispatchKeyPress;
+    // This assumes that caps lock is off on load, doesn't say anything about current state outside of my os.
     this.isCapsLocked = false;  
     // "Constructor" code.
 }

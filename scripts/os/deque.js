@@ -14,13 +14,33 @@ function Deque () {
 
 Deque.prototype.length = function() {
     return this.d.length;   
-}
+};
 
 Deque.prototype.popBack = function () {
     var retVal = null;
     
     if (this.d.length >0) {
         retVal =  this.d.pop();     
+    }    
+    
+    return retVal;
+};
+
+Deque.prototype.peekBack = function () {
+    var retVal = null;
+    
+    if (this.d.length > 0) {
+        retVal =  this.d[this.d.length-1];     
+    }    
+    
+    return retVal;
+};
+
+Deque.prototype.peekFront = function () {
+    var retVal = null;
+    
+    if (this.d.length > 0) {
+        retVal =  this.d[0];     
     }    
     
     return retVal;
@@ -55,7 +75,7 @@ Deque.prototype.isEmpty  = function () {
 Deque.prototype.toString = function () {
     var retVal = "";
     
-    for (i in this.d) {
+    for (var i in this.d) {
         retVal += this.d[i];
     }
     

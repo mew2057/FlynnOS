@@ -1,18 +1,23 @@
 <!DOCTYPE HTML>
 <html>
 <head>
+   <!-- This is guaranteed to work in the latest version of chrome and should work in Firefox, no promises on ie -->
    <meta http-equiv="Content-Type" content="text/html;charset=utf-8" />
    <meta name="author"             content="John F. Dunham" />
-   <link rel="stylesheet" href="flynnos.css" type="text/css" media="screen" />
    <title>
         FlynnOS - Welcome to The Grid.
    </title>  
+   <link rel="stylesheet" href="flynnos.css" type="text/css" media="screen" />
 
+    <!-- The JQuery libraries used in beautification -->
+   <script type="text/javascript" src="libraries/jquery-1.8.1.min.js"></script>    
+    
    <!-- Globals CONSTANTS and _Variables. Must included be first. -->
-   <script type="text/javascript" src="globals.js"></script>	
-
+   <script type="text/javascript" src="globals.js"></script>	  
+    
+   
    <!-- The canvas drawing scripts that gives the page that Tron Legacy feel. -->
-   <script type="text/javascript" src="scripts/canvasAnimations.js"></script>        
+   <script type="text/javascript" src="scripts/os/canvasAnimations.js"></script>        
 
    <!-- Host (Hardware Simulation) Routines -->
    <script type="text/javascript" src="scripts/host/control.js"></script>
@@ -33,40 +38,47 @@
 
    <!-- Other Routines -->
    <script type="text/javascript" src="scripts/utils.js"></script>	
+        
 </head>
 
 <body onload="simInit();canvasInit();">
 
-<!-- Canvasi: The plural form of canvas for people who forgot canvases is totaly valid and had cacti on the mind apparently -->
-<div id="canvasi">
-     
-    <canvas id="taskBar"
-            width="1250px"
-            height="50px">
+<table id="boundingTable" border="0" cellspacing="0" cellpadding="2">
+    <tr>
+        <td>
+            <canvas id="taskBar"
+                    width="1250px"
+                    height="50px"
+                    position: relative>
                  Why not get yourself a real browser?                         
-    </canvas>    
+            </canvas>    
+        </td>
+    </tr>
     
-    <canvas id="display"
-            width="500px"
-            height="500px"
-            tabindex="3">
-                Seriously, I mean chrome is pretty nice and I designed this in it.
-    </canvas>
-    
-    <textarea name="taLog"
-              class="textBox"
-              id = "taLog"
-              rows="15"
-              cols="42"
-    ></textarea>
-    
-    <textarea name="taExtProgs"
-              id = "taExtProgs"
-              class="textBox"
-              rows="15"
-              cols="42" 
-    > 48 65 6C 6C 6F 20 57 6F 72 6C 64 </textarea>   
-</div>
+    <tr id="monitor">
+        <td rowspan="2" id= "displayCell">
+            <canvas id="display"
+                    width="500px"
+                    height="500px"
+                    tabindex="3">
+                        Seriously, I mean chrome is pretty nice and I designed this in it.
+            </canvas>
+        </td>
+        
+        <td id="programCell">
+            <textarea name="taExtProgs"
+                  id = "taExtProgs"
+                  class="textBox"             
+            >48 65 6C 6C 6F 20 57 6F 72 6C 64</textarea>  
+        </td>
+        
+        <td id="logCell">
+            <div id="logDiv" 
+                 class="textBox">            
+            </div>
+        </td>
+    </tr>
+</table>
 
 <p></p>
 

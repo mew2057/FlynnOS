@@ -162,8 +162,8 @@ CanvasTextFunctions.draw = function(ctx,font,size,x,y,str)
 		} 
 		ctx.beginPath();
 		var penUp = 1;
-		var needStroke = 0;
-		for (var j = 0; j < c.points.length; j++) 
+
+        for (var j = 0; j < c.points.length; j++) 
 		{
 		    var a = c.points[j];
 		    if ( a[0] === -1 && a[1] === -1) 
@@ -189,7 +189,8 @@ CanvasTextFunctions.draw = function(ctx,font,size,x,y,str)
 };
 
 /**
- * Handles the erasure.
+ * Handles the erasure, filling a box in the color of the canvas from the 
+ * end of the letter to the other bound of the box.
  */
 CanvasTextFunctions.erase = function(ctx,font,size,x,y,str) 
 {
@@ -203,7 +204,10 @@ CanvasTextFunctions.erase = function(ctx,font,size,x,y,str)
     ctx.fillRect(x-1,adjustedY ,CanvasTextFunctions.letter( str ).width, boxHeight);
     
     ctx.restore();
-}
+    
+    // As an aside, to make this work I had to modify the actual letter definitions since the A
+    // Width tended to overlap with other A's deleting some of the pixels on backspace inputs
+};
 
 
 CanvasTextFunctions.enable = function(ctx) 

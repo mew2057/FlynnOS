@@ -24,11 +24,26 @@ td.heading
 	font-weight: normal;
 	font-style: normal;
 }
-
+#boundingTable
+{
+    margin:auto;   
+}
 #taskBar
 {
     opacity: .75;   
 }
+
+#monitor
+{
+    float:left;
+    
+}
+
+#display
+{
+    display:none;
+}
+
 
 .footer 
 {
@@ -37,12 +52,20 @@ td.heading
 	font-size: 8pt;
 }
 
+div.textBox
+{
+    overflow: auto;
+}
+
 .textBox
 {
     background-color: #02181d;
+    border-color:#b5ffff;
     color: #b5ffff;
     border: solid 3px;
     border-radius: 15px;   
-    visibility: hidden;
-    opacity: .75;   
+    padding:3px;
+    display:none;
+    width:355px;
+    height:250px;
 }
