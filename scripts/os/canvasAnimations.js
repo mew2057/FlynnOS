@@ -37,15 +37,28 @@ function drawTaskBar ()
     loadTaskButtons();    
     
     // Add the mouse events.
-    $("#taskBar").mousemove(function(e){
-        checkTaskButtons(e,$(e.target).offset());
-        });
+    var buttonAnimate = function(e){
+        var offset= $(e.target).offset();
+        
+        if (offset)
+        {
+            checkTaskButtons(e,offset);   
+        }
+    };
     
-    $("#taskBar").mousedown(function(e){
-        taskButtonClick(e,$(e.target).offset());
-        });
+    var buttonClick = function(e){
+        var offset= $(e.target).offset();
+        
+        if (offset)
+        {
+            taskButtonClick(e,offset);
+        } 
+    };
     
-    TASKBAR_CANVAS.addEventListener ("mouseout", checkTaskButtons, false);
+    
+    $("#taskBar").mousedown(buttonClick);    
+    $("#taskBar").mousemove(buttonAnimate);
+    $("#taskBar").mouseout(buttonAnimate);
 }
 
 /**
