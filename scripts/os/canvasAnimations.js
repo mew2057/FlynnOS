@@ -54,8 +54,7 @@ function drawTaskBar ()
             taskButtonClick(e,offset);
         } 
     };
-    
-    
+        
     $("#taskBar").mousedown(buttonClick);    
     $("#taskBar").mousemove(buttonAnimate);
     $("#taskBar").mouseout(buttonAnimate);
@@ -104,7 +103,8 @@ function loadTaskButtons()
     var button = null;
     buttons =[];
     
-    // Load the power button.
+    // Load the power button. When clicked this will either start or halt the OS 
+    // and show or hide the "monitor" respectively(opposite of current state).
     button = new Button();    
     button.name = "power";
     button.x = 15;
@@ -133,7 +133,7 @@ function loadTaskButtons()
     buttons.push(button);
     //-------------------------
     
-    // Load the refresh button.
+    // Load the refresh button. Reloads the page.
     button = new Button();    
     button.name = "refresh";
     button.x = 50;
@@ -224,6 +224,15 @@ function animateHalt ()
     $(".textBox").slideUp(300);
     
     simBtnHaltOS_click();
+    
+    // Disables the halt button. (I'm sure there's a more elegant way).
+    for(var index in buttons)
+    {
+        if ( buttons[index].name == "halt" )
+        {
+            buttons[index].enabled = false;
+        }  
+    }
 }
 
 /**
@@ -269,7 +278,8 @@ function updateTaskBar()
     
     TASKBAR_CONTEXT.fillStyle = CANVAS_OUTLINES;
     TASKBAR_CONTEXT.fillText("Status: " + _KernelStatus, startX,20);
-    TASKBAR_CONTEXT.fillText("Time:   "  + (new Date().toLocaleString().split("(")[0]), startX,40);
+    TASKBAR_CONTEXT.fillText("Time:   " + new Date().toLocaleString().split("(")[0], 
+        startX, 40);
 
 }
 
@@ -333,20 +343,25 @@ Button.prototype.swapFunct = function ()
 
 
 /**
- * Checks the mouse position to see if it collides with one for the task buttons. 
+ * Checks the mouse position to see if it collides with one for the task buttons.
+ * This will only respond if the button is enabled.
  * @param event The event containg the cursor position.
  * @param offset Holds the offset for the mouse clicks.
  */
 function checkTaskButtons (event, offset)
 {
+    var found = false;
     // Iterate over the collection of buttons and cehck for collides.
     // Redraw the button regardless (to emulate focus lost).
     for ( var buttonIndex in buttons )
     {
-        if(buttons[buttonIndex].collide(event.pageX -offset.left, 
+        if(buttons[buttonIndex].enabled &&
+            buttons[buttonIndex].collide(event.pageX -offset.left, 
             event.pageY - offset.top))
         {
+            
             buttons[buttonIndex].hoverStatus = true;   
+            found = true;
             drawTaskButton(buttons[buttonIndex]);
         }
         else
@@ -354,6 +369,16 @@ function checkTaskButtons (event, offset)
            buttons[buttonIndex].hoverStatus = false;      
            drawTaskButton(buttons[buttonIndex]);
         }
+    }
+    
+    // This just adds some more visual feedback for the user by changing the pointer appropriately.
+    if(found)
+    {
+        $(event.target).css('cursor', 'pointer');   
+    }
+    else 
+    {
+        $(event.target).css('cursor', 'auto'); 
     }
 }
 
@@ -394,7 +419,7 @@ function taskButtonClick(event,offset)
     for ( var buttonIndex = 0; buttonIndex < buttons.length; buttonIndex ++ )
     {
         if(buttons[buttonIndex].enabled &&
-           buttons[buttonIndex].collide(event.pageX -offset.left, 
+            buttons[buttonIndex].collide(event.pageX -offset.left, 
             event.pageY - offset.top))
         {
             // Allows for the power button to be on and off.

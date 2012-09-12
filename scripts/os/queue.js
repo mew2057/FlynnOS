@@ -16,17 +16,17 @@ function Queue()
     this.getSize  = function()
     {
         return this.q.length;    
-    }
+    };
 
     this.isEmpty  = function()
     {
         return (this.q.length == 0);    
-    }
+    };
 
     this.enqueue  = function(element)
     {
         this.q.push(element);        
-    }
+    };
     
     this.dequeue  = function()
     {
@@ -36,7 +36,7 @@ function Queue()
             retVal = this.q.shift();
         }
         return retVal;        
-    }
+    };
     
     this.toString = function()
     {
@@ -46,5 +46,5 @@ function Queue()
             retVal += "[" + this.q[i] + "] ";
         }
         return retVal;
-    }    
+    };    
 }

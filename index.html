@@ -1,3 +1,4 @@
+
 <!DOCTYPE HTML>
 <html>
 <head>
@@ -13,7 +14,7 @@
    <script type="text/javascript" src="libraries/jquery-1.8.1.min.js"></script>    
     
    <!-- Globals CONSTANTS and _Variables. Must included be first. -->
-   <script type="text/javascript" src="globals.js"></script>	  
+   <script type="text/javascript" src="globals.js"></script>      
     
    
    <!-- The canvas drawing scripts that gives the page that Tron Legacy feel. -->
@@ -43,23 +44,22 @@
 
 <body onload="simInit();canvasInit();">
 
-<table id="boundingTable" border="0" cellspacing="0" cellpadding="2">
+<table id="boundingTable">
     <tr>
-        <td>
+        <td colspan = 3>
             <canvas id="taskBar"
-                    width="1250px"
-                    height="50px"
-                    position: relative>
+                    width=1250
+                    height=50>
                  Why not get yourself a real browser?                         
             </canvas>    
         </td>
     </tr>
     
     <tr id="monitor">
-        <td rowspan="2" id= "displayCell">
+        <td rowspan=2 id= "displayCell">
             <canvas id="display"
-                    width="500px"
-                    height="500px"
+                    width=500
+                    height=500
                     tabindex="3">
                         Seriously, I mean chrome is pretty nice and I designed this in it.
             </canvas>
@@ -78,18 +78,14 @@
             </div>
         </td>
     </tr>
+    <tr><td><!-- this is to appease the validator gods--></td></tr>
 </table>
 
 <p></p>
 
-<table width="100%" border="0" cellspacing="0" cellpadding="0">
-    <tr valign="top">
-        <td align="center" class="footer">
-            Copyleft 1983 No Rights Reserved. - 
-            Reproduction is wholeheartedly endorsed by Kevin Flynn.
-        </td>
-    </tr>
-</table>
+<div id = "footer">
+    Copyleft 1983 No Rights Reserved - Reproduction is wholeheartedly endorsed by Kevin Flynn
+</div>
 
 </body>
 </html>

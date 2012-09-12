@@ -22,9 +22,9 @@ function krnDispDriverEntry()
     // Get a global reference to the canvas.  
     CANVAS  = document.getElementById('display');
     // Get a global reference to the drawing context.
-	DRAWING_CONTEXT = CANVAS.getContext('2d');
-	// Enable the added-in canvas text functions (see canvastext.js for provenance and details).
-	CanvasTextFunctions.enable(DRAWING_CONTEXT);
+    DRAWING_CONTEXT = CANVAS.getContext('2d');
+    // Enable the added-in canvas text functions (see canvastext.js for provenance and details).
+    CanvasTextFunctions.enable(DRAWING_CONTEXT);
     
     // Sets the fill style and stroke style of the console.
     DRAWING_CONTEXT.fillStyle = CANVAS_BACKGROUNDS;

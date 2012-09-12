@@ -85,7 +85,9 @@ function krnKbdDispatchKeyPress(params)
     }
     else if ( (keyCode >= 96) && (keyCode <= 111 ) )        // Numpad keys.
     {
-        var subFactor = keyCode <= 105?48:64;   // I found that the keycodes adhered to a set offset from the unicode value in their respective ranges.
+        // I found that the keycodes adhered to a set offset from the unicode 
+        // value in their respective ranges.
+        var subFactor = keyCode <= 105?48:64;   
         
         chr = String.fromCharCode(keyCode - subFactor); 
         _KernelInputQueue.enqueue(chr);         

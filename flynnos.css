@@ -1,36 +1,31 @@
 /* flynnos.css */
 body
 {
-	background-color: #040809;	/* The bottom color of background.jpg. */
-	/*background-image: url(images/background.jpg);
-	background-repeat: repeat-x;*/
-	font-family: Helvetica, Verdana, Arial, sans-serif;
-	font-size: 10pt;
-	font-weight: normal;
-	font-style: normal;
+    background-color: #040809;	/* The bottom color of background.jpg. */
+    /*background-image: url(images/background.jpg);
+    background-repeat: repeat-x;*/
+    font-family: Helvetica, Verdana, Arial, sans-serif;
+    font-size: 10pt;
+    font-weight: normal;
+    font-style: normal;
 }
 
-td.section
+div#footer
 {
-	border-top: 1px solid blue;
-	padding-top: 6px;
-	padding-bottom: 6px;	
+    text-align:center;
+    width:100%;
+    color: #b5ffff;
+    font-family: Arial, Helvetica, sans-serif;
+    font-size: 8pt;
 }
 
-td.heading
-{
-	background-color: black;
-	color: white;
-	font-weight: normal;
-	font-style: normal;
-}
 #boundingTable
 {
     margin:auto;   
 }
 #taskBar
 {
-    opacity: .75;   
+    opacity: 1;   
 }
 
 #monitor
@@ -45,13 +40,6 @@ td.heading
 }
 
 
-.footer 
-{
-    color: #b5ffff;
-    font-family: Arial, Helvetica, sans-serif;
-	font-size: 8pt;
-}
-
 div.textBox
 {
     overflow: auto;
@@ -64,7 +52,7 @@ div.textBox
     color: #b5ffff;
     border: solid 3px;
     border-radius: 15px;   
-    padding:3px;
+    padding:5px;
     display:none;
     width:355px;
     height:250px;

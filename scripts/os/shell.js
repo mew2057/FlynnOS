@@ -47,7 +47,8 @@ function shellInit()
     // shutdown
     sc = new ShellCommand();
     sc.command = "shutdown";
-    sc.description = "- Shuts down the virtual OS but leaves the underlying hardware simulation running.";
+    sc.description = "- Shuts down the virtual OS but leaves the underlying"
+        + " hardware simulation running.";
     sc.funct = shellShutdown;
     this.commandList[this.commandList.length] = sc;
 
@@ -267,7 +268,7 @@ function ShellCommand()
 }
 
 //
-// Another "interior" or "private" class (prototype) used only inside Shell() (we hope).
+// Another "interior" or "private" class (prototype) used only inside Shell().
 //
 function UserCommand()
 {
@@ -278,31 +279,33 @@ function UserCommand()
 
 
 //
-// Shell Command Functions.  Again, not part of Shell() class per se', just called from there.
+// Shell Command Functions.  Again, not part of Shell() class per se', just 
+// called from there.
 //
 function shellInvalidCommand()
 {
     _StdIn.putText("Invalid Command. ");
-    if (_SarcasticMode)
+    if (_MCPMode)
     {
         _StdIn.putText("Want me to slow down your power cycles for you?");
     }
     else
     {
-        _StdIn.putText("Type 'help' for, well... help.");
+        _StdIn.putText("Type 'help' for user designed help.");
     }
 }
 
 function shellCurse()
 {
-    _StdIn.putText("You're getting brutal, "+ _UserName + ". Brutal and needlessly sadistic.");
-    _SarcasticMode = true;
+    _StdIn.putText("You're getting brutal, "+ _UserName 
+        + ". Brutal and needlessly sadistic.");
+    _MCPMode = true;
 }
 
 function shellApology()
 {
     _StdIn.putText(_UserName + ", I am so very disappointed in you.");
-    _SarcasticMode = false;
+    _MCPMode = false;
 }
 
 function shellVer(args)
@@ -318,7 +321,8 @@ function shellHelp(args)
     for (i in _OsShell.commandList)
     {
         _StdIn.advanceLine();
-        _StdIn.putText("  " + _OsShell.commandList[i].command + " " + _OsShell.commandList[i].description);
+        _StdIn.putText("  " + _OsShell.commandList[i].command + " " 
+            + _OsShell.commandList[i].description);
     }    
 }
 
@@ -328,7 +332,7 @@ function shellShutdown(args)
         "I wonder how you'd take to working in a pocket calculator. ");
      // Call Kernal shutdown routine.
     krnShutdown();   
-    // TODO: Stop the final prompt from being displayed.  If possible.  Not a high priority.  (Damn OCD!)
+    // TODO: Stop the final prompt from being displayed.  If possible.  
 }
 
 function shellCls(args)
@@ -345,7 +349,7 @@ function shellMan(args)
         switch (topic)
         {
             case "help": 
-                _StdIn.putText("Help displays a list of (hopefully) valid commands.");
+                _StdIn.putText("Help displays a list of MCP approved commands.");
                 break;
             default:
                 _StdIn.putText("No manual entry for " + args[0] + ".");
@@ -365,9 +369,10 @@ function shellTrace(args)
         switch (setting)
         {
             case "on": 
-                if (_Trace && _SarcasticMode)
+                if (_Trace && _MCPMode)
                 {
-                    _StdIn.putText("Trace is already on, dumbass.");
+                    _StdIn.putText("That isn't going to do you any good, " 
+                        + _UserName + ", trace is on.");
                 }
                 else
                 {
@@ -442,6 +447,7 @@ function shellDate(args)
 
 /**
  * Sets the global status that will be reflected in the task bar on the next os cycle.
+ * Doesn't reflect case.
  */
 function shellStatus (args)
 {
@@ -457,7 +463,7 @@ function shellStatus (args)
         if(tempStatus.length > 42 )
         {
             _StdIn.putText("Please no status greater in length than the answer " +
-                            "to the question of life the universe and everything (42).");
+                "to the question of life the universe and everything (42).");
         }
         else
         {
@@ -489,7 +495,7 @@ function shellLoad (args)
         else
         {
            _StdIn.putText("Please verify that your program only has paired Hexidecimal characters " +
-                            "and non continuous whitespace.");   
+                "and non continuous whitespace.");   
         }
     }
     else
@@ -497,7 +503,7 @@ function shellLoad (args)
         // This is more of an easter egg than anything appreciable
         if (args[0] == "tron")
         {
-           _StdIn.putText("I fight for the user!."); 
+           _StdIn.putText("I fight for the user!"); 
         }
         else if (args[0] == "sark")
         {
@@ -521,19 +527,19 @@ function shellOSOD(args)
 
 /**
  * Asks the program bit a question.
- * If no question mark is detected at the end of the statement 0 is always returned.
+ * If no question mark is detected at the end of the statement No is always returned.
  * Otherwise bit's response is derived by the mod 2 of the length of the first arg.
  * Note: bit is this guy: http://images.wikia.com/tron/images/b/bc/Bitidle.png
  */
 function shellBit(args)
 {    
-    var response = 0;
+    var response = "No";
     
     if( args.length > 0)
     {    
         var question = args[args.length -1].search(/\?/) != -1 ? 1 : 0;
     
-        response = args[0].length % 2 * question;
+        response = args[0].length % 2 * question > 0 ? "Yes" : "No";
     }
         
     _StdIn.putText("Bit: " + response );   
