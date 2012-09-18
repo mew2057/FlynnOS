@@ -50,6 +50,19 @@ function checkForHex(str)
     return retVal;
 }
 
+function padZeros(str,digits)
+{
+    var padding = digits - str.length;
+    var newString = str;
+    
+    for(var i = 0; i < padding; i++)
+    {
+        newString = "0" + newString;
+    }
+    
+    return newString;
+}
+
 function rot13(str)     // An easy-to understand implementation of the famous and common Rot13 obfuscator.
 {                       // You can do this in three lines with a complex regular experssion, but I'd have
     var retVal = "";    // trouble explaining it in the future.  There's a lot to be said for obvious code.

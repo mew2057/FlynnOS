@@ -282,7 +282,18 @@ function updateTaskBar()
         startX, 40);
 
 }
-
+/**
+ * 
+ */
+function updateCPUDisplay(cpu)
+{
+    $("#cpuDiv").text("");
+    $("#cpuDiv").append('ACC:'+cpu.Acc);
+    $("#cpuDiv").append('<br/>PC:'+cpu.PC);
+    $("#cpuDiv").append('<br/>X:'+cpu.Xreg);
+    $("#cpuDiv").append('<br/>Y:'+cpu.Yreg);
+    $("#cpuDiv").append('<br/>Z:'+cpu.Zflag);
+}
 
 /**
  * A button class that allows for animated images to be used as buttons.

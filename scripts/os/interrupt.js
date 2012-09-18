@@ -2,7 +2,7 @@
    Interrupt.js   
    ------------ */
    
-function Interrput(_irq, _params)
+function Interrupt(_irq, _params)
 {
     // Properties
     this.irq = _irq;

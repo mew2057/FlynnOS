@@ -19,10 +19,13 @@ function krnBootstrap()      // Page 8.
 
 
     // Initialize our global queues.
-    _KernelInterruptQueue = new Queue();  // A (currently) non-priority queue for interrupt requests (IRQs).
-    _KernelBuffers = new Array();         // Buffers... for the kernel.
-    _KernelInputQueue = new Queue();      // Where device input lands before being processed out somewhere.
-    _Console = new Console();             // The console output device.
+    _KernelInterruptQueue = new Queue();    // A (currently) non-priority queue for interrupt requests (IRQs).
+    _KernelBuffers = new Array();           // Buffers... for the kernel.
+    _KernelInputQueue = new Queue();        // Where device input lands before being processed out somewhere.
+    _Console = new Console();               // The console output device.
+    _InstructionSet = new InstructionSet(); // Initialize the instruction set for program execution.
+    _MemoryManager = new MemoryManager(4);  //
+    _PCBs = new ProcessControlBlockCollection();
 
 
     // Load the Display Device Driver.
@@ -88,8 +91,8 @@ function krnOnCPUClockPulse()
     {
         // Process the first interrupt on the interrupt queue.
         // TODO: Implement a priority queue based on the IRQ number/id to enforce interrupt priority.
-        var interrput = _KernelInterruptQueue.dequeue();
-        krnInterruptHandler(interrput.irq, interrput.params);        
+        var interrupt = _KernelInterruptQueue.dequeue();
+        krnInterruptHandler(interrupt.irq, interrupt.params);        
     }
     else if (_CPU.isExecuting) // If there are no interrupts then run a CPU cycle if there is anything being processed.
     {
@@ -102,6 +105,8 @@ function krnOnCPUClockPulse()
     
     // Update the status and time in the task bar.
     updateTaskBar();
+    updateCPUDisplay(_CPU);
+    _MemoryManager.updateDisplay();
 }
 
 
@@ -201,4 +206,70 @@ function krnTrapError(msg)
      
     _Console.trapScreen("I'M WARNING YOU. YOU'RE ENTERING A BIG ERROR, " + _UserName.toUpperCase() + ": " + msg);    
     krnShutdown();
+}
+
+function krnVerifyInstructions(program)
+{
+    var splitProgram = program.split(" ");   
+    
+    for( var index = 0; index < splitProgram.length; index++)
+    {
+        var opCode = _InstructionSet.get(splitProgram[index]);
+        if(opCode)
+        {
+            index += opCode.argCount;
+        }
+        else 
+        {
+            return null;
+        }
+    }
+    
+    return splitProgram;
+}
+
+function krnLoadProgram()
+{
+    var program=simLoadProgram();
+    
+    if(!checkForHex(program))
+    {
+        program = null;  
+    }  
+    
+    if(program)
+    {       
+        var verifiedIntructions = krnVerifyInstructions(program);
+        
+        if(verifiedIntructions)
+        {
+            //TODO load to Core Memory.
+            switch (_MemoryManager.store("0000", verifiedIntructions))
+            {
+                case 0:
+                    _StdIn.putText( "I feel a presence. Another warrior is on the mesa.");
+                    break;
+                case 1:
+                    krnTrapError("Memory Address was out of bounds!");
+                    break;
+                case 2:
+                    krnTrapError("Memory overflow on program load!");
+                    break;                
+            }            
+        }
+        else
+        {
+            _StdIn.putText("An invalid instruction was detected in your program.");   
+        }
+    }
+    else
+    {
+        _StdIn.putText("Please verify that your program only has paired Hexidecimal characters " +
+            "and non continuous whitespace.");   
+    } 
+}
+
+function krnRunProgram(pid)
+{
+       
 }

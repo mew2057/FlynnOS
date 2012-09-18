@@ -2,90 +2,120 @@
 <!DOCTYPE HTML>
 <html>
 <head>
-   <!-- This is guaranteed to work in the latest version of chrome and should work in Firefox, no promises on ie -->
-   <meta http-equiv="Content-Type" content="text/html;charset=utf-8" />
-   <meta name="author"             content="John F. Dunham" />
-   <title>
-        FlynnOS - Welcome to The Grid.
-   </title>  
-   <link rel="stylesheet" href="flynnos.css" type="text/css" media="screen" />
+    <!-- This is guaranteed to work in the latest version of chrome and should work in Firefox, no promises on ie -->
+    <meta http-equiv="Content-Type" content="text/html;charset=utf-8" />
+    <meta name="author"             content="John F. Dunham" />
+    <title>
+         FlynnOS - Welcome to The Grid.
+    </title>  
+    <link rel="stylesheet" href="flynnos.css" type="text/css" media="screen" />
 
     <!-- The JQuery libraries used in beautification -->
-   <script type="text/javascript" src="libraries/jquery-1.8.1.min.js"></script>    
+    <script type="text/javascript" src="libraries/jquery-1.8.1.min.js"></script>    
     
-   <!-- Globals CONSTANTS and _Variables. Must included be first. -->
-   <script type="text/javascript" src="globals.js"></script>      
+    <!-- Globals CONSTANTS and _Variables. Must included be first. -->
+    <script type="text/javascript" src="globals.js"></script>      
+
+    <!-- Host (Hardware Simulation) Routines -->
+    <script type="text/javascript" src="scripts/host/control.js"></script>
+    <script type="text/javascript" src="scripts/host/devices.js"></script>
+    <script type="text/javascript" src="scripts/host/cpu.js"></script>
+    <script type="text/javascript" src="scripts/host/coreMemory.js"></script>
     
-   
-   <!-- The canvas drawing scripts that gives the page that Tron Legacy feel. -->
-   <script type="text/javascript" src="scripts/os/canvasAnimations.js"></script>        
+    <!-- The canvas drawing scripts that gives the page that Tron Legacy feel. -->
+    <script type="text/javascript" src="scripts/os/canvasAnimations.js"></script>        
 
-   <!-- Host (Hardware Simulation) Routines -->
-   <script type="text/javascript" src="scripts/host/control.js"></script>
-   <script type="text/javascript" src="scripts/host/devices.js"></script>
-   <script type="text/javascript" src="scripts/host/cpu.js"></script>
 
-   <!-- Virtual OS Routines: Make sure Kernel code is last, since it needs those above it. -->
-   <script type="text/javascript" src="scripts/os/interrupt.js"></script>
-   <script type="text/javascript" src="scripts/os/canvastext.js"></script>	
-   <script type="text/javascript" src="scripts/os/console.js"></script>	
-   <script type="text/javascript" src="scripts/os/deviceDriver.js"></script>
-   <script type="text/javascript" src="scripts/os/deviceDriverKeyboard.js"></script>
-   <script type="text/javascript" src="scripts/os/deviceDriverDisplay.js"></script>
-   <script type="text/javascript" src="scripts/os/queue.js"></script>
-   <script type="text/javascript" src="scripts/os/deque.js"></script>
-   <script type="text/javascript" src="scripts/os/shell.js"></script>
-   <script type="text/javascript" src="scripts/os/kernel.js"></script>
+    <!-- Virtual OS Routines: Make sure Kernel code is last, since it needs those above it. -->
+    <script type="text/javascript" src="scripts/os/interrupt.js"></script>
+    <script type="text/javascript" src="scripts/os/kernelInstructions.js"></script>
+    <script type="text/javascript" src="scripts/os/instructions.js"></script>
+    <script type="text/javascript" src="scripts/os/memoryManager.js"></script>
+    <script type="text/javascript" src="scripts/os/pcb.js"></script>
+    <script type="text/javascript" src="scripts/os/canvastext.js"></script>	
+    <script type="text/javascript" src="scripts/os/console.js"></script>	
+    <script type="text/javascript" src="scripts/os/deviceDriver.js"></script>
+    <script type="text/javascript" src="scripts/os/deviceDriverKeyboard.js"></script>
+    <script type="text/javascript" src="scripts/os/deviceDriverDisplay.js"></script>
+    <script type="text/javascript" src="scripts/os/queue.js"></script>
+    <script type="text/javascript" src="scripts/os/deque.js"></script>
+    <script type="text/javascript" src="scripts/os/shell.js"></script>
+    <script type="text/javascript" src="scripts/os/kernel.js"></script>
 
-   <!-- Other Routines -->
-   <script type="text/javascript" src="scripts/utils.js"></script>	
+    <!-- Other Routines -->
+    <script type="text/javascript" src="scripts/utils.js"></script>	
         
 </head>
 
 <body onload="simInit();canvasInit();">
 
-<table id="boundingTable">
-    <tr>
-        <td colspan = 3>
-            <canvas id="taskBar"
-                    width=1250
-                    height=50>
-                 Why not get yourself a real browser?                         
-            </canvas>    
-        </td>
-    </tr>
+    <table id="boundingTable">
+        <tr>
+            <td colspan = 3>
+                <canvas id="taskBar"
+                        width=1250
+                        height=50>
+                     Why not get yourself a real browser?                         
+                </canvas>    
+            </td>
+        </tr>
+         
+        <tr id="monitor">
+            <td id= "displayCell">
+                <canvas id="display"
+                        width=500
+                        height=500
+                        tabindex="3">
+                            Seriously, I mean chrome is pretty nice and I designed this in it.
+                </canvas>
+            </td>
+            <td>
+                <table id = "hostTable">
+                    <tr>
+                        <td id="programCell">
+                            <textarea name="taExtProgs"
+                                  id = "taExtProgs"
+                                  class="textBox"             
+                        >A9 03 8D 41 00 A9 01 8D 40 00 AC 40 
+00 A2 01 EA EE 40 00 AE 40 00 EC 41 
+00 D0 EF A9 44 8D 42 00 A9 4F 8D 43 
+00 A9 4E 8D 44 00 A9 45 8D 45 00 A9 
+00 8D 46 00 A2 02 A0 42 EA 00</textarea>  
+                        </td>
+                    
+                        <td id="logCell">
+                            <div id="logDiv" 
+                                class="textBox">            
+                            </div>
+                        </td>
+                    </tr>
+                    <tr>
+                        <td id="memCell">
+                            <div id="memDiv"class ="textBox">
+                      
+                            </div>
+                        </td>
+                        <td id="cpuCell">
+                            <div id="cpuDiv"class ="textBox">
+                                ACC: 
+                                <br/>PC:
+                                <br/>X:
+                                <br/>Y:
+                                <br/>Z:
+                                
+                            </div>
+                        </td>
+                    </tr>
+                </table> 
+            </td>
+        </tr>      
+    </table>
     
-    <tr id="monitor">
-        <td rowspan=2 id= "displayCell">
-            <canvas id="display"
-                    width=500
-                    height=500
-                    tabindex="3">
-                        Seriously, I mean chrome is pretty nice and I designed this in it.
-            </canvas>
-        </td>
-        
-        <td id="programCell">
-            <textarea name="taExtProgs"
-                  id = "taExtProgs"
-                  class="textBox"             
-            >48 65 6C 6C 6F 20 57 6F 72 6C 64</textarea>  
-        </td>
-        
-        <td id="logCell">
-            <div id="logDiv" 
-                 class="textBox">            
-            </div>
-        </td>
-    </tr>
-    <tr><td><!-- this is to appease the validator gods--></td></tr>
-</table>
-
-<p></p>
-
-<div id = "footer">
-    Copyleft 1983 No Rights Reserved - Reproduction is wholeheartedly endorsed by Kevin Flynn
-</div>
+    <p></p>
+    
+    <div id = "footer">
+        Copyleft 1983 No Rights Reserved - Reproduction is wholeheartedly endorsed by Kevin Flynn
+    </div>
 
 </body>
 </html>

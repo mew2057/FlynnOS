@@ -131,7 +131,12 @@ function shellInit()
     sc.description = " <string> - Recieve sage advice from Bit.";
     sc.funct = shellBit;
     this.commandList[this.commandList.length]=sc;
-
+    
+    sc = new ShellCommand();
+    sc.command ="run";
+    sc.description = " <pid> - Execute the program in memory with the specified pid.";
+    sc.funct = shellRun;
+    this.commandList[this.commandList.length]=sc;
     //
     // Display the initial prompt.
     this.putPrompt();
@@ -485,18 +490,7 @@ function shellLoad (args)
 {
     if(args.length == 0)
     {
-        var program=simLoadProgram();
-        
-        if(program)
-        {
-              _KernelLoadedProgram = program;  
-              _StdIn.putText( "I feel a presence. Another warrior is on the mesa.");
-        }
-        else
-        {
-           _StdIn.putText("Please verify that your program only has paired Hexidecimal characters " +
-                "and non continuous whitespace.");   
-        }
+        krnLoadProgram();
     }
     else
     {
@@ -544,3 +538,19 @@ function shellBit(args)
         
     _StdIn.putText("Bit: " + response );   
 }
+
+/**
+ * 
+ */
+function shellRun(args)
+{
+    if(args.length > 0)
+    {
+        krnRunProgram(args[0]);
+    }
+    else
+    {
+        _StdIn.putText("Please supply a program id.");
+    }
+}
+

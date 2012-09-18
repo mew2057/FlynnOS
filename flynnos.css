@@ -57,3 +57,13 @@ div.textBox
     width:355px;
     height:250px;
 }
+#cpuDiv
+{
+    width:65px;
+    height:90px;   
+}
+#memDiv
+{
+    font-family:Monospace;
+    width:200px;
+}
