@@ -30,8 +30,8 @@
     <script type="text/javascript" src="scripts/os/interrupt.js"></script>
     <script type="text/javascript" src="scripts/os/kernelInstructions.js"></script>
     <script type="text/javascript" src="scripts/os/instructions.js"></script>
-    <script type="text/javascript" src="scripts/os/memoryManager.js"></script>
     <script type="text/javascript" src="scripts/os/pcb.js"></script>
+    <script type="text/javascript" src="scripts/os/memoryManager.js"></script>
     <script type="text/javascript" src="scripts/os/canvastext.js"></script>	
     <script type="text/javascript" src="scripts/os/console.js"></script>	
     <script type="text/javascript" src="scripts/os/deviceDriver.js"></script>
@@ -77,10 +77,10 @@
                                   id = "taExtProgs"
                                   class="textBox"             
                         >A9 03 8D 41 00 A9 01 8D 40 00 AC 40 
-00 A2 01 EA EE 40 00 AE 40 00 EC 41 
+00 A2 01 FF EE 40 00 AE 40 00 EC 41 
 00 D0 EF A9 44 8D 42 00 A9 4F 8D 43 
 00 A9 4E 8D 44 00 A9 45 8D 45 00 A9 
-00 8D 46 00 A2 02 A0 42 EA 00</textarea>  
+00 8D 46 00 A2 02 A0 42 FF 00</textarea>  
                         </td>
                     
                         <td id="logCell">
@@ -97,12 +97,24 @@
                         </td>
                         <td id="cpuCell">
                             <div id="cpuDiv"class ="textBox">
-                                ACC: 
-                                <br/>PC:
-                                <br/>X:
-                                <br/>Y:
-                                <br/>Z:
-                                
+                                <table id="cpuTable">
+                                    <tr> 
+                                        <td>ACC:</td> 
+                                        <td id="accCell"></td>
+                                        <td>PC:</td> 
+                                        <td id="pcCell"></td>
+                                    </tr>
+                                    <tr>
+                                        <td>X:</td> 
+                                        <td id="xCell"></td>
+                                        <td>Y:</td> 
+                                        <td id="yCell"></td>
+                                    </tr>
+                                    <tr>
+                                        <td>Z:</td>
+                                        <td id="zCell"></td>
+                                    </tr>
+                                </table>                                
                             </div>
                         </td>
                     </tr>

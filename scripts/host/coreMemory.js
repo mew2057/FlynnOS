@@ -8,3 +8,5 @@ function CoreMemory(memorySize)
         this.memory.push("00");   
     }
 }
+
+

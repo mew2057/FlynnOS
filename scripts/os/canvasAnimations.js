@@ -342,12 +342,13 @@ function updateTaskBar()
  */
 function updateCPUDisplay(cpu)
 {
-    $("#cpuDiv").text("");
-    $("#cpuDiv").append('ACC:'+cpu.Acc);
-    $("#cpuDiv").append('<br/>PC:'+cpu.PC);
-    $("#cpuDiv").append('<br/>X:'+cpu.Xreg);
-    $("#cpuDiv").append('<br/>Y:'+cpu.Yreg);
-    $("#cpuDiv").append('<br/>Z:'+cpu.Zflag);
+    
+    $("#accCell").text(padZeros(cpu.Acc.toString(16),2).toUpperCase());
+    $("#pcCell").text(padZeros(cpu.PC.toString(16),2).toUpperCase());
+    $("#xCell").text(padZeros(cpu.Xreg.toString(16),2).toUpperCase());
+    $("#yCell").text(padZeros(cpu.Yreg.toString(16),2).toUpperCase());
+    $("#zCell").text(cpu.Zflag.toString(16));
+    
 }
 
 /**

@@ -34,6 +34,41 @@ MemoryManager.prototype.store = function(hexAddress, toStore)
     return 0;
 };
 
+/**
+ * @param trapPointer - A pointer to the prefered trap or error handling mechanism.
+ * @return 0 - Success.
+ *         1 - Address out of bounds.
+ *         2 - Memory overflow.
+ */
+MemoryManager.prototype.storeProgram = function(hexAddress, toStore, trapPointer, pcbs)
+{
+    
+    var returnCode = this.store(hexAddress,toStore);
+    var pid = null;
+    
+    switch (returnCode)
+    {
+        case 0:
+            pid = 0;
+
+            var currentPCB = new PCB();   
+            currentPCB.Base = parseInt(hexAddress,16);
+            currentPCB.Limit = currentPCB.Base + this.pageSize - 1;            
+            pcbs.setBlock(currentPCB, pid);
+            
+            
+            break;
+        case 1:
+            trapPointer("Memory Address was out of bounds!");
+            break;
+        case 2:
+            trapPointer("Memory Address overflow on program load!");
+            break;
+    }
+
+    return pid;
+};
+
 MemoryManager.prototype.updateDisplay = function()
 {
     $("#memDiv").text("");
@@ -72,6 +107,49 @@ MemoryManager.prototype.retrieveContents = function(hexAddress)
     
     return this.core.memory[intAddress];
 };
+//TODO page faults!
+/**
+ * Retrieves the contents of a memory cell.
+ * @return null if out of bounds, the contents if found.
+ */
+MemoryManager.prototype.retrieveContentsToLimit = function(hexAddress,boundingValue)
+{
+    // Translate the hex address to int.
+    var intAddress = parseInt(hexAddress,16);
+    var contents = [];
+    
+    do {
+        contents.push(this.core.memory[intAddress++]);
+    }while(intAddress < this.core.memory.length && contents[contents.length-1] != boundingValue);
+    
+    if(contents[contents.length-1] != boundingValue)
+    {
+        contents = null;
+    }
+    
+    return contents;
+};
+
+MemoryManager.prototype.retrieveContentsFromAddress = function(hexAddress,numBytes)
+{
+    // Translate the hex address to int.
+    var intAddress = parseInt(hexAddress,16);
+    var offset = 0;
+    var contents = [];
+    
+    do {
+        contents.push(this.core.memory[intAddress + offset]);
+        offset++;
+    }while(intAddress + offset < this.core.memory.length && 
+        offset !=numBytes);
+    
+    if(intAddress + offset >= this.core.memory.length)
+    {
+        contents = null;
+    }
+    return contents;
+};
+
 
 /**
  * Returns the array that represents the memory.

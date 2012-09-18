@@ -59,9 +59,10 @@ div.textBox
 }
 #cpuDiv
 {
-    width:65px;
-    height:90px;   
+    width:120px;
+    height:70px;   
 }
+
 #memDiv
 {
     font-family:Monospace;

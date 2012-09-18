@@ -190,8 +190,10 @@ function consolePutText(txt, input)
             
             default:
                 // I split the string into tokens, as it makes it easier to handle 
-                // wraparound. (wraparound comment somewhat intended)
-                var tokens = txt.split(" ");    
+                // wraparound.I apply a toString for bound conditions that I 
+                // encountered while coding project 2. (wraparound comment 
+                // somewhat intended)
+                var tokens = txt.toString().split(" ");    
 
                 var offsetLength = 0;
                 if(tokens.length > 1)

@@ -8,6 +8,14 @@ function PCB()
     this.Base  = 0;     // Base of the program page in core memory. 
     this.Limit = 0;     // The Upper limit of the program page.
 }
+PCB.prototype.update = function(cpu)
+{
+    this.PC = cpu.PC;
+    this.Acc = cpu.Acc;
+    this.Xreg = cpu.Xreg;
+    this.Yreg = cpu.Yreg;
+    this.Zflag = cpu.Zflag;
+};
 
 function ProcessControlBlockCollection()
 {
@@ -33,11 +41,7 @@ ProcessControlBlockCollection.prototype.setBlock = function(pcb,pid)
 
 ProcessControlBlockCollection.prototype.updateBlock = function(cpu,pid)
 {
-    this.pcbs[pid].PC = cpu.PC;
-    this.pcbs[pid].Acc = cpu.Acc;
-    this.pcbs[pid].Xreg = cpu.Xreg;
-    this.pcbs[pid].Yreg = cpu.Yreg;
-    this.pcbs[pid].Zflag = cpu.Zflag;
+    this.pcbs[pid].update(cpu);
 };
 
 

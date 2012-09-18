@@ -243,18 +243,14 @@ function krnLoadProgram()
         
         if(verifiedIntructions)
         {
-            //TODO load to Core Memory.
-            switch (_MemoryManager.store("0000", verifiedIntructions))
+            var pid = _MemoryManager.storeProgram("0000",verifiedIntructions, 
+                krnTrapError, _PCBs);
+                
+            if(!isNaN(pid))
             {
-                case 0:
-                    _StdIn.putText( "I feel a presence. Another warrior is on the mesa.");
-                    break;
-                case 1:
-                    krnTrapError("Memory Address was out of bounds!");
-                    break;
-                case 2:
-                    krnTrapError("Memory overflow on program load!");
-                    break;                
+                
+                _StdIn.putText( "I feel a presence. Another warrior is on the "+
+                    "mesa at pid: " + pid);
             }            
         }
         else
@@ -269,7 +265,43 @@ function krnLoadProgram()
     } 
 }
 
+// TODO make this use the step not be a separate looping mechanism.
 function krnRunProgram(pid)
 {
-       
+    var executingProcessBlock = _PCBs.getBlock(pid);
+    var instruction,args,instructionHex;
+    
+    if(!executingProcessBlock)
+    {
+        return;   
+    }
+    
+    for(_CPU.PC = executingProcessBlock.Base; _CPU.PC < executingProcessBlock.Limit; _CPU.PC++)
+    {
+        instructionHex = _MemoryManager.retrieveContents(_CPU.PC.toString(16));
+        instruction =_InstructionSet.get(instructionHex);
+        
+        if(instructionHex === "00")
+            break;
+            
+        if(instruction)
+        {
+            args = _MemoryManager.retrieveContentsFromAddress((1 + _CPU.PC).toString(16),
+                instruction.argCount);
+            
+            _CPU.PC += instruction.argCount;
+            
+            if(args)
+            { 
+                instruction.funct(args);
+            }
+            else
+            {
+                instruction.funct();
+            }
+    
+            executingProcessBlock.update(_CPU,pid);
+        }
+
+    }
 }
