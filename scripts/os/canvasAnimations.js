@@ -164,7 +164,7 @@ function loadTaskButtons()
     // If this button is pressed to restart the os either double click power or reload.
     button = new Button();   
     button.name = "halt";
-    button.x = 87;
+    button.x = 85;
     button.y = 15;
     button.width = button.height = 25;
     button.context = TASKBAR_CONTEXT;
@@ -173,7 +173,7 @@ function loadTaskButtons()
     var haltSelectButton= new Image();
     
     // Ensures the button has a starting image on the load (using the static button).
-    haltButton.onload = function() {TASKBAR_CONTEXT.drawImage(haltButton,87,15)}; 
+    haltButton.onload = function() {TASKBAR_CONTEXT.drawImage(haltButton,85,15)}; 
     haltButton.src = "images/halt.png";
 
     haltSelectButton.onload = function() {};
@@ -188,6 +188,61 @@ function loadTaskButtons()
     // Push the button to the buttons array.
     buttons.push(button);    
     //-------------------------   
+    
+    // Load the step on button.
+    button = new Button();   
+    button.name = "stepon";
+    button.x = 120;
+    button.y = 15;
+    button.width = button.height = 25;
+    button.context = TASKBAR_CONTEXT;
+    
+    var stepOnButton= new Image();
+    var stepOnSelectButton= new Image();
+    
+    // Ensures the button has a starting image on the load (using the static button).
+    stepOnButton.onload = function() {TASKBAR_CONTEXT.drawImage(stepOnButton,120,15)}; 
+    stepOnButton.src = "images/step_toggle.png";
+
+    stepOnSelectButton.onload = function() {};
+    stepOnSelectButton.src = "images/step_toggle_select.png";
+
+    button.hoverImage = stepOnSelectButton;
+    button.staticImage = stepOnButton;
+    //button.funct = doHaltAction; //TODO implement a function
+    button.enabled = false;
+    
+    // Push the button to the buttons array.
+    buttons.push(button);    
+    //-------------------------
+    
+     // Load the step button.
+    button = new Button();   
+    button.name = "step";
+    button.x = 150;
+    button.y = 15;
+    button.width = button.height = 25;
+    button.context = TASKBAR_CONTEXT;
+    
+    var stepButton= new Image();
+    var stepSelectButton= new Image();
+    
+    // Ensures the button has a starting image on the load (using the static button).
+    stepButton.onload = function() {TASKBAR_CONTEXT.drawImage(stepButton,150,15)}; 
+    stepButton.src = "images/step.png";
+
+    stepSelectButton.onload = function() {};
+    stepSelectButton.src = "images/step_select.png";
+
+    button.hoverImage = stepSelectButton;
+    button.staticImage = stepButton;
+    //button.funct = doHaltAction; //TODO implement a function
+    button.enabled = false;
+    
+    // Push the button to the buttons array.
+    buttons.push(button);    
+    //-------------------------   
+    
 }
 
 

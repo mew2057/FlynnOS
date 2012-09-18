@@ -23,7 +23,7 @@ function krnBootstrap()      // Page 8.
     _KernelBuffers = new Array();           // Buffers... for the kernel.
     _KernelInputQueue = new Queue();        // Where device input lands before being processed out somewhere.
     _Console = new Console();               // The console output device.
-    _InstructionSet = new InstructionSet(); // Initialize the instruction set for program execution.
+    _InstructionSet = new InstructionSet6502(); // Initialize the instruction set for program execution.
     _MemoryManager = new MemoryManager(4);  //
     _PCBs = new ProcessControlBlockCollection();
 

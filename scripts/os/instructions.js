@@ -7,7 +7,7 @@ function Instruction(funct, args)
     this.argCount = args;
 }
 
-function InstructionSet()
+function InstructionSet6502()
 {
     this.set = new Array(INSTRUCTION_COUNT);
     
@@ -28,7 +28,7 @@ function InstructionSet()
     
 }
 
-InstructionSet.prototype.get = function(hex)
+InstructionSet6502.prototype.get = function(hex)
 {
     var index = parseInt(hex, 16);
     var retVal = null;
