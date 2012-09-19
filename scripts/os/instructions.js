@@ -36,12 +36,12 @@ function InstructionSet6502()
 InstructionSet6502.prototype.get = function(opcode)
 {
     var index = parseInt(opcode, 16);
-    var retVal = null;
+
+var retVal = null;
     
     if (index < this.set.length)
     {
         retVal = this.set[index];
     }
-    
     return retVal;
 };

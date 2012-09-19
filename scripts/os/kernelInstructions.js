@@ -60,13 +60,11 @@ function krnLoadY(hexValues,cpu)
     }   
 }
 
-function krnNOP(hexValues,cpu)
-{    
-}
+function krnNOP(hexValues,cpu){}
 
 function krnBreakProcess(hexValues,cpu)
 {
-    
+    cpu.isExecuting = false;
 }
 
 function krnCompareX(hexValues,cpu)

@@ -30,7 +30,7 @@ function krnBootstrap()      // Page 8.
 
     // Load the Display Device Driver.
     krnTrace("Loading the display device driver.");
-    var krnDisplayDriver = new DeviceDriverDisplay();    
+    krnDisplayDriver = new DeviceDriverDisplay();    
     krnDisplayDriver.driverEntry();
     krnTrace(krnDisplayDriver.status);
     
@@ -44,7 +44,7 @@ function krnBootstrap()      // Page 8.
 
     // Load the Keyboard Device Driver
     krnTrace("Loading the keyboard device driver.");
-    var krnKeyboardDriver = new DeviceDriverKeyboard();     // Construct it. 
+    krnKeyboardDriver = new DeviceDriverKeyboard();     // Construct it. 
     krnKeyboardDriver.driverEntry();                    // Call the driverEntry() initialization routine.
     krnTrace(krnKeyboardDriver.status);
     
@@ -95,7 +95,7 @@ function krnOnCPUClockPulse()
     }
     else if (_CPU.isExecuting) // If there are no interrupts then run a CPU cycle if there is anything being processed.
     {
-        _CPU.cycle();
+        _CPU.cycle(_MemoryManager, _InstructionSet);
     }    
     else                       // If there are no interrupts and there is nothing being executed then just be idle.
     {
@@ -264,43 +264,12 @@ function krnLoadProgram()
     } 
 }
 
-// TODO make this use the step not be a separate looping mechanism.
 function krnRunProgram(pid)
 {
-    var executingProcessBlock = _PCBs.getBlock(pid);
-    var instruction,args,instructionHex;
-    
-    if(!executingProcessBlock)
-    {
-        return;   
-    }
-    
-    for(_CPU.PC = executingProcessBlock.Base; _CPU.PC < executingProcessBlock.Limit; _CPU.PC++)
-    {
-        instructionHex = _MemoryManager.retrieveContents(_CPU.PC.toString(16));
-        instruction =_InstructionSet.get(instructionHex);
-        
-        if(instructionHex === "00")
-            break;
-            
-        if(instruction)
-        {
-            args = _MemoryManager.retrieveContentsFromAddress((1 + _CPU.PC).toString(16),
-                instruction.argCount);
-            
-            _CPU.PC += instruction.argCount;
-            
-            if(args)
-            { 
-                instruction.funct(args);
-            }
-            else
-            {
-                instruction.funct();
-            }
-    
-            executingProcessBlock.update(_CPU,pid);
-        }
+   _CPU.isExecuting = true;
+}
 
-    }
+function krnKillProgram(pid)
+{
+     _CPU.isExecuting = false;  
 }

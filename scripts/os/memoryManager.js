@@ -147,6 +147,7 @@ MemoryManager.prototype.retrieveContentsFromAddress = function(hexAddress,numByt
     {
         contents = null;
     }
+    
     return contents;
 };
 

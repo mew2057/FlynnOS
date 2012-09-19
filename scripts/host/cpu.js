@@ -38,14 +38,14 @@ function cpu()
  * @param manager The memory manager.
  * @param instructions The instruction set that is used by the cpu.
  */
-cpu.prototype.cycle = function(manager,instructions)
+cpu.prototype.cycle = function(manager,instructions,inputStream)
 {
     var opcode = this.fetch(manager);
-    
+
     var instruction = this.decode(instructions, opcode);
-    
-    var contents = this.read(instructions, manager, instruction);
-    
+
+    var contents = this.read(manager, instruction);
+
     this.execute(instruction, contents);
 };
 
@@ -56,7 +56,8 @@ cpu.prototype.cycle = function(manager,instructions)
  */
 cpu.prototype.fetch = function(manager)
 {
-    return manager.retrieveContents(this.PC ++);
+    
+    return manager.retrieveContents((this.PC++).toString(16));
 };
 
 /**
@@ -68,7 +69,7 @@ cpu.prototype.fetch = function(manager)
  */
 cpu.prototype.decode = function(instructions, opcode)
 {
-    return instructions.get(parseInt(opcode,16));
+    return instructions.get(opcode);
 };
 
 /**
@@ -97,17 +98,16 @@ cpu.prototype.read = function(manager, instruction)
         case 0:
             break;
         case 1:
-            contents = [manager.retrieveContents(this.PC)];
+            contents = [manager.retrieveContents(this.PC.toString(16))];
             this.PC ++;
             break;
         case 2:
-            contents = [manager.retrieveContentsFromAddress(this.PC,count)];
-            this.PC += count;
+            contents = manager.retrieveContentsFromAddress(this.PC.toString(16),2);
+            this.PC += 2;
             break;
         default:
             break;
     }
-    
     return contents;
 };
 

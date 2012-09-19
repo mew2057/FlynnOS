@@ -545,3 +545,15 @@ function shellRun(args)
     }
 }
 
+function shellKill(args)
+{
+    if(args.length > 0)
+    {
+        krnKillProgram(args[0]);
+    }
+    else
+    {
+        _StdIn.putText("Please supply a program id.");
+    }
+}
+
