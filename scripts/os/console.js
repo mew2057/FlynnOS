@@ -145,7 +145,7 @@ function consolePutText(txt, input)
             case "\b":
                 
                 // This prevents null pointer exceptions.
-                if(this.buffer.length() == 0)
+                if(this.buffer.getSize() == 0)
                 {
                     break;   
                 }

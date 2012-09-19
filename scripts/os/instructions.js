@@ -7,6 +7,11 @@ function Instruction(funct, args)
     this.argCount = args;
 }
 
+/**
+ * The constructor for a 6502 instruction set. I opted for this design as it 
+ * allows for easy expansion and I am able to replace the instruction set easily
+ * if desired.
+ */
 function InstructionSet6502()
 {
     this.set = new Array(INSTRUCTION_COUNT);
@@ -28,9 +33,9 @@ function InstructionSet6502()
     
 }
 
-InstructionSet6502.prototype.get = function(hex)
+InstructionSet6502.prototype.get = function(opcode)
 {
-    var index = parseInt(hex, 16);
+    var index = parseInt(opcode, 16);
     var retVal = null;
     
     if (index < this.set.length)

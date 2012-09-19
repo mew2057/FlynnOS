@@ -17,6 +17,7 @@ PCB.prototype.update = function(cpu)
     this.Zflag = cpu.Zflag;
 };
 
+// This has no functionality that really sets it apart aside from philosophy.
 function ProcessControlBlockCollection()
 {
     this.pcbs = [];  
@@ -38,11 +39,4 @@ ProcessControlBlockCollection.prototype.setBlock = function(pcb,pid)
 {
     this.pcbs[pid] = pcb;  
 };
-
-ProcessControlBlockCollection.prototype.updateBlock = function(cpu,pid)
-{
-    this.pcbs[pid].update(cpu);
-};
-
-
 

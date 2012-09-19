@@ -30,7 +30,7 @@ function krnBootstrap()      // Page 8.
 
     // Load the Display Device Driver.
     krnTrace("Loading the display device driver.");
-    krnDisplayDriver = new DeviceDriverDisplay();    
+    var krnDisplayDriver = new DeviceDriverDisplay();    
     krnDisplayDriver.driverEntry();
     krnTrace(krnDisplayDriver.status);
     
@@ -44,8 +44,7 @@ function krnBootstrap()      // Page 8.
 
     // Load the Keyboard Device Driver
     krnTrace("Loading the keyboard device driver.");
-    krnKeyboardDriver = new DeviceDriverKeyboard();     // Construct it. 
-
+    var krnKeyboardDriver = new DeviceDriverKeyboard();     // Construct it. 
     krnKeyboardDriver.driverEntry();                    // Call the driverEntry() initialization routine.
     krnTrace(krnKeyboardDriver.status);
     

@@ -1,13 +1,13 @@
 // I separated this from kernel.js because it made things easier to read.
-function krnLoadAcc(hexValues)
+function krnLoadAcc(hexValues,cpu)
 {
     if (hexValues.length === 1) 
     {
-        _CPU.Acc = parseInt(hexValues[0],16);
+        cpu.Acc = parseInt(hexValues[0],16);
     }
     else if( hexValues.length === 2 )
     {
-        _CPU.Acc = _MemoryManager.retrieveContents(hexValues[1] + hexValues[0]);
+        cpu.Acc = _MemoryManager.retrieveContents(hexValues[1] + hexValues[0]);
     }
     else
     {
@@ -16,27 +16,27 @@ function krnLoadAcc(hexValues)
 }
 
 
-function krnStoreAcc(hexValues)
+function krnStoreAcc(hexValues,cpu)
 {
-    _MemoryManager.store(hexValues[1] + hexValues[0], [padZeros(_CPU.Acc.toString(16),2)]);
+    _MemoryManager.store(hexValues[1] + hexValues[0], [padZeros(cpu.Acc.toString(16),2)]);
 }
 
-function krnAddWithCarry(hexValues)
+function krnAddWithCarry(hexValues,cpu)
 {
     
-    _CPU.Acc = (_CPU.Acc + _MemoryManager.retrieveContents(hexValues[1] + hexValues[0])) % 256;
+    cpu.Acc = (cpu.Acc + _MemoryManager.retrieveContents(hexValues[1] + hexValues[0])) % 256;
 }
 
-function krnLoadX(hexValues)
+function krnLoadX(hexValues,cpu)
 {
     if (hexValues.length === 1) 
     {
-        _CPU.Xreg = parseInt(hexValues[0],16);
+        cpu.Xreg = parseInt(hexValues[0],16);
     }
     else if( hexValues.length === 2 )
     {
         
-        _CPU.Xreg = _MemoryManager.retrieveContents(hexValues[1] + hexValues[0]);
+        cpu.Xreg = _MemoryManager.retrieveContents(hexValues[1] + hexValues[0]);
     }
     else
     {
@@ -44,15 +44,15 @@ function krnLoadX(hexValues)
     }   
 }
 
-function krnLoadY(hexValues)
+function krnLoadY(hexValues,cpu)
 {
     if (hexValues.length === 1) 
     {
-        _CPU.Yreg = parseInt(hexValues[0],16);
+        cpu.Yreg = parseInt(hexValues[0],16);
     }
     else if( hexValues.length === 2 )
     {
-        _CPU.Yreg = _MemoryManager.retrieveContents(hexValues[1] + hexValues[0]);
+        cpu.Yreg = _MemoryManager.retrieveContents(hexValues[1] + hexValues[0]);
     }
     else
     {
@@ -60,39 +60,39 @@ function krnLoadY(hexValues)
     }   
 }
 
-function krnNOP()
+function krnNOP(hexValues,cpu)
 {    
 }
 
-function krnBreakProcess()
+function krnBreakProcess(hexValues,cpu)
 {
     
 }
 
-function krnCompareX(hexValues)
+function krnCompareX(hexValues,cpu)
 {
     var toCompare = parseInt(_MemoryManager.retrieveContents(hexValues[1] + hexValues[0]), 16);
     
-    _CPU.Zflag = _CPU.Xreg == toCompare?1:0;
+    cpu.Zflag = cpu.Xreg == toCompare?1:0;
     
 }
 
-function krnBranchNotEqual(branchAddress)
+function krnBranchNotEqual(branchAddress,cpu)
 {
-    if(_CPU.Zflag == 0)
+    if(cpu.Zflag == 0)
     {
-        if(128 & parseInt(branchAddress,16))
+        if(128 & parseInt(branchAddress[0],16))
         {
-            _CPU.PC -= (256 - parseInt(branchAddress,16));
+            cpu.PC -= (256 - parseInt(branchAddress[0],16));
         }
         else
         {
-            _CPU.PC += parseInt(branchAddress,16);
+            cpu.PC += parseInt(branchAddress[0],16);
         }
     }
 }
 
-function krnIncrementByte(hexValues)
+function krnIncrementByte(hexValues,cpu)
 {
     var hexAddress = hexValues[1] + hexValues[0];
     
@@ -104,18 +104,18 @@ function krnIncrementByte(hexValues)
     
 }
 
-function krnSystemCall()
+function krnSystemCall(hexValues,cpu)
 {
 
-    switch(_CPU.Xreg)
+    switch(cpu.Xreg)
     {
         case 1:
-            _StdIn.putText(parseInt(_CPU.Yreg,16));
+            _StdIn.putText(parseInt(cpu.Yreg,16));
             break;
         case 2:
             
             var outputChars = _MemoryManager.retrieveContentsToLimit(
-                    _CPU.Yreg.toString(16), "00");
+                    cpu.Yreg.toString(16), "00");
             
             if(outputChars)
             {

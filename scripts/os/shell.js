@@ -14,7 +14,6 @@ function Shell()
     this.commandList   = [];
     this.curses        = "[fuvg],[cvff],[shpx],[phag],[pbpxfhpxre],[zbgureshpxre],[gvgf]";
     this.apologies     = "[sorry]";
-    this.commandBuffer = new Deque();
     
     
     // Methods
@@ -180,14 +179,6 @@ function shellHandleInput(buffer)
     if (found)
     {
         this.execute(fn, args);
-        
-        // Do the command buffer logic.
-        this.commandBuffer.pushBack(userCommand);   // This is for a command history.
-        
-        if(this.commandBuffer.length > SHELL_COMMAND_BUFFER_LIMIT)
-        {
-            this.commandBuffer.popFront();    
-        }
     }
     else
     {

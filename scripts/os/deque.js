@@ -12,10 +12,6 @@ function Deque () {
     this.d = [];
 }
 
-Deque.prototype.length = function() {
-    return this.d.length;   
-};
-
 Deque.prototype.popBack = function () {
     var retVal = null;
     
@@ -36,6 +32,16 @@ Deque.prototype.peekBack = function () {
     return retVal;
 };
 
+Deque.prototype.popFront = function () {
+    var retVal = null;
+    
+    if (this.d.length >0) {
+        retVal =  this.d.shift();
+    }    
+    
+    return retVal;
+};
+
 Deque.prototype.peekFront = function () {
     var retVal = null;
     
@@ -48,16 +54,6 @@ Deque.prototype.peekFront = function () {
 
 Deque.prototype.pushBack = function (element) {
     this.d.push(element);
-};
-
-Deque.prototype.popFront = function () {
-    var retVal = null;
-    
-    if (this.d.length >0) {
-        retVal =  this.d.shift();
-    }    
-    
-    return retVal;
 };
 
 Deque.prototype.pushFront = function (element) {

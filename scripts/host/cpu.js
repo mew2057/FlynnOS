@@ -31,15 +31,96 @@ function cpu()
         this.Zflag = 0;      
         this.isExecuting = false;  
     };
-    
-    this.pulse = function()
-    {
-        // TODO: Do we need this?  Probably not.
-    };
-    
-    this.cycle = function()
-    {
-        krnTrace("CPU cycle");
-        // Do real work here. Set this.isExecuting appropriately.
-    };
 }
+
+/**
+ * The cycle funtion protoype for the cpu.
+ * @param manager The memory manager.
+ * @param instructions The instruction set that is used by the cpu.
+ */
+cpu.prototype.cycle = function(manager,instructions)
+{
+    var opcode = this.fetch(manager);
+    
+    var instruction = this.decode(instructions, opcode);
+    
+    var contents = this.read(instructions, manager, instruction);
+    
+    this.execute(instruction, contents);
+};
+
+/**
+ * Retrieve the next instruction from the memory and increment the program counter.
+ * @param manager The memory manager containing a reference to the core memory.
+ * @return The contents of the memory cell being fetched.
+ */
+cpu.prototype.fetch = function(manager)
+{
+    return manager.retrieveContents(this.PC ++);
+};
+
+/**
+ * Decodes the instruction that has been fetched from memory.
+ * 
+ * @param instructions The instruction set that contains the opcode.
+ * @param opcode The opcode of the instruction.
+ * @return The instruction object for the opcode.
+ */
+cpu.prototype.decode = function(instructions, opcode)
+{
+    return instructions.get(parseInt(opcode,16));
+};
+
+/**
+ * Reads the contents of the supplied memory address.
+ * 
+ * @param manager The memory management object containing a reference to main memory.
+ * @param instruction The instruction to read the operands from.
+ * 
+ * @return An array of the operands.
+ * 
+ */
+cpu.prototype.read = function(manager, instruction)
+{    
+    var count = 42;
+    
+    if(instruction)
+    {
+        count = instruction.argCount;
+    }
+    
+    var contents = [];
+    
+    // Gets the operand from main memory.
+    switch (count)
+    {
+        case 0:
+            break;
+        case 1:
+            contents = [manager.retrieveContents(this.PC)];
+            this.PC ++;
+            break;
+        case 2:
+            contents = [manager.retrieveContentsFromAddress(this.PC,count)];
+            this.PC += count;
+            break;
+        default:
+            break;
+    }
+    
+    return contents;
+};
+
+/**
+ * Executes the instruction.
+ * @param instruction The instruction to execute.
+ * @param contents The operands for the instruction.
+ */
+cpu.prototype.execute = function(instruction, contents)
+{
+    if(instruction)
+    {
+        instruction.funct(contents,this);
+    }
+};
+
