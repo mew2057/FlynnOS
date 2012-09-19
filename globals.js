@@ -23,12 +23,11 @@ var KEYBOARD_IRQ = 1;
 //
 // Global Variables
 //
+var _StepEnabled = false;
+var _Step = false;
 var _CPU = null;
-
 var _InstructionSet = null; 
-
 var _MemoryManager = null;
-
 var _PCBs = null;
 
 var _OSclock = 0;       // Page 23.

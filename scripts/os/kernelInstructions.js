@@ -108,7 +108,9 @@ function krnSystemCall(hexValues,cpu)
     switch(cpu.Xreg)
     {
         case 1:
+            _StdIn.advanceLine();
             _StdIn.putText(parseInt(cpu.Yreg,16));
+            
             break;
         case 2:
             
@@ -117,6 +119,7 @@ function krnSystemCall(hexValues,cpu)
             
             if(outputChars)
             {
+                _StdIn.advanceLine();
                 for(var index in outputChars)
                 {
                     _StdIn.putText(String.fromCharCode(parseInt(outputChars[index],16)));

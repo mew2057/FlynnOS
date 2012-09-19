@@ -57,14 +57,36 @@ div.textBox
     width:355px;
     height:250px;
 }
+
 #cpuDiv
 {
-    width:120px;
-    height:70px;   
+    width:225px;
+    height:25px; 
+}
+
+#cpuTable
+{   
+    table-layout:fixed;
+    font-family:Monospace;
 }
 
 #memDiv
 {
     font-family:Monospace;
     width:200px;
+}
+
+#pcbTable td
+{
+    text-align:center;
+    
+    border-bottom: 1px dotted #b5ffff;
+    padding:2px;
+}
+
+#pcbDiv
+{
+    font-family:Monospace;
+    width:225px;  
+    height:150px
 }

@@ -36,26 +36,19 @@ MemoryManager.prototype.store = function(hexAddress, toStore)
 
 /**
  * @param trapPointer - A pointer to the prefered trap or error handling mechanism.
- * @return 0 - Success.
- *         1 - Address out of bounds.
- *         2 - Memory overflow.
  */
-MemoryManager.prototype.storeProgram = function(hexAddress, toStore, trapPointer, pcbs)
+MemoryManager.prototype.storeProgram = function(hexAddress, toStore, trapPointer)
 {
     
     var returnCode = this.store(hexAddress,toStore);
-    var pid = null;
+    var currentPCB =null;
     
     switch (returnCode)
     {
         case 0:
-            pid = 0;
-
-            var currentPCB = new PCB();   
+            currentPCB = new PCB();   
             currentPCB.Base = parseInt(hexAddress,16);
-            currentPCB.Limit = currentPCB.Base + this.pageSize - 1;            
-            pcbs.setBlock(currentPCB, pid);
-            
+            currentPCB.Limit = currentPCB.Base + this.pageSize - 1;              
             
             break;
         case 1:
@@ -66,7 +59,7 @@ MemoryManager.prototype.storeProgram = function(hexAddress, toStore, trapPointer
             break;
     }
 
-    return pid;
+    return currentPCB;
 };
 
 MemoryManager.prototype.updateDisplay = function()

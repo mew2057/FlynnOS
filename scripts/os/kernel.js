@@ -26,6 +26,8 @@ function krnBootstrap()      // Page 8.
     _InstructionSet = new InstructionSet6502(); // Initialize the instruction set for program execution.
     _MemoryManager = new MemoryManager(4);  //
     _PCBs = new ProcessControlBlockCollection();
+    _StepEnabled = false;
+    _Step = false;
 
 
     // Load the Display Device Driver.
@@ -93,18 +95,20 @@ function krnOnCPUClockPulse()
         var interrupt = _KernelInterruptQueue.dequeue();
         krnInterruptHandler(interrupt.irq, interrupt.params);        
     }
-    else if (_CPU.isExecuting) // If there are no interrupts then run a CPU cycle if there is anything being processed.
+    else if (_CPU.isExecuting && (!_StepEnabled || (_StepEnabled && _Step))) // If there are no interrupts then run a CPU cycle if there is anything being processed.
     {
         _CPU.cycle(_MemoryManager, _InstructionSet);
+        _Step = false;
     }    
     else                       // If there are no interrupts and there is nothing being executed then just be idle.
     {
-       krnTrace("Idle");
+       //krnTrace("Idle");
     }
     
     // Update the status and time in the task bar.
     updateTaskBar();
     updateCPUDisplay(_CPU);
+    updatePCBDisplay(_PCBs);
     _MemoryManager.updateDisplay();
 }
 
@@ -242,14 +246,15 @@ function krnLoadProgram()
         
         if(verifiedIntructions)
         {
-            var pid = _MemoryManager.storeProgram("0000",verifiedIntructions, 
-                krnTrapError, _PCBs);
+            var pcb = _MemoryManager.storeProgram("0000",verifiedIntructions, 
+                krnTrapError);
                 
-            if(!isNaN(pid))
+            if(pcb)
             {
+                pcb.update(_CPU);
                 
                 _StdIn.putText( "I feel a presence. Another warrior is on the "+
-                    "mesa at pid: " + pid);
+                    "mesa at pid: " + _PCBs.push(pcb));
             }            
         }
         else
@@ -266,10 +271,20 @@ function krnLoadProgram()
 
 function krnRunProgram(pid)
 {
-   _CPU.isExecuting = true;
+   var pcb = _PCBs.getBlock(pid);
+   if(pcb)
+   {
+       _CPU.PC = pcb.PC;
+       _CPU.isExecuting = true;
+   }
+   else
+   {
+        _StdIn.putText("Process ID not found!");   
+   }
+    
 }
 
 function krnKillProgram(pid)
 {
-     _CPU.isExecuting = false;  
+    _CPU.isExecuting = false;  
 }

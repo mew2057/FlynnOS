@@ -209,7 +209,7 @@ function loadTaskButtons()
 
     button.hoverImage = stepOnSelectButton;
     button.staticImage = stepOnButton;
-    //button.funct = doHaltAction; //TODO implement a function
+    button.funct = toggleStep; 
     button.enabled = false;
     
     // Push the button to the buttons array.
@@ -236,7 +236,7 @@ function loadTaskButtons()
 
     button.hoverImage = stepSelectButton;
     button.staticImage = stepButton;
-    //button.funct = doHaltAction; //TODO implement a function
+    button.funct = stepAction;
     button.enabled = false;
     
     // Push the button to the buttons array.
@@ -262,7 +262,8 @@ function animateStart ()
     // Enables the halt button. (I'm sure there's a more elegant way).
     for(var index in buttons)
     {
-        if ( buttons[index].name == "halt" )
+        if ( buttons[index].name == "halt"  || 
+            buttons[index].name.indexOf("step" != -1))
         {
             buttons[index].enabled = true;
         }  
@@ -288,6 +289,17 @@ function animateHalt ()
             buttons[index].enabled = false;
         }  
     }
+}
+
+function stepAction()
+{
+    _Step = !_Step;
+}
+
+function toggleStep()
+{
+    _StepEnabled = !_StepEnabled;
+    _Step = false;
 }
 
 /**
@@ -351,6 +363,25 @@ function updateCPUDisplay(cpu)
     
 }
 
+function updatePCBDisplay(pcbs)
+{
+    var html ="<tr> <td>PID</td> <td>PC</td> <td>ACC</td> <td>X</td> <td>Y</td>"+
+        "<td>Z</td> <td>BASE</td> <td>LIMIT</td> </tr>";
+    var pcb;
+    for(var pid = 0; pid < pcbs.getSize();pid++)
+    {
+        pcb = pcbs.getBlock(pid);
+        html += "<tr><td>" + pid + "</td>";
+        html += "<td>" + padZeros(pcb.PC.toString(16),2).toUpperCase() + "</td>";
+        html += "<td>" + padZeros(pcb.Acc.toString(16),2).toUpperCase() + "</td>";
+        html += "<td>" + padZeros(pcb.Xreg.toString(16),2).toUpperCase() + "</td>";
+        html += "<td>" + padZeros(pcb.Yreg.toString(16),2).toUpperCase() + "</td>";
+        html += "<td>" + pcb.Zflag + "</td>";
+        html += "<td>" + padZeros(pcb.Base.toString(16),2).toUpperCase() + "</td>";
+        html += "<td>" + padZeros(pcb.Limit.toString(16),2).toUpperCase() + "</td></tr>";    
+    }
+    $("#pcbTable").html(html);
+}
 /**
  * A button class that allows for animated images to be used as buttons.
  */

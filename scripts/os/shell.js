@@ -136,6 +136,7 @@ function shellInit()
     sc.description = " <pid> - Execute the program in memory with the specified pid.";
     sc.funct = shellRun;
     this.commandList[this.commandList.length]=sc;
+    
     //
     // Display the initial prompt.
     this.putPrompt();

@@ -39,4 +39,14 @@ ProcessControlBlockCollection.prototype.setBlock = function(pcb,pid)
 {
     this.pcbs[pid] = pcb;  
 };
+ProcessControlBlockCollection.prototype.push = function(pcb)
+{
+    this.pcbs.push(pcb); 
+    return this.pcbs.length-1;
+};
+
+ProcessControlBlockCollection.prototype.getSize = function()
+{
+    return this.pcbs.length;   
+};
 
