@@ -23,8 +23,7 @@ function krnBootstrap()      // Page 8.
     _KernelBuffers = new Array();           // Buffers... for the kernel.
     _KernelInputQueue = new Queue();        // Where device input lands before being processed out somewhere.
     _Console = new Console();               // The console output device.
-    _InstructionSet = new InstructionSet6502(); // Initialize the instruction set for program execution.
-    _MemoryManager = new MemoryManager(4);  //
+    _MemoryManager = new MemoryManager(3);  //
     _PCBs = new ProcessControlBlockCollection();
     _StepEnabled = false;
     _Step = false;
@@ -97,7 +96,8 @@ function krnOnCPUClockPulse()
     }
     else if (_CPU.isExecuting && (!_StepEnabled || (_StepEnabled && _Step))) // If there are no interrupts then run a CPU cycle if there is anything being processed.
     {
-        _CPU.cycle(_MemoryManager, _InstructionSet);
+        _CPU.cycle();
+        _PCBs.getBlock(_CPU.pid).update(_CPU);
         _Step = false;
     }    
     else                       // If there are no interrupts and there is nothing being executed then just be idle.
@@ -120,6 +120,8 @@ function krnEnableInterrupts()
 {
     // Keyboard
     simEnableKeyboardInterrupt();
+    
+    
     // Put more here.
 }
 
@@ -150,6 +152,9 @@ function krnInterruptHandler(irq, params)    // This is the Interrupt Handler Ro
             krnKeyboardDriver.isr(params);   // Kernel mode device driver
             _StdIn.handleInput();
             break;
+        case SYSTEM_IRQ:
+            krnSystemCallISR(params);
+            break
         default: 
             krnTrapError("Invalid Interrupt Request. irq=" + irq + " params=[" + params + "]");
     }
@@ -161,7 +166,32 @@ function krnTimerISR()  // The built-in TIMER (not clock) Interrupt Service Rout
 {
     // Check multiprogramming parameters and enfore quanta here. Call the scheduler / context switch here if necessary.
 }   
-
+function krnSystemCallISR(params)
+{
+    switch(params[0].Xreg)
+    {
+        case 1:
+            _StdIn.putText(parseInt(params[0].Yreg,16));
+            break;
+        case 2:
+             var outputChars = _MemoryManager.retrieveContentsToLimit(
+                    params[0].Yreg.toString(16), "00");
+            
+            if(outputChars)
+            {
+                for(var index in outputChars)
+                {
+                    _StdIn.putText(String.fromCharCode(parseInt(outputChars[index],16)));
+                }
+            }
+            else 
+            {
+                //TODO Do something
+            }
+            break;
+        default:
+    }
+}
 
 
 //
@@ -250,9 +280,7 @@ function krnLoadProgram()
                 krnTrapError);
                 
             if(pcb)
-            {
-                pcb.update(_CPU);
-                
+            {                
                 _StdIn.putText( "I feel a presence. Another warrior is on the "+
                     "mesa at pid: " + _PCBs.push(pcb));
             }            
@@ -275,6 +303,7 @@ function krnRunProgram(pid)
    if(pcb)
    {
        _CPU.PC = pcb.PC;
+       _CPU.pid = pid;
        _CPU.isExecuting = true;
    }
    else

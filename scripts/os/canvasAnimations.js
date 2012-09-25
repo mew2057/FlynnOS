@@ -263,7 +263,7 @@ function animateStart ()
     for(var index in buttons)
     {
         if ( buttons[index].name == "halt"  || 
-            buttons[index].name.indexOf("step" != -1))
+            buttons[index].name.indexOf("step") != -1)
         {
             buttons[index].enabled = true;
         }  
@@ -284,7 +284,8 @@ function animateHalt ()
     // Disables the halt button. (I'm sure there's a more elegant way).
     for(var index in buttons)
     {
-        if ( buttons[index].name == "halt" )
+        if ( buttons[index].name == "halt"  || 
+            buttons[index].name.indexOf("step") != -1)
         {
             buttons[index].enabled = false;
         }  
@@ -314,7 +315,8 @@ function doHaltAction()
         {
             buttons[index].swapFunct();
         }
-        else if ( buttons[index].name == "halt" )
+        else if ( buttons[index].name == "halt"  || 
+            buttons[index].name.indexOf("step") != -1)
         {
             buttons[index].enabled = false;
         }

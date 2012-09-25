@@ -23,6 +23,7 @@ function simInit()
 {
     // Clear the log text box.
     $("#logDiv").text("");
+
     
 }
 

@@ -167,10 +167,10 @@ function shellHandleInput(buffer)
     var found = false;
     while (!found && index < this.commandList.length)
     {
-        if (this.commandList[index].command === cmd)
+        if (this.commandList[index].command === cmd.toLowerCase())
         {
             found = true;
-            fn = this.commandList[index].funct;
+            var fn = this.commandList[index].funct;
         }
         else
         {
@@ -207,7 +207,7 @@ function shellParseInput(buffer)
     // 1. Remove leading and trailing spaces.
     buffer = trim(buffer);
     // 2. Lower-case it.
-    buffer = buffer.toLowerCase();
+    buffer = buffer;
     // 3. Separate on spaces so we can determine the command and command-line args, if any.
     var tempList = buffer.split(" ");
     // 4. Take the first (zeroth) element and use that as the command.
@@ -451,7 +451,7 @@ function shellStatus (args)
     if (args.length > 0)
     {
         var tempStatus = args[0];
-        
+
         for (var index=1; index < args.length; index++)
         {
             tempStatus += " " + args[index];   

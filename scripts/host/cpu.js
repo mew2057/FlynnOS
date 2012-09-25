@@ -21,6 +21,7 @@ function cpu()
     this.Yreg  = 0;     // Y register
     this.Zflag = 0;     // Z-ero flag (Think of it as "isZero".)
     this.isExecuting = false;
+    this.pid = 0;
     
     this.init = function() 
     {
@@ -29,22 +30,25 @@ function cpu()
         this.Xreg  = 0;
         this.Yreg  = 0;
         this.Zflag = 0;      
-        this.isExecuting = false;  
+        this.isExecuting = false; 
+        this.pid = 0;
+
+        _InstructionSet = new InstructionSet6502(); // Initialize the instruction set for program execution.
+
     };
 }
 
 /**
  * The cycle funtion protoype for the cpu.
  * @param manager The memory manager.
- * @param instructions The instruction set that is used by the cpu.
  */
-cpu.prototype.cycle = function(manager,instructions,inputStream)
+cpu.prototype.cycle = function()
 {
-    var opcode = this.fetch(manager);
+    var opcode = this.fetch();
 
-    var instruction = this.decode(instructions, opcode);
+    var instruction = this.decode(opcode);
 
-    var contents = this.read(manager, instruction);
+    var contents = this.read( instruction);
 
     this.execute(instruction, contents);
 };
@@ -54,22 +58,21 @@ cpu.prototype.cycle = function(manager,instructions,inputStream)
  * @param manager The memory manager containing a reference to the core memory.
  * @return The contents of the memory cell being fetched.
  */
-cpu.prototype.fetch = function(manager)
+cpu.prototype.fetch = function()
 {
     
-    return manager.retrieveContents((this.PC++).toString(16));
+    return _MemoryManager.retrieveContents((this.PC++).toString(16));
 };
 
 /**
  * Decodes the instruction that has been fetched from memory.
  * 
- * @param instructions The instruction set that contains the opcode.
  * @param opcode The opcode of the instruction.
  * @return The instruction object for the opcode.
  */
-cpu.prototype.decode = function(instructions, opcode)
+cpu.prototype.decode = function(opcode)
 {
-    return instructions.get(opcode);
+    return _InstructionSet.get(opcode);
 };
 
 /**
@@ -81,7 +84,7 @@ cpu.prototype.decode = function(instructions, opcode)
  * @return An array of the operands.
  * 
  */
-cpu.prototype.read = function(manager, instruction)
+cpu.prototype.read = function(instruction)
 {    
     var count = 42;
     
@@ -98,11 +101,11 @@ cpu.prototype.read = function(manager, instruction)
         case 0:
             break;
         case 1:
-            contents = [manager.retrieveContents(this.PC.toString(16))];
+            contents = [_MemoryManager.retrieveContents(this.PC.toString(16))];
             this.PC ++;
             break;
         case 2:
-            contents = manager.retrieveContentsFromAddress(this.PC.toString(16),2);
+            contents = _MemoryManager.retrieveContentsFromAddress(this.PC.toString(16),2);
             this.PC += 2;
             break;
         default:
