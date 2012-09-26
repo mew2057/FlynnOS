@@ -73,8 +73,15 @@ function simBtnStartOS_click()
 
     // ... then set the clock pulse simulation to call ?????????.
     hardwareClockID = setInterval(simClockPulse, CPU_CLOCK_INTERVAL);
+    
+    // Then establish the core memory.
+    _CoreMemory = new CoreMemory();
+    _CoreMemory.init();
+    
     // .. and call the OS Kernel Bootstrap routine.
     krnBootstrap();
+    
+
 }
 
 function simBtnHaltOS_click()

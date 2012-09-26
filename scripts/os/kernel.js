@@ -23,7 +23,7 @@ function krnBootstrap()      // Page 8.
     _KernelBuffers = new Array();           // Buffers... for the kernel.
     _KernelInputQueue = new Queue();        // Where device input lands before being processed out somewhere.
     _Console = new Console();               // The console output device.
-    _MemoryManager = new MemoryManager(3);  //
+    _MemoryManager = new MemoryManager(_CoreMemory);  //
     _PCBs = new ProcessControlBlockCollection();
     _StepEnabled = false;
     _Step = false;
@@ -109,7 +109,7 @@ function krnOnCPUClockPulse()
     updateTaskBar();
     updateCPUDisplay(_CPU);
     updatePCBDisplay(_PCBs);
-    _MemoryManager.updateDisplay();
+    updateMemDisplay(_MemoryManager);
 }
 
 

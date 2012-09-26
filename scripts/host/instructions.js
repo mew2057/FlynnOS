@@ -1,6 +1,18 @@
-// The instruction count for the OS.
-var INSTRUCTION_COUNT = 256;
+/* ------------
+   instructions.js
+   
+   Requires globals.js
+   
+   Defines the function for an instruction and the 6502 instruction set to be 
+   used in cpu.js.
+   ------------ */
 
+
+/**
+ * An Instruction function(object).
+ * @param funct The fuction referenced by the instruction.
+ * @param args The number of operands associated with the instruction.
+ */
 function Instruction(funct, args)
 {
     this.funct = funct;
@@ -33,11 +45,16 @@ function InstructionSet6502()
     
 }
 
+/**
+ * A gettor for the 6502 instruction set.
+ * @param opcode The opcode of the requested instruction.
+ * @return null if the instruction doesn't exist, an instruction object if found.
+ */
 InstructionSet6502.prototype.get = function(opcode)
 {
     var index = parseInt(opcode, 16);
 
-var retVal = null;
+    var retVal = null;
     
     if (index < this.set.length)
     {

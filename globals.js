@@ -15,6 +15,8 @@ var APP_NAME = "FlynnOS";  // 'cause I was at a loss for a better name.
 var APP_VERSION = "0.1"
 var APP_DESCRIPTION = "Welcome to The Grid: A digital frontier."
 
+
+
 var CPU_CLOCK_INTERVAL = 100;   // in ms, or milliseconds, so 1000 = 1 second.
 
 var TIMER_IRQ    = 0;  // Pages 23 (timer), 9 (interrupts), and 561 (interrupt priority). 
@@ -27,6 +29,8 @@ var FAULT_IRQ = 3;
 var INST_FAULT = 1; //An instruction fault.
 var MEM_FAULT = 2;  //A memory fault.
 
+// The instruction count for the CPU.
+var INSTRUCTION_COUNT = 256;
 
 //
 // Global Variables
@@ -37,6 +41,7 @@ var _CPU = null;
 var _InstructionSet = null; 
 var _MemoryManager = null;
 var _PCBs = null;
+var _CoreMemory = null;
 
 var _OSclock = 0;       // Page 23.
 

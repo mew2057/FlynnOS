@@ -1,11 +1,27 @@
-function MemoryManager(pages)
+/* ------------
+   memoryManager.js
+   
+   Requires globals.js
+   
+   A set of routines to handle memory management.
+   ------------ */
+   
+/**
+  * The Memory manager function that should handle all accesses to Core Memory.
+  * 
+  */
+function MemoryManager(coreMem)
 {
-    this.pageSize = 256; // This is the default page size.
-    this.core = new CoreMemory(this.pageSize * pages);
+    this.core = coreMem;
     
 }
 
 /**
+ * A routine for storing data in Core Memory. 
+ * 
+ * @param hexAddress The hexadecimal address of the  memory location to store 
+ *      the data.
+ * @param toStore The data to store in the core memory.
  * 
  * @return 0 - Success.
  *         1 - Address out of bounds.
@@ -35,20 +51,28 @@ MemoryManager.prototype.store = function(hexAddress, toStore)
 };
 
 /**
- * @param putText - A pointer to the prefered console.
+ * Effectively a wrapper to the store routine that handles pcb creation and
+ * storage error codes.
+ * 
+ * @param hexAddress The address to begin the storage at (please note this is 
+ * soon to be deprecated).
+ * 
+ * @param toStore The verified program code to store in Core Memory.
+ * @return A PCB initialized with key data relating to the loaded program. This 
+ *          is null if any issues were detected.
  */
 MemoryManager.prototype.storeProgram = function(hexAddress, toStore)
 {
     
     var returnCode = this.store(hexAddress,toStore);
-    var currentPCB =null;
+    var currentPCB = null;
     
     switch (returnCode)
     {
         case 0:
             currentPCB = new PCB();   
             currentPCB.Base = parseInt(hexAddress,16);
-            currentPCB.Limit = currentPCB.Base + this.pageSize - 1;
+            currentPCB.Limit = currentPCB.Base + this.core.pageSize - 1;
             
             break;
         case 1:
@@ -64,29 +88,11 @@ MemoryManager.prototype.storeProgram = function(hexAddress, toStore)
     return currentPCB;
 };
 
-MemoryManager.prototype.updateDisplay = function()
-{
-    $("#memDiv").text("");
-    
-    $("#memDiv").append("0x" + padZeros("",4) + ": ");
-    
-    for (var index = 0; index < this.core.memory.length; index ++)
-    {
-        if(index === 0 || index % 5 !== 0)
-        {
-            $("#memDiv").append(this.core.memory[index].toUpperCase() + " ");
-        }
-        else
-        {
-            $("#memDiv").append("<br/>0x" + padZeros(index.toString(16),4)+ ": " 
-                + this.core.memory[index].toUpperCase() +" ");
-        }
-    }
-    
-};
+//XXX Is there a way to condense this? It may not be worth it...
 
 /**
  * Retrieves the contents of a memory cell.
+ * @param hexAddress The address of the cell in hex.
  * @return null if out of bounds, the contents if found.
  */
 MemoryManager.prototype.retrieveContents = function(hexAddress)
@@ -102,9 +108,15 @@ MemoryManager.prototype.retrieveContents = function(hexAddress)
     
     return this.core.memory[intAddress];
 };
+
 //TODO page faults!
 /**
- * Retrieves the contents of a memory cell.
+ * Retrieves an array from core memory begining on the hexAddress and ending with
+ * the supplied bounding value (e.g. 00).
+ * 
+ * @param hexAddress The address of the starting cell in hex.
+ * @param boundingValue The hex value that marks the delimiter in memory for 
+ *  the collection.
  * @return null if out of bounds, the contents if found.
  */
 MemoryManager.prototype.retrieveContentsToLimit = function(hexAddress,boundingValue)
@@ -125,6 +137,14 @@ MemoryManager.prototype.retrieveContentsToLimit = function(hexAddress,boundingVa
     return contents;
 };
 
+/**
+ * Retrieves numBytes cells from core memory and returns it as an array.
+ * 
+ * @param hexAddress The address of the starting cell in hex.
+ * @param nuymBytes The number of cells that the returned array should contain.
+ * 
+ * @return The contents from the starting cell numBytes on.
+ */
 MemoryManager.prototype.retrieveContentsFromAddress = function(hexAddress,numBytes)
 {
     // Translate the hex address to int.

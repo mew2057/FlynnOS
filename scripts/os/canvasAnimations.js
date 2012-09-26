@@ -352,7 +352,9 @@ function updateTaskBar()
 
 }
 /**
+ * Updates the cpu display with the current cpu state.
  * 
+ * @param cpu The cpu object that is to be used to update the cpu display.
  */
 function updateCPUDisplay(cpu)
 {
@@ -362,9 +364,40 @@ function updateCPUDisplay(cpu)
     $("#xCell").text(padZeros(cpu.Xreg.toString(16),2).toUpperCase());
     $("#yCell").text(padZeros(cpu.Yreg.toString(16),2).toUpperCase());
     $("#zCell").text(cpu.Zflag.toString(16));
-    
 }
 
+/**
+ * Updates the memory display with the contents of core memory.
+ * 
+ * @param memoryManager The memory manager that acts as a delegate to core memory
+ *  allowing for controlled data access.
+ */
+function updateMemDisplay(memoryManager)
+{
+    $("#memDiv").text("");
+    
+    $("#memDiv").append("0x" + padZeros("",4) + ": ");
+    
+    for (var index = 0; index < memoryManager.core.memory.length; index ++)
+    {
+        if(index === 0 || index % 5 !== 0)
+        {
+            $("#memDiv").append(memoryManager.core.memory[index].toUpperCase() + " ");
+        }
+        else
+        {
+            $("#memDiv").append("<br/>0x" + padZeros(index.toString(16),4)+ ": " 
+                + memoryManager.core.memory[index].toUpperCase() +" ");
+        }
+    }
+}
+
+/**
+ * Draws the current state of the Proccess Control Blocks in the DOM.
+ * 
+ * @param pcbs The Process Control blocks whose states must be represented in the 
+ *  DOM.
+ */
 function updatePCBDisplay(pcbs)
 {
     var html ="<tr> <td>PID</td> <td>PC</td> <td>ACC</td> <td>X</td> <td>Y</td>"+

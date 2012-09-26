@@ -39,8 +39,7 @@ function cpu()
 }
 
 /**
- * The cycle funtion protoype for the cpu.
- * @param manager The memory manager.
+ * The cycle funtion protoype for the cpu. Used in executing processes...
  */
 cpu.prototype.cycle = function()
 {
@@ -55,7 +54,6 @@ cpu.prototype.cycle = function()
 
 /**
  * Retrieve the next instruction from the memory and increment the program counter.
- * @param manager The memory manager containing a reference to the core memory.
  * @return The contents of the memory cell being fetched.
  */
 cpu.prototype.fetch = function()
@@ -78,16 +76,17 @@ cpu.prototype.decode = function(opcode)
 /**
  * Reads the contents of the supplied memory address.
  * 
- * @param manager The memory management object containing a reference to main memory.
  * @param instruction The instruction to read the operands from.
  * 
  * @return An array of the operands.
- * 
  */
 cpu.prototype.read = function(instruction)
 {    
+    // The 42 is the answer to the question of life the universe and everything,
+    // but here it's a dummy fail condition...
     var count = 42;
     
+    // Ensure the instruction is truthy.
     if(instruction)
     {
         count = instruction.argCount;
