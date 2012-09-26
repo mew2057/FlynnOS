@@ -1,5 +1,20 @@
-// I separated this from cpu.js because it made things easier to read.
+/* ------------
+   hostInstructions.js
+   
+   Requires globals.js, cpu.js, interrupt.js
+   
+   Routines for the Instruction Set of the cpu. Please note that philosophically
+   this is "in" the CPU, but I separated it for clarity and readbility's sake.
+   ------------ */
 
+/**
+ * LDA - LoaD the Accumulator: Loads the accumulator with either a constant 
+ * (1 operand) or the contents of a memory location (2 operand). If too many 
+ * operands are detected a minor fault is thrown.
+ * 
+ * @param hexValues The operand(s) of the instruction.
+ * @param cpu The cpu that this instruction addresses.
+ */
 function hostLoadAcc(hexValues,cpu)
 {
     if (hexValues.length === 1) 
@@ -12,22 +27,55 @@ function hostLoadAcc(hexValues,cpu)
     }
     else
     {
-        //Trap?
-    }    
+        _KernelInterruptQueue.enqueue( new Interrupt(FAULT_IRQ, 
+            new Array(INST_FAULT,"Too many operands for LDA.")));
+    }
 }
 
 
+/**
+ * STA - Store The Accumulator: Stores the contents of the accumulator to a 
+ * memory location specified in the operands.
+ * 
+ * @param hexValues The operands of the instruction.
+ * @param cpu The cpu that this instruction addresses.
+ */
 function hostStoreAcc(hexValues,cpu)
 {
     _MemoryManager.store(hexValues[1] + hexValues[0], [padZeros(cpu.Acc.toString(16),2)]);
 }
 
+/**
+ * ADC - ADd with Carry: Adds the contents of the Accumulator to the contents of
+ * the memory position pointed to by the operand.
+ * 
+ * @param hexValues The operand(s) of the instruction.
+ * @param cpu The cpu that this instruction addresses.
+ */
 function hostAddWithCarry(hexValues,cpu)
 {
+    // XXX on overflow should this set the Z flag?
+    var memContents = _MemoryManager.retrieveContents(hexValues[1] + hexValues[0]);
     
-    cpu.Acc = (cpu.Acc + _MemoryManager.retrieveContents(hexValues[1] + hexValues[0])) % 256;
+    if(memContents)
+    {
+        cpu.Acc = (cpu.Acc + memContents) % 256;
+    }
+    else
+    {        
+        _KernelInterruptQueue.enqueue( new Interrupt(FAULT_IRQ, 
+            new Array(MEM_FAULT,"Memory Address was unable to be read for ADC.")));
+    }
 }
 
+/**
+ * LDX - LoaD the X register: Loads the X register with either a constant 
+ * (1 operand) or the contents of a memory location (2 operand). If too many 
+ * operands are detected a minor fault is thrown.
+ * 
+ * @param hexValues The operand(s) of the instruction.
+ * @param cpu The cpu that this instruction addresses.
+ */
 function hostLoadX(hexValues,cpu)
 {
     if (hexValues.length === 1) 
@@ -41,10 +89,19 @@ function hostLoadX(hexValues,cpu)
     }
     else
     {
-        //Trap?
-    }   
+        _KernelInterruptQueue.enqueue( new Interrupt(FAULT_IRQ, 
+            new Array(INST_FAULT,"Too many operands for LDX.")));
+    }
 }
 
+/**
+ * LDY - LoaD the Y register: Loads the Y register with either a constant 
+ * (1 operand) or the contents of a memory location (2 operand). If too many 
+ * operands are detected a minor fault is thrown.
+ * 
+ * @param hexValues The operand(s) of the instruction.
+ * @param cpu The cpu that this instruction addresses.
+ */
 function hostLoadY(hexValues,cpu)
 {
     if (hexValues.length === 1) 
@@ -57,52 +114,114 @@ function hostLoadY(hexValues,cpu)
     }
     else
     {
-        //Trap?
+        _KernelInterruptQueue.enqueue( new Interrupt(FAULT_IRQ, 
+            new Array(INST_FAULT,"Too many operands for LDY.")));
     }   
 }
 
-function hostNOP(hexValues,cpu){}
 
+// XXX This may be better as an anonymous function, but I like having all the 
+// instructions in one place.
+/**
+ * NOP - No OPeration: Literally performs no operations.
+ */
+function hostNOP(){}
+
+/**
+ * BRK - BReaL: Breaks the execution of the process.
+ * 
+ * @param hexValues N/A
+ * @param cpu The cpu that this instruction addresses.
+ */
 function hostBreakProcess(hexValues,cpu)
 {
+    // XXX This works for now, but when multiple processes are working together
+    // this simply shan't cut it.
     cpu.isExecuting = false;
 }
 
+/**
+ * CPX - ComPare X register: Compares the contents of the X register with the 
+ * contents of the supplied memory address and loads the result of the boolean
+ * expression into the Z flag.
+ * 
+ * @param hexValues The operand(s) of the instruction.
+ * @param cpu The cpu that this instruction addresses.
+ */
 function hostCompareX(hexValues,cpu)
 {
     var toCompare = parseInt(_MemoryManager.retrieveContents(hexValues[1] + hexValues[0]), 16);
     
-    cpu.Zflag = cpu.Xreg == toCompare?1:0;
+    if(toCompare)
+    {
+        cpu.Zflag = cpu.Xreg == toCompare?1:0;
+    }
+    else
+    {
+        _KernelInterruptQueue.enqueue( new Interrupt(FAULT_IRQ, 
+            new Array(MEM_FAULT,"Memory Address was unable to be read for CPX.")));
+    }
     
 }
 
-function hostBranchNotEqual(branchAddress,cpu)
+/**
+ * BNE - Branch Not Equal: Branches the number of bytes specified in the operand
+ * as a two's complement integer if the Z flag is NOT set. The branched address 
+ * is relative to the current Program Counter value.
+ * 
+ * @param hexValues The operand(s) of the instruction.
+ * @param cpu The cpu that this instruction addresses.
+ */
+function hostBranchNotEqual(hexValues,cpu)
 {
-    if(cpu.Zflag == 0)
+    if(cpu.Zflag === 0)
     {
-        if(128 & parseInt(branchAddress[0],16))
+        var branchAddress = parseInt(hexValues[0],16);
+        /*
+         * As the leading bit carries the sign of the number in two's complement
+         * And our CPU is 8bit 128 and a bitwise or will extract the important bit.
+         * If the leading bit is 1 then the result is truthy and it is necessary
+         * to do some work.
+         */
+        if(128 & branchAddress )
         {
-            cpu.PC -= (256 - parseInt(branchAddress[0],16));
+            cpu.PC -= (256 - branchAddress);
         }
         else
         {
-            cpu.PC += parseInt(branchAddress[0],16);
+            cpu.PC += branchAddress;
         }
     }
 }
 
+/**
+ * INC - INCrement byte: Increments the contents of the memory address at operand
+ * by one.
+ * 
+ * @param hexValues The operand(s) of the instruction.
+ * @param cpu The cpu that this instruction addresses.
+ */
 function hostIncrementByte(hexValues,cpu)
 {
     var hexAddress = hexValues[1] + hexValues[0];
     
-    var incrementedValue = ((parseInt(_MemoryManager.retrieveContents(hexAddress),
-        16) + 1) % 256).toString(16);
+    var contents = parseInt(_MemoryManager.retrieveContents(hexAddress),16);
+    
+    var incrementedValue = (( contents + 1) % 256).toString(16);
         
     _MemoryManager.store(hexAddress,[padZeros(incrementedValue,2)]);
-    
-    
 }
-//Interupt
+
+
+/**
+ * SYS - SYStem call: Raises a System Call interrupt for the kernel to process.
+ * Xreg == 1 : Prints the contents of the Y register.
+ * Xreg == 2 : Prints the contents of memory from the address in the Y register
+ *              to the first occurrence of 00 in the core memory as a String.
+ * 
+ * @param hexValues The operand(s) of the instruction.
+ * @param cpu The cpu that this instruction addresses.
+ */
 function hostSystemCall(hexValues,cpu)
 {
    _KernelInterruptQueue.enqueue( new Interrupt(SYSTEM_IRQ, new Array(cpu)) );

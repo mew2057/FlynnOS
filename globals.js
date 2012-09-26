@@ -19,9 +19,15 @@ var CPU_CLOCK_INTERVAL = 100;   // in ms, or milliseconds, so 1000 = 1 second.
 
 var TIMER_IRQ    = 0;  // Pages 23 (timer), 9 (interrupts), and 561 (interrupt priority). 
                        // NOTE: The timer is different from hardware clock pulses. Don't confuse these.
-var KEYBOARD_IRQ = 1;  
-
+var KEYBOARD_IRQ = 1;
 var SYSTEM_IRQ = 2;
+var FAULT_IRQ = 3;
+
+// Fault Types
+var INST_FAULT = 1; //An instruction fault.
+var MEM_FAULT = 2;  //A memory fault.
+
+
 //
 // Global Variables
 //

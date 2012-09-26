@@ -154,7 +154,10 @@ function krnInterruptHandler(irq, params)    // This is the Interrupt Handler Ro
             break;
         case SYSTEM_IRQ:
             krnSystemCallISR(params);
-            break
+            break;
+        case FAULT_IRQ:
+            krnFaultISR(params);
+            break;
         default: 
             krnTrapError("Invalid Interrupt Request. irq=" + irq + " params=[" + params + "]");
     }
@@ -166,17 +169,47 @@ function krnTimerISR()  // The built-in TIMER (not clock) Interrupt Service Rout
 {
     // Check multiprogramming parameters and enfore quanta here. Call the scheduler / context switch here if necessary.
 }   
+
+/**
+ * Outputs the supplied fault to the console.
+ * @params param[0] - Fault type.
+ *         param[1] - Fault message.
+ */
+function krnFaultISR(params)
+{
+    var message = "";
+    switch(params[0])
+    {
+        case INST_FAULT:
+            message = "Instruction Fault:";
+            break;
+        case MEM_FAULT:
+            message = "Memory Fault:";
+            break;
+    }
+    
+    _StdIn.putText(message + " " + params[1]);
+}
+
+/**
+ * Executes a system call using the parameter list supplied CPU.
+ * @param An array containing a cpu object to be used in executing a system call.
+ */
 function krnSystemCallISR(params)
 {
     switch(params[0].Xreg)
     {
         case 1:
+            // Output the contents of the Y register.
             _StdIn.putText(parseInt(params[0].Yreg,16));
             break;
         case 2:
-             var outputChars = _MemoryManager.retrieveContentsToLimit(
+            // Get the String of characters from the core memory through the 
+            // manager.
+            var outputChars = _MemoryManager.retrieveContentsToLimit(
                     params[0].Yreg.toString(16), "00");
             
+            // If the memory request was successful, output the string.
             if(outputChars)
             {
                 for(var index in outputChars)
@@ -186,10 +219,17 @@ function krnSystemCallISR(params)
             }
             else 
             {
-                //TODO Do something
+                // Notifies the user that the "string" in memory was not properly terminated.
+                _KernelInterruptQueue.enqueue( new Interrupt(FAULT_IRQ, 
+                    new Array(MEM_FAULT,"Memory overflow on system call." +
+                    "Memory String did not have a valid termination.")));
             }
             break;
         default:
+            // Notifies the user that the System Call type was unsupported.
+            _KernelInterruptQueue.enqueue( new Interrupt(FAULT_IRQ, 
+                new Array(INST_FAULT,"Unsupported system call type.")));
+            break;
     }
 }
 
@@ -241,6 +281,12 @@ function krnTrapError(msg)
     krnShutdown();
 }
 
+/**
+ * Checks to ensure that each instruction in a program String has a valid 
+ * corresponding Instruction in the Instruction Set.
+ * @param program The String form of a user program to be loaded to memory.
+ * @return An array containing op codes if valid, null if any op codes were bad.
+ */
 function krnVerifyInstructions(program)
 {
     var splitProgram = program.split(" ");   
@@ -261,6 +307,10 @@ function krnVerifyInstructions(program)
     return splitProgram;
 }
 
+/**
+ * Verifies that the program has valid instructions then loads it into core 
+ * memory and assigns a pid which is returned to the user via console.
+ */
 function krnLoadProgram()
 {
     var program=simLoadProgram();
@@ -276,8 +326,7 @@ function krnLoadProgram()
         
         if(verifiedIntructions)
         {
-            var pcb = _MemoryManager.storeProgram("0000",verifiedIntructions, 
-                krnTrapError);
+            var pcb = _MemoryManager.storeProgram("0000",verifiedIntructions);
                 
             if(pcb)
             {                

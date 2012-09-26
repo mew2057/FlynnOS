@@ -35,9 +35,9 @@ MemoryManager.prototype.store = function(hexAddress, toStore)
 };
 
 /**
- * @param trapPointer - A pointer to the prefered trap or error handling mechanism.
+ * @param putText - A pointer to the prefered console.
  */
-MemoryManager.prototype.storeProgram = function(hexAddress, toStore, trapPointer)
+MemoryManager.prototype.storeProgram = function(hexAddress, toStore)
 {
     
     var returnCode = this.store(hexAddress,toStore);
@@ -48,14 +48,16 @@ MemoryManager.prototype.storeProgram = function(hexAddress, toStore, trapPointer
         case 0:
             currentPCB = new PCB();   
             currentPCB.Base = parseInt(hexAddress,16);
-            currentPCB.Limit = currentPCB.Base + this.pageSize - 1;              
+            currentPCB.Limit = currentPCB.Base + this.pageSize - 1;
             
             break;
         case 1:
-            trapPointer("Memory Address was out of bounds!");
+            _KernelInterruptQueue.enqueue( new Interrupt(FAULT_IRQ, 
+                new Array(MEM_FAULT,"Memory Address was out of bounds.")));
             break;
         case 2:
-            trapPointer("Memory Address overflow on program load!");
+            _KernelInterruptQueue.enqueue( new Interrupt(FAULT_IRQ, 
+                new Array(MEM_FAULT,"Memory Address overflow on program load.")));
             break;
     }
 
@@ -142,13 +144,4 @@ MemoryManager.prototype.retrieveContentsFromAddress = function(hexAddress,numByt
     }
     
     return contents;
-};
-
-
-/**
- * Returns the array that represents the memory.
- */
-MemoryManager.prototype.dump = function()
-{
-    return this.core.memory;
 };
