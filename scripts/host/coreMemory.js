@@ -11,9 +11,10 @@
  */
 function CoreMemory()
 {
-    this.pages = 1;
-    this.pageSize = 256; // This is the default page size.
-    this.memory = new Array(this.pages*this.pageSize);
+    this.frameNum = 3;
+    this.frameSize = 256; // This is the default page size.
+    
+    this.memory = new Array(this.frameNum*this.frameSize);
  
     this.init = function()
     {

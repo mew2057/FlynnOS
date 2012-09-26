@@ -13,7 +13,10 @@
 function MemoryManager(coreMem)
 {
     this.core = coreMem;
-    
+    this.pageNum = 3;
+
+    // pageSize === frameSize
+    this.pageSize = this.core.frameSize;
 }
 
 /**
@@ -50,6 +53,7 @@ MemoryManager.prototype.store = function(hexAddress, toStore)
     return 0;
 };
 
+//XXX Where do I actually assign Process ID, is that a PCB collection related thing?
 /**
  * Effectively a wrapper to the store routine that handles pcb creation and
  * storage error codes.
@@ -72,7 +76,7 @@ MemoryManager.prototype.storeProgram = function(hexAddress, toStore)
         case 0:
             currentPCB = new PCB();   
             currentPCB.Base = parseInt(hexAddress,16);
-            currentPCB.Limit = currentPCB.Base + this.core.pageSize - 1;
+            currentPCB.Limit = currentPCB.Base + this.core.frameSize - 1;
             
             break;
         case 1:
@@ -97,16 +101,24 @@ MemoryManager.prototype.storeProgram = function(hexAddress, toStore)
  */
 MemoryManager.prototype.retrieveContents = function(hexAddress)
 {
-    // Translate the hex address to int.
-    var intAddress = parseInt(hexAddress,16);
-    
+    return this.retrieveContentsDecimal(parseInt(hexAddress,16));
+};
+
+/**
+ * Retrieves the contents of a memory cell, doesn't do address translation (only
+ * should be used internally or for data output)..
+ * @param decimalAddress The address of the cell in decimal.
+ * @return null if out of bounds, the contents if found.
+ */
+MemoryManager.prototype.retrieveContentsDecimal = function(decimalAddress)
+{
     // If the address is already out of bounds notify the invoking function.
-    if( intAddress >= this.core.memory.length )
+    if( decimalAddress >= this.core.memory.length )
     {
         return null;
     }
     
-    return this.core.memory[intAddress];
+    return this.core.memory[decimalAddress];
 };
 
 //TODO page faults!

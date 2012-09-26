@@ -376,18 +376,39 @@ function updateMemDisplay(memoryManager)
 {
     $("#memDiv").text("");
     
-    $("#memDiv").append("0x" + padZeros("",4) + ": ");
-    
-    for (var index = 0; index < memoryManager.core.memory.length; index ++)
+    for (var index = 0, pages = 1,elementsOnLine =1,lineWidth = 5; 
+        index < memoryManager.pageSize * memoryManager.pageNum; index ++)
     {
-        if(index === 0 || index % 5 !== 0)
+        // Output the page divider when it is reached.
+        if(index % memoryManager.pageSize === 0 )
+        {                
+            var pageHead = "------page " +  pages +"------";
+            elementsOnLine = 0;
+            
+            if(index !== 0)
+            {
+                pageHead = "<br/><br/>" + pageHead;
+            }
+            
+            if(index % lineWidth !== 0)
+            {
+                pageHead += "</br>";   
+            }
+            
+            $("#memDiv").append(pageHead);            
+            pages++;            
+        }
+        
+        if( elementsOnLine % lineWidth !== 0)
         {
-            $("#memDiv").append(memoryManager.core.memory[index].toUpperCase() + " ");
+            $("#memDiv").append(memoryManager.retrieveContentsDecimal(index).toUpperCase() + " ");
+            elementsOnLine++;
         }
         else
         {
+            elementsOnLine = 1;
             $("#memDiv").append("<br/>0x" + padZeros(index.toString(16),4)+ ": " 
-                + memoryManager.core.memory[index].toUpperCase() +" ");
+                + memoryManager.retrieveContentsDecimal(index).toUpperCase() +" ");
         }
     }
 }
