@@ -495,6 +495,12 @@ function shellLoad (args)
         {
             _StdIn.putText("There's nothing special about you. You're just an ordinary program..");     
         }
+         else if (args[0] == "cycles")
+        {
+            CycleGame.init(0,2,2,"#display");  
+            //I need to kill the OS since it lags the gameplay
+            simBtnHaltOS_click();
+        }
         else
         {
             _StdIn.putText("Program was not rezzed.");   

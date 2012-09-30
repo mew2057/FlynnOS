@@ -2,6 +2,7 @@
    pcb.js
    
    Contains functions to represent Process Control Blocks in the simulation.
+   Additionally, contains the ResidentList data structure.
    ------------ */
 
 /**
@@ -9,6 +10,7 @@
  */
 function PCB()
 {
+    this.pid   = 0;     // The Process IDentifier.
     this.PC    = 0;     // Program Counter
     this.Acc   = 0;     // Accumulator
     this.Xreg  = 0;     // X register
@@ -20,6 +22,7 @@ function PCB()
 
 /**
  * Updates the mutable values of the PCB with the contents of a cpu.
+ * 
  * @param cpu The cpu state to be mirrored in the PCB.
  */
 PCB.prototype.update = function(cpu)
@@ -31,58 +34,155 @@ PCB.prototype.update = function(cpu)
     this.Zflag = cpu.Zflag;
 };
 
+
 /**
- * The Process Control Block Collection...
+ * The toString function, enough said.
+ * 
+ * @return An html formatted string of the pcb contents.
  */
-function ProcessControlBlockCollection()
+PCB.prototype.toString = function()
 {
-    this.pcbs = [];  
+    var retVal ="";
+    
+    retVal += "<tr><td>" + this.pid + "</td>";
+    retVal += "<td>" + padZeros(this.PC.toString(16),2).toUpperCase() + "</td>";
+    retVal += "<td>" + padZeros(this.Acc.toString(16),2).toUpperCase() + "</td>";
+    retVal += "<td>" + padZeros(this.Xreg.toString(16),2).toUpperCase() + "</td>";
+    retVal += "<td>" + padZeros(this.Yreg.toString(16),2).toUpperCase() + "</td>";
+    retVal += "<td>" + this.Zflag + "</td>";
+    retVal += "<td>" + padZeros(this.Base.toString(16),2).toUpperCase() + "</td>";
+    retVal += "<td>" + padZeros(this.Limit.toString(16),2).toUpperCase() + "</td></tr>";      
+    
+    return retVal;
+};
+
+/**
+ * The Process Control Block Collection. This structure manages pcb creation.
+ * The only way to add to it is to create a new process control block through
+ * createNewPCB. Editing existing pcbs is allowed through getBlock.
+ */
+function ResidentList()
+{
+    // The collection of resident PCBs.
+    this.residents = [];
+
+    // Manages pids.
+    this.leadPID = 0;
 }
 
 /**
+ * Finds the pcb with the supplied pid.
+ * 
+ * @param pid The Process IDentifier.
+ * 
+ * @return the location of the process ID.
+ */
+ResidentList.prototype.indexOfPID = function(pid)
+{
+    var retVal = -1;
+    
+    for(var index in this.residents)
+    {
+        if(this.residents[index].pid == pid)
+        {
+            retVal = index;
+            break;
+        }
+    }
+
+    return retVal;
+};
+    
+
+/**
+ * Creates a new Process Control Block and assigns a Process ID.
+ * 
+ * @param params 0: Base
+ *               1: Limit offset.
+ * 
+ * @return The Process ID.
+ */
+ResidentList.prototype.createNewPCB = function(params)
+{
+    // Create a new PCB and load the pid into it.
+    var pcb = new PCB();
+    pcb.pid = this.leadPID++;
+    
+    // If params are supplied load the base and limt in.
+    if(params)
+    {
+        if(params[0])
+        {
+            pcb.Base = params[0];
+        }
+        
+        if(params[1])
+        {
+            pcb.Limit = pcb.Base + params[1];
+        }
+    }
+    
+    // Push the new pcb onto the collection.
+    this.residents.push(pcb);
+    
+    return pcb.pid;
+};
+
+/**
  * Retrieves the control block by process id.
+ * 
  * @param pid The process id.
+ * 
  * @return The pcb if found, null if not.
  */
-ProcessControlBlockCollection.prototype.getBlock = function(pid)
+ResidentList.prototype.getBlock = function(pid)
 {
-    if(pid < this.pcbs.length)
+    var pcbIndex = this.indexOfPID(pid);
+    var retVal = null;
+    
+    if(pcbIndex != -1)
     {
-        return this.pcbs[pid];
+        retVal =  this.residents[pcbIndex];
     }
-    else
+    return retVal;
+};
+
+/**
+ * Retrieves the control block by process id and removes the ProcessControlBlock
+ * from the resident list.
+ * 
+ * @param pid The process id.
+ * 
+ * @return The pcb if found, null if not.
+ */
+ResidentList.prototype.popBlock = function(pid)
+{
+    var pcbIndex = this.indexOfPID(pid);
+    var retVal = null;
+    
+    if(pcbIndex != -1)
     {
-        return null;
+        retVal =  this.residents[pcbIndex];
+        this.residents.splice(pcbIndex,1);
     }
+    
+    return retVal;
+    
 };
 
 /**
- * Sets a block in the collection.
- * @param pcb The block that will be placed in the collection.
- * @param pid The location in the collection to place the PCB.
+ * Outputs the contents of the residents list in an ordered manner.
+ * @return An html formated string.
  */
-ProcessControlBlockCollection.prototype.setBlock = function(pcb,pid)
+ResidentList.prototype.toString = function()
 {
-    this.pcbs[pid] = pcb;  
-};
-
-/**
- * Pushes a pcb to the collection.
- * @param pcb The PCB to push.
- * @return The id of teh new PCB.
- */
-ProcessControlBlockCollection.prototype.push = function(pcb)
-{
-    this.pcbs.push(pcb); 
-    return this.pcbs.length-1;
-};
-
-/**
- * Retrieves the size of the collection.
- * @return The number of PCBs.
- */
-ProcessControlBlockCollection.prototype.getSize = function()
-{
-    return this.pcbs.length;   
+    var retVal="";
+    
+    for(var index = 0; index < this.residents.length;index++)
+    {
+        retVal += this.residents[index].toString();
+        
+    }
+    return retVal;
 };
 

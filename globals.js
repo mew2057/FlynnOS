@@ -12,20 +12,19 @@
 // Global Constants
 //
 var APP_NAME = "FlynnOS";  // 'cause I was at a loss for a better name.
-var APP_VERSION = "0.1"
-var APP_DESCRIPTION = "Welcome to The Grid: A digital frontier."
-
-
-
+var APP_VERSION = "0.1";
+var APP_DESCRIPTION = "Welcome to The Grid: A digital frontier.";
 var CPU_CLOCK_INTERVAL = 100;   // in ms, or milliseconds, so 1000 = 1 second.
 
+// Interrupt ReQuests.
 var TIMER_IRQ    = 0;  // Pages 23 (timer), 9 (interrupts), and 561 (interrupt priority). 
                        // NOTE: The timer is different from hardware clock pulses. Don't confuse these.
 var KEYBOARD_IRQ = 1;
 var SYSTEM_IRQ = 2;
 var FAULT_IRQ = 3;
+var BRK_IRQ = 4;
 
-// Fault Types
+// Fault Types.
 var INST_FAULT = 1; //An instruction fault.
 var MEM_FAULT = 2;  //A memory fault.
 
@@ -40,15 +39,10 @@ var _Step = false;
 var _CPU = null;
 var _InstructionSet = null; 
 var _MemoryManager = null;
-var _PCBs = null;
 var _CoreMemory = null;
-
 var _OSclock = 0;       // Page 23.
-
 var _Mode = 0;   // 0 = Kernel Mode, 1 = User Mode.  See page 21.
-
 var _KernelStatus = "default"; // The kernel status field specified by iProject1
-
 var _KernelLoadedProgram = ""; //XXX This will change in future versions.
 
 // TODO: Fix the naming convention for these next five global vars.
@@ -81,6 +75,10 @@ var _Trace = true;
 var _KernelInterruptQueue = null;
 var _KernelBuffers = null;
 var _KernelInputQueue = null;
+var _ReadyQueue = null;
+
+var _Residents = null;
+var _Terminated = null;
 
 // Buffer limits.
 var SHELL_COMMAND_BUFFER_LIMIT = 20;
@@ -102,7 +100,7 @@ var _MCPMode = false;
 var krnKeyboardDriver = null;
 
 // Digit Punctuation.
-var DIGIT_PUNCTUATIONS= [')','!','@','#','$','%','^','&','*','(']
+var DIGIT_PUNCTUATIONS= [')','!','@','#','$','%','^','&','*','('];
 
 // User Data
 var _UserName = "flynn";

@@ -17,6 +17,17 @@ function MemoryManager(coreMem)
 
     // pageSize === frameSize
     this.pageSize = this.core.frameSize;
+    
+    // The page set containg pages in and out of use.
+    this.pageSet = new Array(this.pageNum);
+    
+    this.init = function()
+    {
+        for(var page = 0; page < this.pageSet; page ++)
+        {
+            this.pageSet[page] = false;
+        }
+    };
 }
 
 /**
@@ -53,7 +64,6 @@ MemoryManager.prototype.store = function(hexAddress, toStore)
     return 0;
 };
 
-//XXX Where do I actually assign Process ID, is that a PCB collection related thing?
 /**
  * Effectively a wrapper to the store routine that handles pcb creation and
  * storage error codes.
@@ -62,28 +72,33 @@ MemoryManager.prototype.store = function(hexAddress, toStore)
  * soon to be deprecated).
  * 
  * @param toStore The verified program code to store in Core Memory.
- * @return A PCB initialized with key data relating to the loaded program. This 
- *          is null if any issues were detected.
+ * 
+ * @param residents A collection of resident process control blocks.
+ * 
+ * @return The ID of the process control block  in pbcs. -1 if pcb creation 
+ * failed
  */
-MemoryManager.prototype.storeProgram = function(hexAddress, toStore)
+MemoryManager.prototype.storeProgram = function(hexAddress, toStore, residents)
 {
     
     var returnCode = this.store(hexAddress,toStore);
-    var currentPCB = null;
+    var currentPCB = -1;
     
     switch (returnCode)
     {
         case 0:
-            currentPCB = new PCB();   
-            currentPCB.Base = parseInt(hexAddress,16);
-            currentPCB.Limit = currentPCB.Base + this.core.frameSize - 1;
+            // Assigns the PID and gives the PCB a base and limit.
+            currentPCB  = residents.createNewPCB([parseInt(hexAddress,16), 
+                this.pageSize - 1]);
             
             break;
         case 1:
+            // Doesn't stop the CPU but notifies the user of a detected errror.
             _KernelInterruptQueue.enqueue( new Interrupt(FAULT_IRQ, 
                 new Array(MEM_FAULT,"Memory Address was out of bounds.")));
             break;
         case 2:
+            // Doesn't stop the CPU but notifies the user of a detected errror.
             _KernelInterruptQueue.enqueue( new Interrupt(FAULT_IRQ, 
                 new Array(MEM_FAULT,"Memory Address overflow on program load.")));
             break;
@@ -92,43 +107,40 @@ MemoryManager.prototype.storeProgram = function(hexAddress, toStore)
     return currentPCB;
 };
 
-//XXX Is there a way to condense this? It may not be worth it...
+// TODO in project 3 add more paging support.
 
 /**
  * Retrieves the contents of a memory cell.
+ * 
  * @param hexAddress The address of the cell in hex.
+ * 
+ * @param offset The offset of the final address.
+ * 
  * @return null if out of bounds, the contents if found.
  */
-MemoryManager.prototype.retrieveContents = function(hexAddress)
+MemoryManager.prototype.retrieveContents = function(hexAddress,offset)
 {
-    return this.retrieveContentsDecimal(parseInt(hexAddress,16));
-};
-
-/**
- * Retrieves the contents of a memory cell, doesn't do address translation (only
- * should be used internally or for data output)..
- * @param decimalAddress The address of the cell in decimal.
- * @return null if out of bounds, the contents if found.
- */
-MemoryManager.prototype.retrieveContentsDecimal = function(decimalAddress)
-{
+    var intAddress = parseInt(hexAddress,16);
+    var intOffset = offset?parseInt(offset,16):0;
+    
     // If the address is already out of bounds notify the invoking function.
-    if( decimalAddress >= this.core.memory.length )
+    if( intAddress >= this.core.memory.length )
     {
         return null;
     }
     
-    return this.core.memory[decimalAddress];
+    return this.core.memory[intAddress + intOffset];
 };
 
-//TODO page faults!
 /**
  * Retrieves an array from core memory begining on the hexAddress and ending with
  * the supplied bounding value (e.g. 00).
  * 
  * @param hexAddress The address of the starting cell in hex.
+ * 
  * @param boundingValue The hex value that marks the delimiter in memory for 
  *  the collection.
+ * 
  * @return null if out of bounds, the contents if found.
  */
 MemoryManager.prototype.retrieveContentsToLimit = function(hexAddress,boundingValue)
@@ -153,6 +165,7 @@ MemoryManager.prototype.retrieveContentsToLimit = function(hexAddress,boundingVa
  * Retrieves numBytes cells from core memory and returns it as an array.
  * 
  * @param hexAddress The address of the starting cell in hex.
+ * 
  * @param nuymBytes The number of cells that the returned array should contain.
  * 
  * @return The contents from the starting cell numBytes on.
@@ -176,4 +189,20 @@ MemoryManager.prototype.retrieveContentsFromAddress = function(hexAddress,numByt
     }
     
     return contents;
+};
+
+/**
+ * Retrieves from coreMemory with a page offset.
+ * 
+ * @param hexAddress The logical hexAddress.
+ * 
+ * @param page The page the logical address reside on.
+ * 
+ * @return The contents of the page offset cell. Null if not found.
+ */
+MemoryManager.prototype.retrieveFromPage = function(hexAddress, page)
+{
+    var pageOffset = this.pageSize * page;
+    
+    return this.retrieveContents(hexAddress, pageOffset.toString(16));    
 };

@@ -23,10 +23,13 @@ function krnBootstrap()      // Page 8.
     _KernelBuffers = new Array();           // Buffers... for the kernel.
     _KernelInputQueue = new Queue();        // Where device input lands before being processed out somewhere.
     _Console = new Console();               // The console output device.
-    _MemoryManager = new MemoryManager(_CoreMemory);  //
-    _PCBs = new ProcessControlBlockCollection();
-    _StepEnabled = false;
-    _Step = false;
+    _MemoryManager = new MemoryManager(_CoreMemory); // Creates a memory manager linked to core memory.
+    _MemoryManager.init();                  // Initializes the memory manager.
+    _Residents = new ResidentList();        // Contains loaded PCBS.
+    _ReadyQueue = new Queue();              // Contains the PCBs that are in the process of execution.
+    _Terminated = new Queue();              // Contains the pcbs that have executed.
+    _StepEnabled = false;                   // Ensures that Stepping is off on load.
+    _Step = false;                          // Clears out the Step.
 
 
     // Load the Display Device Driver.
@@ -59,7 +62,7 @@ function krnBootstrap()      // Page 8.
     krnTrace("Enabling the interrupts.");
     krnEnableInterrupts();
     // Launch the shell.
-    krnTrace("Creating and Launching the shell.")
+    krnTrace("Creating and Launching the shell.");
     _OsShell = new Shell();
     _OsShell.init();
 }
@@ -94,21 +97,30 @@ function krnOnCPUClockPulse()
         var interrupt = _KernelInterruptQueue.dequeue();
         krnInterruptHandler(interrupt.irq, interrupt.params);        
     }
-    else if (_CPU.isExecuting && (!_StepEnabled || (_StepEnabled && _Step))) // If there are no interrupts then run a CPU cycle if there is anything being processed.
+    else if ((_ReadyQueue.getSize() > 0  || _CPU.pcb) && 
+        (!_StepEnabled || (_StepEnabled && _Step))) // If there are no interrupts then run a CPU cycle if there is anything being processed.
     {
+        if(!_CPU.pcb)
+        {
+            _CPU.pcb = _ReadyQueue.dequeue();
+            _CPU.setStateFromPCB();
+        }
+        
         _CPU.cycle();
-        _PCBs.getBlock(_CPU.pid).update(_CPU);
+        
+        //Scheduler code goes here (Project 3)            
         _Step = false;
     }    
     else                       // If there are no interrupts and there is nothing being executed then just be idle.
     {
+        //I disabled Idle, because it was annoying.
        //krnTrace("Idle");
     }
     
     // Update the status and time in the task bar.
     updateTaskBar();
     updateCPUDisplay(_CPU);
-    updatePCBDisplay(_PCBs);
+    updatePCBDisplay([_Residents,_ReadyQueue,_Terminated, _CPU.pcb]);
     updateMemDisplay(_MemoryManager);
 }
 
@@ -158,6 +170,9 @@ function krnInterruptHandler(irq, params)    // This is the Interrupt Handler Ro
         case FAULT_IRQ:
             krnFaultISR(params);
             break;
+        case BRK_IRQ:
+            krnBreakISR(params);
+            break;
         default: 
             krnTrapError("Invalid Interrupt Request. irq=" + irq + " params=[" + params + "]");
     }
@@ -178,6 +193,8 @@ function krnTimerISR()  // The built-in TIMER (not clock) Interrupt Service Rout
 function krnFaultISR(params)
 {
     var message = "";
+    
+    // Multiple fault types share this interrupt.
     switch(params[0])
     {
         case INST_FAULT:
@@ -192,22 +209,45 @@ function krnFaultISR(params)
 }
 
 /**
+ * Removes the PCB from the ready queue (this is subject to change as I develop 
+ * the Scheduler).
+ * 
+ * @params 0 - CPU
+ */
+function krnBreakISR(params)
+{
+    //This will be more complicated come project 3
+    params[0].pcb.update(params[0]);
+    
+    _Terminated.enqueue(params[0].pcb);
+    
+    params[0].pcb = null;
+}
+
+/**
  * Executes a system call using the parameter list supplied CPU.
  * @param An array containing a cpu object to be used in executing a system call.
  */
 function krnSystemCallISR(params)
 {
-    switch(params[0].Xreg)
+    switch(params[0])
     {
         case 1:
             // Output the contents of the Y register.
-            _StdIn.putText(parseInt(params[0].Yreg,16));
+            var toOutput = params[1];
+            
+            //Assumes the contents are Two's complement.
+            if (128 & toOutput)
+            {
+                toOutput = -(256 - toOutput);   
+            }
+            _StdIn.putText(toOutput);
             break;
         case 2:
             // Get the String of characters from the core memory through the 
             // manager.
             var outputChars = _MemoryManager.retrieveContentsToLimit(
-                    params[0].Yreg.toString(16), "00");
+                    params[1].toString(16), "00");
             
             // If the memory request was successful, output the string.
             if(outputChars)
@@ -326,12 +366,12 @@ function krnLoadProgram()
         
         if(verifiedIntructions)
         {
-            var pcb = _MemoryManager.storeProgram("0000",verifiedIntructions);
+            var pid = _MemoryManager.storeProgram("0000",verifiedIntructions, _Residents);
                 
-            if(pcb)
+            if(pid >= 0)
             {                
                 _StdIn.putText( "I feel a presence. Another warrior is on the "+
-                    "mesa at pid: " + _PCBs.push(pcb));
+                    "mesa at pid: " + pid);
             }            
         }
         else
@@ -346,23 +386,32 @@ function krnLoadProgram()
     } 
 }
 
+/**
+ * Runs the program with the supplied proces ID on the kernel.
+ * 
+ * @param pid The Process ID to run.
+ */
 function krnRunProgram(pid)
 {
-   var pcb = _PCBs.getBlock(pid);
-   if(pcb)
-   {
-       _CPU.PC = pcb.PC;
-       _CPU.pid = pid;
-       _CPU.isExecuting = true;
-   }
-   else
-   {
-        _StdIn.putText("Process ID not found!");   
-   }
+    // Pop the pid from the resident list and store the pcb to add to the ready queue.
+    var pcb = _Residents.popBlock(pid);
+    if(pcb)
+    {           
+       _ReadyQueue.enqueue(pcb);
+    }
+    else
+    {
+        _StdIn.putText("This warrior wasn't present on the mesa.");   
+    }
     
 }
 
+/**
+ * Kills the executing process with matching pid.
+ * @param pid The process to stop.
+ */
 function krnKillProgram(pid)
 {
-    _CPU.isExecuting = false;  
+    //TODO add some form of interrupt.
 }
+

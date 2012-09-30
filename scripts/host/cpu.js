@@ -20,8 +20,7 @@ function cpu()
     this.Xreg  = 0;     // X register
     this.Yreg  = 0;     // Y register
     this.Zflag = 0;     // Z-ero flag (Think of it as "isZero".)
-    this.isExecuting = false;
-    this.pid = 0;
+    this.pcb = null;
     
     this.init = function() 
     {
@@ -30,8 +29,7 @@ function cpu()
         this.Xreg  = 0;
         this.Yreg  = 0;
         this.Zflag = 0;      
-        this.isExecuting = false; 
-        this.pid = 0;
+        this.pcb = null;
 
         _InstructionSet = new InstructionSet6502(); // Initialize the instruction set for program execution.
 
@@ -39,7 +37,25 @@ function cpu()
 }
 
 /**
- * The cycle funtion protoype for the cpu. Used in executing processes...
+ * Uses the pcb that the CPU is currently pointed to and generates the state for
+ * the remainder of the CPU.
+ */
+cpu.prototype.setStateFromPCB = function ()
+{
+    if(this.pcb)
+    {
+        this.PC = this.pcb.PC;
+        this.Acc = this.pcb.ACC;
+        this.Xreg = this.pcb.Xreg;
+        this.Yreg = this.pcb.Yreg;
+        this.Zflag = this.pcb.Zflag;
+    }
+};
+
+
+
+/**
+ * The cycle funtion protoype for the cpu. Used in executing processes.
  */
 cpu.prototype.cycle = function()
 {
@@ -54,6 +70,7 @@ cpu.prototype.cycle = function()
 
 /**
  * Retrieve the next instruction from the memory and increment the program counter.
+ * 
  * @return The contents of the memory cell being fetched.
  */
 cpu.prototype.fetch = function()
@@ -66,6 +83,7 @@ cpu.prototype.fetch = function()
  * Decodes the instruction that has been fetched from memory.
  * 
  * @param opcode The opcode of the instruction.
+ * 
  * @return The instruction object for the opcode.
  */
 cpu.prototype.decode = function(opcode)
@@ -115,7 +133,9 @@ cpu.prototype.read = function(instruction)
 
 /**
  * Executes the instruction.
+ * 
  * @param instruction The instruction to execute.
+ * 
  * @param contents The operands for the instruction.
  */
 cpu.prototype.execute = function(instruction, contents)

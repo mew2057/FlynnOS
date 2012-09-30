@@ -58,6 +58,8 @@ function drawTaskBar ()
     $("#taskBar").mousedown(buttonClick);    
     $("#taskBar").mousemove(buttonAnimate);
     $("#taskBar").mouseout(buttonAnimate);
+   /* $("#taskBar").dblclick(function(e){e.stopPropagation();
+        e.preventDefault();});*/
 }
 
 /**
@@ -290,6 +292,7 @@ function animateHalt ()
             buttons[index].enabled = false;
         }  
     }
+    
 }
 
 function stepAction()
@@ -343,9 +346,13 @@ function updateTaskBar()
     var startX =TASKBAR_CANVAS.width/2.5;
     
     TASKBAR_CONTEXT.fillStyle = CANVAS_BACKGROUNDS;
-    TASKBAR_CONTEXT.fillRect(startX, 5, 625,40);
+    TASKBAR_CONTEXT.fillRect(startX-150, 5, 625,40);
     
     TASKBAR_CONTEXT.fillStyle = CANVAS_OUTLINES;
+    
+    var step =_StepEnabled?"on":"off";
+    TASKBAR_CONTEXT.fillText("Step: " + step, startX-150,20);
+    
     TASKBAR_CONTEXT.fillText("Status: " + _KernelStatus, startX,20);
     TASKBAR_CONTEXT.fillText("Time:   " + new Date().toLocaleString().split("(")[0], 
         startX, 40);
@@ -376,67 +383,71 @@ function updateMemDisplay(memoryManager)
 {
     $("#memDiv").text("");
     
-    for (var index = 0, pages = 1,elementsOnLine =1,lineWidth = 5; 
-        index < memoryManager.pageSize * memoryManager.pageNum; index ++)
+    for (var page = 0,lineWidth = 5;page <  memoryManager.pageNum; page ++)
     {
-        // Output the page divider when it is reached.
-        if(index % memoryManager.pageSize === 0 )
-        {                
-            var pageHead = "------page " +  pages +"------";
-            elementsOnLine = 0;
+        var pageHead = "-------page " +  page +"-------";
+        
+        if(page !== 0)
+        {
+            pageHead = "<br/><br/>" + pageHead;
+        }
             
-            if(index !== 0)
-            {
-                pageHead = "<br/><br/>" + pageHead;
-            }
-            
-            if(index % lineWidth !== 0)
-            {
-                pageHead += "</br>";   
-            }
-            
-            $("#memDiv").append(pageHead);            
-            pages++;            
+        if(page % lineWidth !== 0 || page === 0)
+        {
+            pageHead += "</br>";   
         }
         
-        if( elementsOnLine % lineWidth !== 0)
+        $("#memDiv").append(pageHead); 
+        
+        for (var index = 0; index < memoryManager.pageSize;index ++)
         {
-            $("#memDiv").append(memoryManager.retrieveContentsDecimal(index).toUpperCase() + " ");
-            elementsOnLine++;
-        }
-        else
-        {
-            elementsOnLine = 1;
-            $("#memDiv").append("<br/>0x" + padZeros(index.toString(16),4)+ ": " 
-                + memoryManager.retrieveContentsDecimal(index).toUpperCase() +" ");
+            if( index % lineWidth !== 0)
+            {
+                $("#memDiv").append(memoryManager.retrieveFromPage(index.toString(16),page).toUpperCase() + " ");
+            }
+            else
+            {
+                $("#memDiv").append("<br/>0x" + padZeros(index.toString(16),2)+ ": " 
+                    + memoryManager.retrieveFromPage(index.toString(16),page).toUpperCase() +" ");
+            }            
         }
     }
 }
 
 /**
  * Draws the current state of the Proccess Control Blocks in the DOM.
+ * I made this somewhat more robust than asked.
  * 
  * @param pcbs The Process Control blocks whose states must be represented in the 
  *  DOM.
  */
-function updatePCBDisplay(pcbs)
+function updatePCBDisplay(params)
 {
-    var html ="<tr> <td>PID</td> <td>PC</td> <td>ACC</td> <td>X</td> <td>Y</td>"+
-        "<td>Z</td> <td>BASE</td> <td>LIMIT</td> </tr>";
-    var pcb;
-    for(var pid = 0; pid < pcbs.getSize();pid++)
+    var html = 'Executing<br/><table class="pcbTable"><tr> <td>PID</td> <td>PC</td> <td>ACC</td> <td>X</td> <td>Y</td>'+
+        '<td>Z</td> <td>BASE</td> <td>LIMIT</td> </tr>';
+    if(params[3])
     {
-        pcb = pcbs.getBlock(pid);
-        html += "<tr><td>" + pid + "</td>";
-        html += "<td>" + padZeros(pcb.PC.toString(16),2).toUpperCase() + "</td>";
-        html += "<td>" + padZeros(pcb.Acc.toString(16),2).toUpperCase() + "</td>";
-        html += "<td>" + padZeros(pcb.Xreg.toString(16),2).toUpperCase() + "</td>";
-        html += "<td>" + padZeros(pcb.Yreg.toString(16),2).toUpperCase() + "</td>";
-        html += "<td>" + pcb.Zflag + "</td>";
-        html += "<td>" + padZeros(pcb.Base.toString(16),2).toUpperCase() + "</td>";
-        html += "<td>" + padZeros(pcb.Limit.toString(16),2).toUpperCase() + "</td></tr>";    
+        html += params[3].toString();
     }
-    $("#pcbTable").html(html);
+    html += "</table>";
+    
+    
+    html +='<br/>Residents<br/><table class="pcbTable"><tr> <td>PID</td> <td>PC</td> <td>ACC</td> <td>X</td> <td>Y</td>'+
+        '<td>Z</td> <td>BASE</td> <td>LIMIT</td> </tr>';
+        
+    html += params[0].toString() + "</table>"; 
+    
+    html +='<br/>Ready<br/><table class="pcbTable"><tr> <td>PID</td> <td>PC</td> <td>ACC</td> <td>X</td> <td>Y</td>'+
+        '<td>Z</td> <td>BASE</td> <td>LIMIT</td> </tr>';
+        
+    html += params[1].toString() + "</table>";   
+    
+    html +='<br/>Terminated<br/><table class="pcbTable"><tr> <td>PID</td> <td>PC</td> <td>ACC</td> <td>X</td> <td>Y</td>'+
+        '<td>Z</td> <td>BASE</td> <td>LIMIT</td> </tr>';
+        
+    html += params[2].toString() + "</table>";   
+    
+    $("#pcbDiv").html(html);
 }
 /**
  * A button class that allows for animated images to be used as buttons.

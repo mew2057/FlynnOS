@@ -23,7 +23,8 @@ function hostLoadAcc(hexValues,cpu)
     }
     else if( hexValues.length === 2 )
     {
-        cpu.Acc = _MemoryManager.retrieveContents(hexValues[1] + hexValues[0]);
+        cpu.Acc = parseInt(_MemoryManager.retrieveContents(hexValues[1] + 
+            hexValues[0]),16);
     }
     else
     {
@@ -42,7 +43,8 @@ function hostLoadAcc(hexValues,cpu)
  */
 function hostStoreAcc(hexValues,cpu)
 {
-    _MemoryManager.store(hexValues[1] + hexValues[0], [padZeros(cpu.Acc.toString(16),2)]);
+    _MemoryManager.store(hexValues[1] + 
+        hexValues[0], [padZeros(cpu.Acc.toString(16),2)]);
 }
 
 /**
@@ -54,12 +56,13 @@ function hostStoreAcc(hexValues,cpu)
  */
 function hostAddWithCarry(hexValues,cpu)
 {
-    // XXX on overflow should this set the Z flag?
-    var memContents = _MemoryManager.retrieveContents(hexValues[1] + hexValues[0]);
+    var memContents = _MemoryManager.retrieveContents(hexValues[1] +
+        hexValues[0]);
     
     if(memContents)
     {
-        cpu.Acc = (cpu.Acc + memContents) % 256;
+        //As this is implicitly two's complement this will suffice.
+        cpu.Acc = (cpu.Acc + parseInt(memContents,16)) % 256;
     }
     else
     {        
@@ -85,7 +88,8 @@ function hostLoadX(hexValues,cpu)
     else if( hexValues.length === 2 )
     {
         
-        cpu.Xreg = _MemoryManager.retrieveContents(hexValues[1] + hexValues[0]);
+        cpu.Xreg =parseInt(_MemoryManager.retrieveContents(hexValues[1] + 
+            hexValues[0]),16);
     }
     else
     {
@@ -110,7 +114,8 @@ function hostLoadY(hexValues,cpu)
     }
     else if( hexValues.length === 2 )
     {
-        cpu.Yreg = _MemoryManager.retrieveContents(hexValues[1] + hexValues[0]);
+        cpu.Yreg = parseInt(_MemoryManager.retrieveContents(hexValues[1] + 
+            hexValues[0]),16);
     }
     else
     {
@@ -119,26 +124,10 @@ function hostLoadY(hexValues,cpu)
     }   
 }
 
-
-// XXX This may be better as an anonymous function, but I like having all the 
-// instructions in one place.
 /**
  * NOP - No OPeration: Literally performs no operations.
  */
 function hostNOP(){}
-
-/**
- * BRK - BReaL: Breaks the execution of the process.
- * 
- * @param hexValues N/A
- * @param cpu The cpu that this instruction addresses.
- */
-function hostBreakProcess(hexValues,cpu)
-{
-    // XXX This works for now, but when multiple processes are working together
-    // this simply shan't cut it.
-    cpu.isExecuting = false;
-}
 
 /**
  * CPX - ComPare X register: Compares the contents of the X register with the 
@@ -150,7 +139,8 @@ function hostBreakProcess(hexValues,cpu)
  */
 function hostCompareX(hexValues,cpu)
 {
-    var toCompare = parseInt(_MemoryManager.retrieveContents(hexValues[1] + hexValues[0]), 16);
+    var toCompare = parseInt(_MemoryManager.retrieveContents(hexValues[1] + 
+        hexValues[0]), 16);
     
     if(toCompare)
     {
@@ -212,6 +202,16 @@ function hostIncrementByte(hexValues,cpu)
     _MemoryManager.store(hexAddress,[padZeros(incrementedValue,2)]);
 }
 
+/**
+ * BRK - BReak: Breaks the execution of the process.
+ * 
+ * @param hexValues N/A
+ * @param cpu The cpu that this instruction addresses.
+ */
+function hostBreakProcess(hexValues,cpu)
+{
+    _KernelInterruptQueue.enqueue(new Interrupt(BRK_IRQ, new Array(cpu)));
+}
 
 /**
  * SYS - SYStem call: Raises a System Call interrupt for the kernel to process.
@@ -224,6 +224,7 @@ function hostIncrementByte(hexValues,cpu)
  */
 function hostSystemCall(hexValues,cpu)
 {
-   _KernelInterruptQueue.enqueue( new Interrupt(SYSTEM_IRQ, new Array(cpu)) );
+    _KernelInterruptQueue.enqueue(new Interrupt(SYSTEM_IRQ, new Array(cpu.Xreg, 
+        cpu.Yreg)));
 }
 

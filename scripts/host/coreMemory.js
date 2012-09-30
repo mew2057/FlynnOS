@@ -5,9 +5,8 @@
    
    The function for the hardware simulation's core Memory.
    ------------ */
- //XXX What else needs to be here?
 /**
- * The core memory function definition...
+ * The core memory function definition.
  */
 function CoreMemory()
 {
