@@ -35,13 +35,15 @@ function krnKbdDispatchKeyPress(params)
     
     if (params.length < 3)
     {
-        krnTrapError("Something horrible has happened in the Kernel's Interrupt"+
-                        "Service Handler in passing paramerters to the keyboard driver." );     
+        _KernelInterruptQueue.enqueue( new Interrupt(TRAP_IRQ, 
+            new Array("Something horrible has happened in the Kernel's Interrupt"+
+                        "Service Handler in passing paramerters to the keyboard driver.")));
     }
     
     if (isNaN(keyCode))
     {
-        krnTrapError("An invalid keycode was passed to the keyboard driver's isr: " + keyCode);     
+        _KernelInterruptQueue.enqueue( new Interrupt(TRAP_IRQ, 
+            new Array("An invalid keycode was passed to the keyboard driver's isr: " + keyCode)));   
     }
 
     krnTrace("Key code:" + keyCode + " shifted:" + isShifted + " controlled:" + isControlled );

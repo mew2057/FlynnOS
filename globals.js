@@ -23,6 +23,7 @@ var KEYBOARD_IRQ = 1;
 var SYSTEM_IRQ = 2;
 var FAULT_IRQ = 3;
 var BRK_IRQ = 4;
+var TRAP_IRQ = 5;
 
 // Fault Types.
 var INST_FAULT = 1; //An instruction fault.

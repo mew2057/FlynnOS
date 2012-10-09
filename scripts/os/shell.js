@@ -514,7 +514,8 @@ function shellLoad (args)
  */
 function shellOSOD(args)
 {
-    krnTrapError("I'm going to have to put you on the game grid.");   
+    _KernelInterruptQueue.enqueue( new Interrupt(TRAP_IRQ, 
+            new Array("I'm going to have to put you on the game grid."))); 
 }
 
 /**
@@ -538,7 +539,7 @@ function shellBit(args)
 }
 
 /**
- * 
+ * Runs a process with the supplied pid.
  */
 function shellRun(args)
 {
@@ -552,6 +553,9 @@ function shellRun(args)
     }
 }
 
+/**
+ * Doesn't actually do anything right now.
+ */
 function shellKill(args)
 {
     if(args.length > 0)

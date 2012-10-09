@@ -346,7 +346,7 @@ function updateTaskBar()
     var startX =TASKBAR_CANVAS.width/2.5;
     
     TASKBAR_CONTEXT.fillStyle = CANVAS_BACKGROUNDS;
-    TASKBAR_CONTEXT.fillRect(startX-150, 5, 625,40);
+    TASKBAR_CONTEXT.fillRect(startX-150, 5, 700,40);
     
     TASKBAR_CONTEXT.fillStyle = CANVAS_OUTLINES;
     
