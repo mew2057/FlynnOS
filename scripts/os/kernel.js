@@ -337,6 +337,12 @@ function krnVerifyInstructions(program)
     for( var index = 0; index < splitProgram.length; index++)
     {
         var opCode = _InstructionSet.get(splitProgram[index]);
+        
+        if(splitProgram[index] === '00')
+        {
+            break;
+        }
+        
         if(opCode)
         {
             index += opCode.argCount;

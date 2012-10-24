@@ -142,12 +142,12 @@ function hostCompareX(hexValues,cpu)
     var toCompare = parseInt(_MemoryManager.retrieveContents(hexValues[1] + 
         hexValues[0]), 16);
     
-    if(toCompare)
+    if(toCompare != null && toCompare >=0)
     {
         cpu.Zflag = cpu.Xreg == toCompare?1:0;
     }
     else
-    {
+    {      
         _KernelInterruptQueue.enqueue( new Interrupt(FAULT_IRQ, 
             new Array(MEM_FAULT,"Memory Address was unable to be read for CPX.")));
     }

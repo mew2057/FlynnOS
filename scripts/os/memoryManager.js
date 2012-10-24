@@ -122,6 +122,7 @@ MemoryManager.prototype.retrieveContents = function(hexAddress,offset)
 {
     var intAddress = parseInt(hexAddress,16);
     var intOffset = offset?parseInt(offset,16):0;
+   
     
     // If the address is already out of bounds notify the invoking function.
     if( intAddress >= this.core.memory.length )
