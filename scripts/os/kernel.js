@@ -117,7 +117,7 @@ function krnOnCPUClockPulse()
     // Update the status and time in the task bar.
     updateTaskBar();
     updateCPUDisplay(_CPU);
-    updatePCBDisplay([_Residents,_ReadyQueue,_Terminated, _CPU.pcb]);
+    updatePCBDisplay([_Residents,_Scheduler,_Terminated, _CPU.pcb]);
     updateMemDisplay(_MemoryManager);
 }
 
@@ -465,7 +465,7 @@ function krnActivePIDS ()
  */
 function krnKillProgram(pid)
 {    
-    _Scheduler.removeFromSchedule(_CPU, _ReadyQueue, pid);
+    _Scheduler.removeFromSchedule(_CPU, pid);
     console.log(_ReadyQueue);
 }
 

@@ -74,7 +74,6 @@ function hostLoadAcc(hexValues,cpu)
     {
         instrError(ERROR.OPERAND, ["LDA"]);
     }
-    
 }
 
 

@@ -18,6 +18,7 @@ Scheduler.prototype.processNext = function(cpu, finished){};
 Scheduler.prototype.scheduleProcess = function(cpu, pcb){};
 Scheduler.prototype.removeFromSchedule = function(cpu, pid){};
 Scheduler.prototype.activesToString = function(){};
+Scheduler.prototype.toString = function(){};
 Scheduler.prototype.getReadyQueue = function(){};
 
 // Round Robin
@@ -139,7 +140,16 @@ RoundRobin.prototype.activesToString = function(cpu)
     }
     
     return pidString != "" ? pidString : "No active processes.";
-    
+};
+
+RoundRobin.prototype.toString = function()
+{
+    var retVal = "";
+    for (var i in this.readyQueue)
+    {
+        retVal += this.readyQueue[i];
+    }
+    return retVal;
 };
 
 //-------------------------------
