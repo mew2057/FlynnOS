@@ -98,25 +98,21 @@ function krnOnCPUClockPulse()
         var interrupt = _KernelInterruptQueue.dequeue();
         krnInterruptHandler(interrupt.irq, interrupt.params);        
     }
-    else if ((_ReadyQueue.getSize() > 0  || _CPU.pcb) && 
-        (!_StepEnabled || (_StepEnabled && _Step))) // If there are no interrupts then run a CPU cycle if there is anything being processed.
+    else if (_Scheduler.processEnqueued && (!_StepEnabled || (_StepEnabled && _Step))) // If there are no interrupts then run a CPU cycle if there is anything being processed.
     { 
-        _Scheduler.isReady();
+        _Scheduler.isReady();        
         
         if(_CPU.pcb)
         {
             _CPU.cycle();
+            _Step = false;
         }
-        
-
-        _Step = false;
     }    
     else                       // If there are no interrupts and there is nothing being executed then just be idle.
     {
         //I disabled Idle, because it was annoying.
-       krnTrace("Idle");
+    //   krnTrace("Idle");
     }
-
     
     // Update the status and time in the task bar.
     updateTaskBar();
@@ -340,7 +336,7 @@ function krnTrapError(msg)
 
 function krnContextSwitch(params)
 {
-    _Scheduler.processNext(_CPU,_ReadyQueue,params[0]);
+    _Scheduler.processNext(_CPU,params[0]);
 }
 
 /**
@@ -427,7 +423,7 @@ function krnRunProgram(pid)
     
     if(pcb)
     {           
-       _Scheduler.scheduleProcess(_CPU, _ReadyQueue, pcb);
+       _Scheduler.scheduleProcess(_CPU, pcb);
     }
     else
     {
@@ -440,7 +436,7 @@ function krnRunResidents()
 {
     for(var index in _Residents)
     {
-        _Scheduler.scheduleProcess(_CPU, _ReadyQueue, _Residents.popBlock());
+        _Scheduler.scheduleProcess(_CPU, _Residents.popBlock());
     }
 }
 
@@ -459,19 +455,7 @@ function krnSetQuantum(quantum)
 
 function krnActivePIDS ()
 {
-    var pidString = "";
-    
-    for (var resident = 0; resident < _ReadyQueue.q.length; resident++)
-    {
-        pidString += _ReadyQueue.q[resident].pid + " ";
-    }
-    
-    if(_CPU.pcb)
-    {
-        pidString += _CPU.pcb.pid;    
-    }
-    
-    return pidString != "" ? pidString : "No active processes.";
+    return _Scheduler.activesToString(_CPU);
 }
 
 

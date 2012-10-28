@@ -585,13 +585,13 @@ function shellSetQ (args)
 {
     if(args.length > 0)
     {
-        if(!isNaN(args[0]))
+        if(!isNaN(args[0]) && args[0] > 0)
         {
             krnSetQuantum(args[0]);
         }
         else
         {
-            _StdIn.putText("The supplied quanta is not a number.");
+            _StdIn.putText("The supplied quanta is not a valid positive number greater than 0.");
         }
     }
     else

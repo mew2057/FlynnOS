@@ -44,7 +44,7 @@ cpu.prototype.setStateFromPCB = function(pcb)
 {
     this.pcb   = pcb;
     this.PC    = pcb.PC;
-    this.Acc   = pcb.ACC;
+    this.Acc   = pcb.Acc;
     this.Xreg  = pcb.Xreg;
     this.Yreg  = pcb.Yreg;
     this.Zflag = pcb.Zflag;
@@ -65,8 +65,6 @@ cpu.prototype.cycle = function()
     var contents = this.read( instruction);
     
     this.execute(instruction, contents);
-    
-    console.log(this.PC, opcode, contents);
 };
 
 /**

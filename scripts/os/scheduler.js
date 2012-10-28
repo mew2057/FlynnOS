@@ -5,15 +5,20 @@
    ------------ */
 function Scheduler()
 {
-    
+    this.processEnqueued = false;
 }
 
+Scheduler.log = function (msg)
+{
+    simLog(msg, "O_SCH");
+};
+
 Scheduler.prototype.isReady = function(){};
-Scheduler.prototype.processNext = function(cpu,readyQueue, finished){};
-Scheduler.prototype.scheduleProcess = function(cpu, readyQueue, pcb){};
-Scheduler.prototype.removeFromSchedule = function(cpu, readyQueue, pid){};
-
-
+Scheduler.prototype.processNext = function(cpu, finished){};
+Scheduler.prototype.scheduleProcess = function(cpu, pcb){};
+Scheduler.prototype.removeFromSchedule = function(cpu, pid){};
+Scheduler.prototype.activesToString = function(){};
+Scheduler.prototype.getReadyQueue = function(){};
 
 // Round Robin
 //-------------------------------
@@ -26,8 +31,8 @@ function RoundRobin ()
     // The number of cycles that a process has focus in the scheduler.
     // Defaults to 6.
     this.quantum = RoundRobin.DEFAULT_QUANTUM;
-    this.scheduleQueue = [];
     this.tick = 0;
+    this.readyQueue = [];
 }
 
 RoundRobin.prototype.resetQuantum = function()
@@ -39,10 +44,9 @@ RoundRobin.prototype.resetQuantum = function()
 RoundRobin.prototype.setQuantum = function(quant)
 {
     this.quantum = quant;
-    krnTrace(" quantum is now " + this.quantum);
+    Scheduler.log("quantum is now " + this.quantum);
 
 };
-
 RoundRobin.prototype.isReady = function()
 {    
     if(this.tick++ >= this.quantum)
@@ -51,32 +55,33 @@ RoundRobin.prototype.isReady = function()
     }
 };
 
-RoundRobin.prototype.processNext = function(cpu, readyQueue, finished)
+RoundRobin.prototype.processNext = function(cpu, finished)
 {
     
-    if(readyQueue.getSize() >  0)
+    if(this.readyQueue.length >  0)
     {
         if(!finished && cpu.pcb)
         {
             cpu.pcb.update(cpu);
-            readyQueue.enqueue(cpu.pcb);
+            this.readyQueue.push(cpu.pcb);
         }
-        
-        cpu.setStateFromPCB(readyQueue.dequeue());
-        
-        krnTrace(" pid " + cpu.pcb.pid + " is now scheduled to execute");
+        var pcb = this.readyQueue.shift();
 
+        cpu.setStateFromPCB(pcb);
+        
+        Scheduler.log("pid " + cpu.pcb.pid + " is now executing");
     }
     else if(finished)
     {
-        krnTrace(" pid " + cpu.pcb.pid + " is finished executing");
+        Scheduler.log(" pid " + cpu.pcb.pid + " is finished executing");
         cpu.pcb = null;    
+        this.processEnqueued = false;
     }
     
     this.tick = 0;
 };
 
-RoundRobin.prototype.scheduleProcess = function(cpu, readyQueue, pcb)
+RoundRobin.prototype.scheduleProcess = function(cpu, pcb)
 {
     if(!pcb)
     {
@@ -85,35 +90,57 @@ RoundRobin.prototype.scheduleProcess = function(cpu, readyQueue, pcb)
     }
     if(cpu.pcb === null)
     {
-        this.tick == this.quantum;
+        this.tick = this.quantum;
     }
     
-    readyQueue.enqueue(pcb);  
+    this.processEnqueued = true;
+    
+    this.readyQueue.push(pcb);  
 };
 
-Scheduler.prototype.removeFromSchedule = function(cpu, readyQueue, pid)
+RoundRobin.prototype.removeFromSchedule = function(cpu, pid)
 {
     if(cpu.pcb && cpu.pcb.pid === pid)
     {
         _KernelInterruptQueue.enqueue(new Interrupt(BRK_IRQ, new Array(cpu,true)));
+        this.processEnqueued = this.readyQueue.length > 0;
     }
     else
     {
-        for(var index = 0; index < readyQueue.q.length; index ++)
+        for(var index = 0; index < this.readyQueue.length; index ++)
         {
-            if(readyQueue.q[index])
+            if(this.readyQueue[index])
             {
-                readyQueue.q.slice(index,1);
+                this.readyQueue.slice(index,1);
                 _StdIn.putText("PID:" + pid + " Removed from ready queue.");
+                Scheduler.log("pid " + pid + " killed" );
                 break;
             }
         }
         
+        this.processEnqueued = this.readyQueue.length > 0 || cpu.pcb != null;
     }
     
     
 };
 
+RoundRobin.prototype.activesToString = function(cpu)
+{
+    var pidString = "";
+    
+    for (var resident = 0; resident < this.readyQueue.length; resident++)
+    {
+        pidString += this.readyQueue[resident].pid + " ";
+    }
+    
+    if(cpu.pcb)
+    {
+        pidString += cpu.pcb.pid;    
+    }
+    
+    return pidString != "" ? pidString : "No active processes.";
+    
+};
 
 //-------------------------------
 
