@@ -365,7 +365,6 @@ function updateTaskBar()
  */
 function updateCPUDisplay(cpu)
 {
-    
     $("#accCell").text(padZeros(cpu.Acc.toString(16),2).toUpperCase());
     $("#pcCell").text(padZeros(cpu.PC.toString(16),2).toUpperCase());
     $("#xCell").text(padZeros(cpu.Xreg.toString(16),2).toUpperCase());

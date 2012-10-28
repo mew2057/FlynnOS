@@ -60,5 +60,6 @@ InstructionSet6502.prototype.get = function(opcode)
     {
         retVal = this.set[index];
     }
+    
     return retVal;
 };

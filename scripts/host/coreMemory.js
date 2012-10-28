@@ -12,6 +12,8 @@ function CoreMemory()
 {
     this.frameNum = 3;
     this.frameSize = 256; // This is the default page size.
+    this.baseAddress = 0;
+    this.limitAddress = this.frameNum*this.frameSize;
     
     this.memory = new Array(this.frameNum*this.frameSize);
  

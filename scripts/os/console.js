@@ -238,6 +238,9 @@ function consolePutText(txt, input)
             added = true;           
         }
     }
+    else{
+        console.log(txt);
+    }
   
     return added;
 }

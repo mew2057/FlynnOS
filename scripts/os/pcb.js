@@ -16,6 +16,7 @@ function PCB()
     this.Xreg  = 0;     // X register
     this.Yreg  = 0;     // Y register
     this.Zflag = 0;     // Z-ero flag 
+    this.page  = 0;     // The page of the program.
     this.Base  = 0;     // Base of the program page in core memory. 
     this.Limit = 0;     // The Upper limit of the program page.
 }
@@ -27,10 +28,10 @@ function PCB()
  */
 PCB.prototype.update = function(cpu)
 {
-    this.PC = cpu.PC;
-    this.Acc = cpu.Acc;
-    this.Xreg = cpu.Xreg;
-    this.Yreg = cpu.Yreg;
+    this.PC    = cpu.PC;
+    this.Acc   = cpu.Acc;
+    this.Xreg  = cpu.Xreg;
+    this.Yreg  = cpu.Yreg;
     this.Zflag = cpu.Zflag;
 };
 
@@ -52,7 +53,6 @@ PCB.prototype.toString = function()
     retVal += "<td>" + this.Zflag + "</td>";
     retVal += "<td>" + padZeros(this.Base.toString(16),2).toUpperCase() + "</td>";
     retVal += "<td>" + padZeros(this.Limit.toString(16),2).toUpperCase() + "</td></tr>";      
-    
     return retVal;
 };
 
@@ -102,29 +102,22 @@ ResidentList.prototype.indexOfPID = function(pid)
  * 
  * @return The Process ID.
  */
-ResidentList.prototype.createNewPCB = function(params)
+ResidentList.prototype.createNewPCB = function(params, page)
 {
     // Create a new PCB and load the pid into it.
     var pcb = new PCB();
     pcb.pid = this.leadPID++;
-    
+    pcb.page = page;
     // If params are supplied load the base and limt in.
     if(params)
     {
-        if(params[0])
-        {
-            pcb.Base = params[0];
-        }
-        
-        if(params[1])
-        {
-            pcb.Limit = pcb.Base + params[1];
-        }
+        pcb.Base = params[0];
+        pcb.Limit = params[1];
     }
     
     // Push the new pcb onto the collection.
     this.residents.push(pcb);
-    
+
     return pcb.pid;
 };
 
@@ -140,10 +133,11 @@ ResidentList.prototype.getBlock = function(pid)
     var pcbIndex = this.indexOfPID(pid);
     var retVal = null;
     
-    if(pcbIndex != -1)
+    if(pcbIndex > -1)
     {
         retVal =  this.residents[pcbIndex];
     }
+    
     return retVal;
 };
 
@@ -157,13 +151,17 @@ ResidentList.prototype.getBlock = function(pid)
  */
 ResidentList.prototype.popBlock = function(pid)
 {
-    var pcbIndex = this.indexOfPID(pid);
+    var pcbIndex =  this.indexOfPID(pid);
     var retVal = null;
-    
-    if(pcbIndex != -1)
+
+    if(pcbIndex > -1)
     {
         retVal =  this.residents[pcbIndex];
         this.residents.splice(pcbIndex,1);
+    }
+    else if(!pid)
+    {
+        retVal = this.residents.shift();
     }
     
     return retVal;

@@ -40,16 +40,15 @@ function cpu()
  * Uses the pcb that the CPU is currently pointed to and generates the state for
  * the remainder of the CPU.
  */
-cpu.prototype.setStateFromPCB = function ()
+cpu.prototype.setStateFromPCB = function(pcb)
 {
-    if(this.pcb)
-    {
-        this.PC = this.pcb.PC;
-        this.Acc = this.pcb.ACC;
-        this.Xreg = this.pcb.Xreg;
-        this.Yreg = this.pcb.Yreg;
-        this.Zflag = this.pcb.Zflag;
-    }
+    this.pcb   = pcb;
+    this.PC    = pcb.PC;
+    this.Acc   = pcb.ACC;
+    this.Xreg  = pcb.Xreg;
+    this.Yreg  = pcb.Yreg;
+    this.Zflag = pcb.Zflag;
+    
 };
 
 
@@ -64,8 +63,10 @@ cpu.prototype.cycle = function()
     var instruction = this.decode(opcode);
 
     var contents = this.read( instruction);
-
+    
     this.execute(instruction, contents);
+    
+    console.log(this.PC, opcode, contents);
 };
 
 /**
@@ -76,7 +77,7 @@ cpu.prototype.cycle = function()
 cpu.prototype.fetch = function()
 {
     
-    return _MemoryManager.retrieveContents((this.PC++).toString(16));
+    return _MemoryManager.retrieveContents((this.PC++).toString(16), this.pcb);
 };
 
 /**
@@ -118,11 +119,13 @@ cpu.prototype.read = function(instruction)
         case 0:
             break;
         case 1:
-            contents = [_MemoryManager.retrieveContents(this.PC.toString(16))];
+            contents = [_MemoryManager.retrieveContents(this.PC.toString(16),
+                            this.pcb)];
             this.PC ++;
             break;
         case 2:
-            contents = _MemoryManager.retrieveContentsFromAddress(this.PC.toString(16),2);
+            contents = _MemoryManager.retrieveContentsFromAddress(
+                            this.PC.toString(16), 2, this.pcb);
             this.PC += 2;
             break;
         default:

@@ -30,7 +30,7 @@ function krnBootstrap()      // Page 8.
     _Terminated = new Queue();              // Contains the pcbs that have executed.
     _StepEnabled = false;                   // Ensures that Stepping is off on load.
     _Step = false;                          // Clears out the Step.
-
+    _Scheduler = new RoundRobin();          // Initializes the scheduler.
 
     // Load the Display Device Driver.
     krnTrace("Loading the display device driver.");
@@ -90,6 +90,7 @@ function krnOnCPUClockPulse()
        that it has to look for interrupts and process them if it finds any.                           */
 
     // Check for an interrupt, are any. Page 560
+    
     if (_KernelInterruptQueue.getSize() > 0)    
     {
         // Process the first interrupt on the interrupt queue.
@@ -99,23 +100,23 @@ function krnOnCPUClockPulse()
     }
     else if ((_ReadyQueue.getSize() > 0  || _CPU.pcb) && 
         (!_StepEnabled || (_StepEnabled && _Step))) // If there are no interrupts then run a CPU cycle if there is anything being processed.
-    {
-        if(!_CPU.pcb)
+    { 
+        _Scheduler.isReady();
+        
+        if(_CPU.pcb)
         {
-            _CPU.pcb = _ReadyQueue.dequeue();
-            _CPU.setStateFromPCB();
+            _CPU.cycle();
         }
         
-        _CPU.cycle();
-        
-        //Scheduler code goes here (Project 3)            
+
         _Step = false;
     }    
     else                       // If there are no interrupts and there is nothing being executed then just be idle.
     {
         //I disabled Idle, because it was annoying.
-       //krnTrace("Idle");
+       krnTrace("Idle");
     }
+
     
     // Update the status and time in the task bar.
     updateTaskBar();
@@ -175,7 +176,11 @@ function krnInterruptHandler(irq, params)    // This is the Interrupt Handler Ro
             break;
         case TRAP_IRQ:
             krnTrapError(params[0]);
-            break
+            break;
+        case CONTEXT_IRQ:
+            krnContextSwitch(params);
+            break;
+            
         default: 
             krnTrapError("Invalid Interrupt Request. irq=" + irq + " params=[" + params + "]");
     }
@@ -222,9 +227,16 @@ function krnBreakISR(params)
     //This will be more complicated come project 3
     params[0].pcb.update(params[0]);
     
+    // Reclaims the page and places the pcb in the terminated queue(I think the scheduler may need to do this)
+    _MemoryManager.reclaimPage(params[0].pcb.page);
     _Terminated.enqueue(params[0].pcb);
     
-    params[0].pcb = null;
+    if(params[1])
+    {
+        _StdIn.putText("PID:" + params[0].pcb.pid + " Terminated");
+    }
+    
+    _KernelInterruptQueue.enqueue(new Interrupt(CONTEXT_IRQ, [true]));
 }
 
 /**
@@ -244,13 +256,15 @@ function krnSystemCallISR(params)
             {
                 toOutput = -(256 - toOutput);   
             }
-            _StdIn.putText(toOutput);
+            
+            // I add the null character so it is viewed as a character.
+            _StdIn.putText(toOutput + "");
             break;
         case 2:
             // Get the String of characters from the core memory through the 
             // manager.
             var outputChars = _MemoryManager.retrieveContentsToLimit(
-                    params[1].toString(16), "00");
+                    params[1].toString(16), "00", _CPU.pcb);
             
             // If the memory request was successful, output the string.
             if(outputChars)
@@ -324,6 +338,11 @@ function krnTrapError(msg)
     krnShutdown();
 }
 
+function krnContextSwitch(params)
+{
+    _Scheduler.processNext(_CPU,_ReadyQueue,params[0]);
+}
+
 /**
  * Checks to ensure that each instruction in a program String has a valid 
  * corresponding Instruction in the Instruction Set.
@@ -362,7 +381,7 @@ function krnVerifyInstructions(program)
  */
 function krnLoadProgram()
 {
-    var program=simLoadProgram();
+    var program = simLoadProgram();
     
     if(!checkForHex(program))
     {
@@ -375,13 +394,13 @@ function krnLoadProgram()
         
         if(verifiedIntructions)
         {
-            var pid = _MemoryManager.storeProgram("0000",verifiedIntructions, _Residents);
+            var pid = _MemoryManager.storeProgram(verifiedIntructions, _Residents);
                 
             if(pid >= 0)
             {                
                 _StdIn.putText( "I feel a presence. Another warrior is on the "+
                     "mesa at pid: " + pid);
-            }            
+            }                
         }
         else
         {
@@ -402,11 +421,13 @@ function krnLoadProgram()
  */
 function krnRunProgram(pid)
 {
+    //TODO make scheduler.
     // Pop the pid from the resident list and store the pcb to add to the ready queue.
     var pcb = _Residents.popBlock(pid);
+    
     if(pcb)
     {           
-       _ReadyQueue.enqueue(pcb);
+       _Scheduler.scheduleProcess(_CPU, _ReadyQueue, pcb);
     }
     else
     {
@@ -415,12 +436,52 @@ function krnRunProgram(pid)
     
 }
 
+function krnRunResidents()
+{
+    for(var index in _Residents)
+    {
+        _Scheduler.scheduleProcess(_CPU, _ReadyQueue, _Residents.popBlock());
+    }
+}
+
+function krnSetQuantum(quantum)
+{
+    // If the quantum is a valid number and the scheduler has a quantum allow it to be set.
+    if(_Scheduler.setQuantum)
+    {
+        _Scheduler.setQuantum(quantum);
+    }
+    else
+    {
+        _StdIn.putText("The scheduler doesn't have a quantum.");
+    }
+}
+
+function krnActivePIDS ()
+{
+    var pidString = "";
+    
+    for (var resident = 0; resident < _ReadyQueue.q.length; resident++)
+    {
+        pidString += _ReadyQueue.q[resident].pid + " ";
+    }
+    
+    if(_CPU.pcb)
+    {
+        pidString += _CPU.pcb.pid;    
+    }
+    
+    return pidString != "" ? pidString : "No active processes.";
+}
+
+
 /**
  * Kills the executing process with matching pid.
  * @param pid The process to stop.
  */
 function krnKillProgram(pid)
-{
-    //TODO add some form of interrupt.
+{    
+    _Scheduler.removeFromSchedule(_CPU, _ReadyQueue, pid);
+    console.log(_ReadyQueue);
 }
 

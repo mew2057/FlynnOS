@@ -18,50 +18,77 @@ function MemoryManager(coreMem)
     // pageSize === frameSize
     this.pageSize = this.core.frameSize;
     
-    // The page set containg pages in and out of use.
-    this.pageSet = new Array(this.pageNum);
+    this.pagesInUse = new Array(this.pageNum);
     
     this.init = function()
     {
-        for(var page = 0; page < this.pageSet; page ++)
+        for(var page = 0; page < this.pageNum; page ++)
         {
-            this.pageSet[page] = false;
+            //this.pages[page] = page;
+            this.pagesInUse[page] = false;
         }
     };
 }
+
+MemoryManager.prototype.pageToOffset = function(pageNumber)
+{
+    return pageNumber * this.pageSize; 
+};
+
+
+MemoryManager.prototype.reclaimPage = function(page)
+{
+    if(page < this.pagesInUse.length)
+    {
+        //this.pages.push(page);
+        this.pagesInUse[page] = false;
+    }
+};
+
 
 /**
  * A routine for storing data in Core Memory. 
  * 
  * @param hexAddress The hexadecimal address of the  memory location to store 
  *      the data.
+ * 
  * @param toStore The data to store in the core memory.
  * 
  * @return 0 - Success.
  *         1 - Address out of bounds.
  *         2 - Memory overflow.
  */
-MemoryManager.prototype.store = function(hexAddress, toStore)
+MemoryManager.prototype.store = function(hexAddress, toStore, pcb)
 {
     // Translate the hex address to int.
-    var intAddress = parseInt(hexAddress,16);
+    var intAddress = pcb ? parseInt(hexAddress,16)  + pcb.Base : parseInt(hexAddress,16);
+    var limit = pcb ? pcb.Limit : intAddress + this.pageSize;
+    var rc = -1;
     
     // If the address is already out of bounds notify the invoking function.
-    if( intAddress >= this.core.memory.length )
+    if( intAddress >= limit)
     {
-        return 1;
+        // Doesn't stop the CPU but notifies the user of a detected errror.
+        _KernelInterruptQueue.enqueue( new Interrupt(FAULT_IRQ, 
+            new Array(MEM_FAULT,"Memory Address" + hexAddress + "was out of page" +
+            "bounds.")));
     }
-    else if(toStore.length + intAddress > this.core.memory.length)
+    else if(toStore.length + intAddress > limit)
     {
-        return 2;   
+        // Doesn't stop the CPU but notifies the user of a detected errror.
+        _KernelInterruptQueue.enqueue( new Interrupt(FAULT_IRQ, 
+            new Array(MEM_FAULT,"Memory Address overflow on load.")));
+    }
+    else
+    {
+        for (var storeIndex = 0; storeIndex < toStore.length; storeIndex ++)
+        {
+            this.core.memory[storeIndex + intAddress] = toStore[storeIndex];   
+        }
+        rc = 0;
     }
     
-    for (var storeIndex = 0; storeIndex < toStore.length; storeIndex ++)
-    {
-        this.core.memory[storeIndex + intAddress] = toStore[storeIndex];   
-    }
-    
-    return 0;
+    return rc;
 };
 
 /**
@@ -78,59 +105,48 @@ MemoryManager.prototype.store = function(hexAddress, toStore)
  * @return The ID of the process control block  in pbcs. -1 if pcb creation 
  * failed
  */
-MemoryManager.prototype.storeProgram = function(hexAddress, toStore, residents)
+MemoryManager.prototype.storeProgram = function(toStore, residents)
 {
+    var page = this.pagesInUse.indexOf(false);
+    this.pagesInUse[page] = true;
     
-    var returnCode = this.store(hexAddress,toStore);
+    var baseAddress = this.pageToOffset(page);
+
+    var returnCode =page != -1 ? this.store(baseAddress.toString(16),toStore): 1;
     var currentPCB = -1;
     
     switch (returnCode)
     {
         case 0:
             // Assigns the PID and gives the PCB a base and limit.
-            currentPCB  = residents.createNewPCB([parseInt(hexAddress,16), 
-                this.pageSize - 1]);
+            currentPCB  = residents.createNewPCB([baseAddress, 
+                (baseAddress + this.pageSize - 1)], page);
             
             break;
         case 1:
-            // Doesn't stop the CPU but notifies the user of a detected errror.
             _KernelInterruptQueue.enqueue( new Interrupt(FAULT_IRQ, 
-                new Array(MEM_FAULT,"Memory Address was out of bounds.")));
-            break;
-        case 2:
-            // Doesn't stop the CPU but notifies the user of a detected errror.
-            _KernelInterruptQueue.enqueue( new Interrupt(FAULT_IRQ, 
-                new Array(MEM_FAULT,"Memory Address overflow on program load.")));
+                new Array(MEM_FAULT,"No available pages in memory for your code.")));
             break;
     }
 
     return currentPCB;
 };
 
-// TODO in project 3 add more paging support.
 
 /**
  * Retrieves the contents of a memory cell.
  * 
  * @param hexAddress The address of the cell in hex.
  * 
- * @param offset The offset of the final address.
+ * @param pcb The process control block for the process that made the request.
  * 
  * @return null if out of bounds, the contents if found.
  */
-MemoryManager.prototype.retrieveContents = function(hexAddress,offset)
+MemoryManager.prototype.retrieveContents = function(hexAddress,pcb)
 {
-    var intAddress = parseInt(hexAddress,16);
-    var intOffset = offset?parseInt(offset,16):0;
+    var intAddress = parseInt(hexAddress,16) + pcb.Base;
    
-    
-    // If the address is already out of bounds notify the invoking function.
-    if( intAddress >= this.core.memory.length )
-    {
-        return null;
-    }
-    
-    return this.core.memory[intAddress + intOffset];
+    return intAddress >= pcb.Limit ? null : this.core.memory[intAddress];
 };
 
 /**
@@ -141,22 +157,28 @@ MemoryManager.prototype.retrieveContents = function(hexAddress,offset)
  * 
  * @param boundingValue The hex value that marks the delimiter in memory for 
  *  the collection.
+ * @param pcb The process control block for the process that made the request.
  * 
  * @return null if out of bounds, the contents if found.
  */
-MemoryManager.prototype.retrieveContentsToLimit = function(hexAddress,boundingValue)
+MemoryManager.prototype.retrieveContentsToLimit = function(hexAddress, boundingValue, pcb)
 {
     // Translate the hex address to int.
-    var intAddress = parseInt(hexAddress,16);
+    var intAddress = parseInt(hexAddress,16) + pcb.Base;
     var contents = [];
     
     do {
         contents.push(this.core.memory[intAddress++]);
-    }while(intAddress < this.core.memory.length && contents[contents.length-1] != boundingValue);
+    }while(intAddress < pcb.Limit && contents[contents.length-1] != boundingValue);
     
-    if(contents[contents.length-1] != boundingValue)
+    if(intAddress > pcb.Limit || contents.length === 0 || 
+        contents[contents.length-1] != boundingValue)
     {
+        _KernelInterruptQueue.enqueue( new Interrupt(FAULT_IRQ, 
+                new Array(MEM_FAULT,"Memory address " + hexAddress + 
+                " was out of bounds for process " + pcb.pid + "'s page.")));
         contents = null;
+
     }
     
     return contents;
@@ -169,31 +191,34 @@ MemoryManager.prototype.retrieveContentsToLimit = function(hexAddress,boundingVa
  * 
  * @param nuymBytes The number of cells that the returned array should contain.
  * 
+ * @param pcb The process control block for the process that made the request.
+ * 
  * @return The contents from the starting cell numBytes on.
  */
-MemoryManager.prototype.retrieveContentsFromAddress = function(hexAddress,numBytes)
+MemoryManager.prototype.retrieveContentsFromAddress = function(hexAddress, numBytes, pcb)
 {
     // Translate the hex address to int.
-    var intAddress = parseInt(hexAddress,16);
-    var offset = 0;
+    var intAddress = parseInt(hexAddress,16) + pcb.Base;
     var contents = [];
     
-    do {
-        contents.push(this.core.memory[intAddress + offset]);
-        offset++;
-    }while(intAddress + offset < this.core.memory.length && 
-        offset !=numBytes);
+    for(var index = 0; index < numBytes && intAddress < pcb.Limit;index++)
+    {
+        contents.push(this.core.memory[intAddress++]);
+    }
     
-    if(intAddress + offset >= this.core.memory.length)
+    if(intAddress > pcb.Limit || contents.length === 0)
     {
         contents = null;
-    }
+        _KernelInterruptQueue.enqueue( new Interrupt(FAULT_IRQ, 
+            new Array(MEM_FAULT,"Memory address " + hexAddress + 
+            " was out of bounds for process " + pcb.pid + "'s page.")));    }
+    
     
     return contents;
 };
 
 /**
- * Retrieves from coreMemory with a page offset.
+ * Retrieves from coreMemory with a page offset This is a specialty method used by the canvasAnimations (not actually used in the OS).
  * 
  * @param hexAddress The logical hexAddress.
  * 
@@ -202,8 +227,9 @@ MemoryManager.prototype.retrieveContentsFromAddress = function(hexAddress,numByt
  * @return The contents of the page offset cell. Null if not found.
  */
 MemoryManager.prototype.retrieveFromPage = function(hexAddress, page)
-{
-    var pageOffset = this.pageSize * page;
+{    
+    var intAddress = parseInt(hexAddress,16) + this.pageSize * page;
+   
     
-    return this.retrieveContents(hexAddress, pageOffset.toString(16));    
+    return intAddress >= this.core.memory.limitAddress ? "@@" : this.core.memory[intAddress];
 };

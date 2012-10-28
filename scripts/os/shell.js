@@ -137,6 +137,31 @@ function shellInit()
     sc.funct = shellRun;
     this.commandList[this.commandList.length]=sc;
     
+    sc = new ShellCommand();
+    sc.command ="setq";
+    sc.description = " <quantum> - Sets the length of the cycle in the round robin scheduling.";
+    sc.funct = shellSetQ;
+    this.commandList[this.commandList.length]=sc;
+    
+    sc = new ShellCommand();
+    sc.command ="active";
+    sc.description = " - Displays the pids that are on the active queue.";
+    sc.funct = shellActive;
+    this.commandList[this.commandList.length]=sc;
+    
+    sc = new ShellCommand();
+    sc.command ="runall";
+    sc.description = " - Runs all of the processes on the resident's list.";
+    sc.funct = shellRunAll;
+    this.commandList[this.commandList.length]=sc;
+    
+    sc = new ShellCommand();
+    sc.command ="kill";
+    sc.description = " <pid> - Kills a process with the supplied id if present.";
+    sc.funct = shellKill;
+    this.commandList[this.commandList.length]=sc;
+    
+    
     //
     // Display the initial prompt.
     this.putPrompt();
@@ -554,8 +579,37 @@ function shellRun(args)
 }
 
 /**
- * Doesn't actually do anything right now.
+ *  Sets the quantum of the kernel scheduler. 
  */
+function shellSetQ (args)
+{
+    if(args.length > 0)
+    {
+        if(!isNaN(args[0]))
+        {
+            krnSetQuantum(args[0]);
+        }
+        else
+        {
+            _StdIn.putText("The supplied quanta is not a number.");
+        }
+    }
+    else
+    {
+        _StdIn.putText("Please supply a quanta.");
+    }
+}
+
+function shellActive ()
+{
+    _StdIn.putText(krnActivePIDS());   
+}
+
+function shellRunAll ()
+{
+    krnRunResidents();
+}
+
 function shellKill(args)
 {
     if(args.length > 0)

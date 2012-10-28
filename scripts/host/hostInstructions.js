@@ -24,13 +24,14 @@ function hostLoadAcc(hexValues,cpu)
     else if( hexValues.length === 2 )
     {
         cpu.Acc = parseInt(_MemoryManager.retrieveContents(hexValues[1] + 
-            hexValues[0]),16);
+            hexValues[0], cpu.pcb),16);
     }
     else
     {
         _KernelInterruptQueue.enqueue( new Interrupt(FAULT_IRQ, 
             new Array(INST_FAULT,"Too many operands for LDA.")));
     }
+    console.log("host ACC "  + cpu.Acc);
 }
 
 
@@ -44,7 +45,7 @@ function hostLoadAcc(hexValues,cpu)
 function hostStoreAcc(hexValues,cpu)
 {
     _MemoryManager.store(hexValues[1] + 
-        hexValues[0], [padZeros(cpu.Acc.toString(16),2)]);
+        hexValues[0], [padZeros(cpu.Acc.toString(16),2)], cpu.pcb);
 }
 
 /**
@@ -57,7 +58,7 @@ function hostStoreAcc(hexValues,cpu)
 function hostAddWithCarry(hexValues,cpu)
 {
     var memContents = _MemoryManager.retrieveContents(hexValues[1] +
-        hexValues[0]);
+        hexValues[0], cpu.pcb);
     
     if(memContents)
     {
@@ -89,7 +90,7 @@ function hostLoadX(hexValues,cpu)
     {
         
         cpu.Xreg =parseInt(_MemoryManager.retrieveContents(hexValues[1] + 
-            hexValues[0]),16);
+            hexValues[0], cpu.pcb),16);
     }
     else
     {
@@ -115,7 +116,7 @@ function hostLoadY(hexValues,cpu)
     else if( hexValues.length === 2 )
     {
         cpu.Yreg = parseInt(_MemoryManager.retrieveContents(hexValues[1] + 
-            hexValues[0]),16);
+            hexValues[0], cpu.pcb),16);
     }
     else
     {
@@ -140,11 +141,12 @@ function hostNOP(){}
 function hostCompareX(hexValues,cpu)
 {
     var toCompare = parseInt(_MemoryManager.retrieveContents(hexValues[1] + 
-        hexValues[0]), 16);
+        hexValues[0], cpu.pcb), 16);
     
     if(toCompare != null && toCompare >=0)
     {
-        cpu.Zflag = cpu.Xreg == toCompare?1:0;
+        //console.log(cpu.Xreg,toCompare,(cpu.Xreg == toCompare? 1 : 0));
+        cpu.Zflag = cpu.Xreg == toCompare? 1 : 0;
     }
     else
     {      
@@ -195,11 +197,11 @@ function hostIncrementByte(hexValues,cpu)
 {
     var hexAddress = hexValues[1] + hexValues[0];
     
-    var contents = parseInt(_MemoryManager.retrieveContents(hexAddress),16);
+    var contents = parseInt(_MemoryManager.retrieveContents(hexAddress, cpu.pcb),16);
     
     var incrementedValue = (( contents + 1) % 256).toString(16);
         
-    _MemoryManager.store(hexAddress,[padZeros(incrementedValue,2)]);
+    _MemoryManager.store(hexAddress,[padZeros(incrementedValue,2)],cpu.pcb);
 }
 
 /**

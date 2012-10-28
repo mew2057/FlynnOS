@@ -24,6 +24,7 @@ var SYSTEM_IRQ = 2;
 var FAULT_IRQ = 3;
 var BRK_IRQ = 4;
 var TRAP_IRQ = 5;
+var CONTEXT_IRQ = 6;
 
 // Fault Types.
 var INST_FAULT = 1; //An instruction fault.
@@ -44,7 +45,8 @@ var _CoreMemory = null;
 var _OSclock = 0;       // Page 23.
 var _Mode = 0;   // 0 = Kernel Mode, 1 = User Mode.  See page 21.
 var _KernelStatus = "default"; // The kernel status field specified by iProject1
-var _KernelLoadedProgram = ""; //XXX This will change in future versions.
+var _KernelLoadedProgram = ""; 
+var _Scheduler = null; //
 
 // TODO: Fix the naming convention for these next five global vars.
 var CANVAS = null;                  // Initialized in hostInit().
