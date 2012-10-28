@@ -6,17 +6,31 @@
    Routines for the Instruction Set of the cpu. Please note that philosophically
    this is "in" the CPU, but I separated it for clarity and readbility's sake.
    ------------ */
+
+// An error enumeration.
 var ERROR = {
     "MEM"     : 0, 
     "OPERAND" : 1,
     "BRANCH"  : 2
     };
 
+/**
+ * A logging utility for the dev log.
+ * 
+ * @param msg The message to output.
+ */
 function instrLog (msg)
 {
     simLog(msg, "H_INST");
 }
 
+/**
+ * An error logging utility.
+ * 
+ * @param error Defines the error message.
+ * 
+ * @param param Provides supplemental information to the message.
+ */
 function instrError (error, params)
 {
     var msg = params[0] +"-";
@@ -24,18 +38,20 @@ function instrError (error, params)
     switch(error)
     {
         case ERROR.MEM:
-            msg += "bad memory request at " + params[1];
+            msg += "bad memory request at " + params[1] + ".";
             break;
         case ERROR.OPERAND:
-            msg += "incorrect operand total";
+            msg += "incorrect operand total.";
             break;
         case ERROR.BRANCH:
-            msg += "branch address may not exceed 256 or be under 0: " + params[1];
-
+            msg += "branch address may not exceed 256 or be under 0: " + params[1] + ".";
+            break;
         default:
     }
-    _KernelInterruptQueue.enqueue( new Interrupt(FAULT_IRQ, 
-                new Array(INST_FAULT,msg)));
+    
+    // This will remove the offending process from the execution.
+    _KernelInterruptQueue.enqueue( new Interrupt(FAULT_IRQ, [INST_FAULT, msg, _CPU]));
+    
     instrLog(msg);
 }
 

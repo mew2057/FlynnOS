@@ -614,7 +614,7 @@ function shellKill(args)
 {
     if(args.length > 0)
     {
-        krnKillProgram(args[0]);
+        krnKillProcess(args[0]);
     }
     else
     {

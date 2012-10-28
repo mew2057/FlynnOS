@@ -28,7 +28,8 @@ var CONTEXT_IRQ = 6;
 
 // Fault Types.
 var INST_FAULT = 1; //An instruction fault.
-var MEM_FAULT = 2;  //A memory fault.
+var MEM_FAULT  = 2; //A memory fault.
+var CPU_FAULT  = 3;
 
 // The instruction count for the CPU.
 var INSTRUCTION_COUNT = 256;

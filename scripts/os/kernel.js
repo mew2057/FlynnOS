@@ -26,7 +26,6 @@ function krnBootstrap()      // Page 8.
     _MemoryManager = new MemoryManager(_CoreMemory); // Creates a memory manager linked to core memory.
     _MemoryManager.init();                  // Initializes the memory manager.
     _Residents = new ResidentList();        // Contains loaded PCBS.
-    _ReadyQueue = new Queue();              // Contains the PCBs that are in the process of execution.
     _Terminated = new Queue();              // Contains the pcbs that have executed.
     _StepEnabled = false;                   // Ensures that Stepping is off on load.
     _Step = false;                          // Clears out the Step.
@@ -204,12 +203,20 @@ function krnFaultISR(params)
         case INST_FAULT:
             message = "Instruction Fault:";
             break;
+        case CPU_FAULT:
+            message = "CPU Fault:";
+            break;
         case MEM_FAULT:
             message = "Memory Fault:";
             break;
     }
     
     _StdIn.putText(message + " " + params[1]);
+    
+    if(params[0] === INST_FAULT || params[0] === CPU_FAULT)
+    {
+        krnKillProcess(params[2].pid);
+    }
 }
 
 /**
@@ -229,7 +236,7 @@ function krnBreakISR(params)
     
     if(params[1])
     {
-        _StdIn.putText("PID:" + params[0].pcb.pid + " Terminated");
+        _StdIn.putText("PID: " + params[0].pcb.pid + " Terminated");
     }
     
     _KernelInterruptQueue.enqueue(new Interrupt(CONTEXT_IRQ, [true]));
@@ -285,22 +292,6 @@ function krnSystemCallISR(params)
             break;
     }
 }
-
-
-//
-// System Calls... that generate software interrupts via tha Application Programming Interface library routines.
-//
-// Some ideas:
-// - ReadConsole
-// - WriteConsole
-// - CreateProcess
-// - ExitProcess
-// - WaitForProcessToExit
-// - CreateFile
-// - OpenFile
-// - ReadFile
-// - WriteFile
-// - CloseFile
 
 
 //
@@ -463,9 +454,8 @@ function krnActivePIDS ()
  * Kills the executing process with matching pid.
  * @param pid The process to stop.
  */
-function krnKillProgram(pid)
+function krnKillProcess(pid)
 {    
     _Scheduler.removeFromSchedule(_CPU, pid);
-    console.log(_ReadyQueue);
 }
 

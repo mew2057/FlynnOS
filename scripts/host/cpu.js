@@ -47,8 +47,58 @@ cpu.prototype.setStateFromPCB = function(pcb)
     this.Acc   = pcb.Acc;
     this.Xreg  = pcb.Xreg;
     this.Yreg  = pcb.Yreg;
-    this.Zflag = pcb.Zflag;
+    this.Zflag = pcb.Zflag;    
+};
+
+// An error enumeration.
+cpu.ERROR = {
+    "OP"     : 0, 
+    "OPCODE" : 1,
+    "MEM"    : 2,
+    "INST"   : 3
+    };
+
+
+/**
+ * An error logging utility.
+ * 
+ * @param errorCode Defines the error message.
+ * 
+ * @param param Provides supplemental information to the message.
+ */
+cpu.prototype.errorLog = function(errorCode, param)
+{
+    var msg ="";
     
+    switch(errorCode)
+    {
+        case cpu.ERROR.OP:
+            msg += "Bad memory address on opcode fetch PC=" + param + ".";
+            break;
+        case cpu.ERROR.OPCODE:
+            msg += "Invalid opcode " + param + ".";
+            break;
+        case cpu.ERROR.MEM:
+            msg += "Couldn't access memory contents at " + param + ".";
+            break;
+        case cpu.ERROR.INST:
+            msg += "Invalid Instruction (How did you get here?!?!).";
+            break;
+        default:
+    }
+    
+    _KernelInterruptQueue.enqueue(new Interrupt(FAULT_IRQ, [CPU_FAULT, msg, _CPU]));
+    this.log(msg);
+};
+
+/**
+ * A logging utility.
+ * 
+ * @param msg The message to report.
+ */
+cpu.prototype.log = function(msg)
+{
+    simLog(msg,"H_CPU");
 };
 
 
@@ -59,11 +109,25 @@ cpu.prototype.setStateFromPCB = function(pcb)
 cpu.prototype.cycle = function()
 {
     var opcode = this.fetch();
-
-    var instruction = this.decode(opcode);
-
-    var contents = this.read( instruction);
+    if(opcode === null)
+    {
+        this.errorLog(cpu.ERROR.OP, (this.PC -1));
+        return;
+    }
     
+    var instruction = this.decode(opcode);    
+    if(instruction === null)
+    {
+        this.errorLog(cpu.ERROR.OPCODE, opcode);
+        return;
+    }
+    
+    var contents = this.read(instruction);  
+    if(contents === null)
+    {
+        return;
+    }
+
     this.execute(instruction, contents);
 };
 
@@ -127,8 +191,16 @@ cpu.prototype.read = function(instruction)
             this.PC += 2;
             break;
         default:
+            contents = null;
             break;
     }
+    
+    if(contents === null)
+    {
+        console.log(contents, count);
+        this.errorLog(cpu.ERROR.MEM,this.PC-count);
+    }
+    
     return contents;
 };
 
@@ -144,6 +216,10 @@ cpu.prototype.execute = function(instruction, contents)
     if(instruction)
     {
         instruction.funct(contents,this);
+    }
+    else 
+    {
+        this.errorLog(cpu.ERROR.INST);
     }
 };
 

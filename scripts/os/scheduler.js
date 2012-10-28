@@ -89,6 +89,7 @@ RoundRobin.prototype.scheduleProcess = function(cpu, pcb)
         //TODO error notification.
         return;    
     }
+    
     if(cpu.pcb === null)
     {
         this.tick = this.quantum;

@@ -45,6 +45,38 @@ MemoryManager.prototype.reclaimPage = function(page)
     }
 };
 
+MemoryManager.ERROR = {
+    "BOUNDS"     :0,
+    "STORE_OVER" :1,
+    "FULL"       :2
+    
+};
+MemoryManager.prototype.errorLog = function(errorCode, param)
+{
+    var msg = "";
+    
+    switch(errorCode)
+    {
+        case MemoryManager.ERROR.STORE_OVER:
+            msg = "Memory Address overflow on store.";
+            break;
+        case MemoryManager.ERROR.BOUNDS:
+            msg = "Memory access was not within page bounds: " + param;
+            break;
+        case MemoryManager.ERROR.FULL:
+            msg = "No remaining space in memory";
+            break;
+        default:
+    }
+    
+    this.log(msg);
+    _KernelInterruptQueue.enqueue( new Interrupt(FAULT_IRQ, [MEM_FAULT,msg]));
+};
+
+MemoryManager.prototype.log = function(msg)
+{
+    simLog(msg,"O_MEM");
+};
 
 /**
  * A routine for storing data in Core Memory. 
@@ -69,15 +101,12 @@ MemoryManager.prototype.store = function(hexAddress, toStore, pcb)
     if( intAddress >= limit)
     {
         // Doesn't stop the CPU but notifies the user of a detected errror.
-        _KernelInterruptQueue.enqueue( new Interrupt(FAULT_IRQ, 
-            new Array(MEM_FAULT,"Memory Address" + hexAddress + "was out of page" +
-            "bounds.")));
+        this.errorLog(MemoryManager.ERROR.BOUNDS, hexAddress);
     }
     else if(toStore.length + intAddress > limit)
     {
         // Doesn't stop the CPU but notifies the user of a detected errror.
-        _KernelInterruptQueue.enqueue( new Interrupt(FAULT_IRQ, 
-            new Array(MEM_FAULT,"Memory Address overflow on load.")));
+        this.errorLog(MemoryManager.ERROR.STORE_OVER);
     }
     else
     {
@@ -86,6 +115,7 @@ MemoryManager.prototype.store = function(hexAddress, toStore, pcb)
             this.core.memory[storeIndex + intAddress] = toStore[storeIndex];   
         }
         rc = 0;
+        this.log("Store success");
     }
     
     return rc;
@@ -121,11 +151,9 @@ MemoryManager.prototype.storeProgram = function(toStore, residents)
             // Assigns the PID and gives the PCB a base and limit.
             currentPCB  = residents.createNewPCB([baseAddress, 
                 (baseAddress + this.pageSize - 1)], page);
-            
             break;
         case 1:
-            _KernelInterruptQueue.enqueue( new Interrupt(FAULT_IRQ, 
-                new Array(MEM_FAULT,"No available pages in memory for your code.")));
+            this.errorLog(MemoryManager.ERROR.FULL);
             break;
     }
 
@@ -146,7 +174,16 @@ MemoryManager.prototype.retrieveContents = function(hexAddress,pcb)
 {
     var intAddress = parseInt(hexAddress,16) + pcb.Base;
    
-    return intAddress >= pcb.Limit ? null : this.core.memory[intAddress];
+    if(intAddress < pcb.Limit)
+    {
+       this.log(this.core.memory[intAddress] + " loaded from " + hexAddress);
+       return this.core.memory[intAddress];
+    }
+    else
+    {
+        this.errorLog(MemoryManager.ERROR.BOUNDS, hexAddress);
+        return null;
+    }
 };
 
 /**
@@ -167,18 +204,29 @@ MemoryManager.prototype.retrieveContentsToLimit = function(hexAddress, boundingV
     var intAddress = parseInt(hexAddress,16) + pcb.Base;
     var contents = [];
     
-    do {
-        contents.push(this.core.memory[intAddress++]);
-    }while(intAddress < pcb.Limit && contents[contents.length-1] != boundingValue);
-    
-    if(intAddress > pcb.Limit || contents.length === 0 || 
-        contents[contents.length-1] != boundingValue)
+    if(intAddress < pcb.Limit)
     {
-        _KernelInterruptQueue.enqueue( new Interrupt(FAULT_IRQ, 
-                new Array(MEM_FAULT,"Memory address " + hexAddress + 
-                " was out of bounds for process " + pcb.pid + "'s page.")));
-        contents = null;
+        do {
+            contents.push(this.core.memory[intAddress++]);
+        }while(intAddress < pcb.Limit && contents[contents.length-1] != boundingValue);
+        
+        if(intAddress > pcb.Limit || contents.length === 0 || 
+            contents[contents.length-1] != boundingValue)
+        {
+            this.errorLog(MemoryManager.ERROR.BOUNDS, intAddress.toString(16));
+            contents = null;
+    
+        }
+        else
+        {
+           this.log("Retrieve to character success.");
 
+        }
+    }
+    else
+    {
+        this.errorLog(MemoryManager.ERROR.BOUNDS, intAddress.toString(16));
+        contents = null;
     }
     
     return contents;
@@ -201,18 +249,28 @@ MemoryManager.prototype.retrieveContentsFromAddress = function(hexAddress, numBy
     var intAddress = parseInt(hexAddress,16) + pcb.Base;
     var contents = [];
     
-    for(var index = 0; index < numBytes && intAddress < pcb.Limit;index++)
+    if(intAddress < pcb.Limit)
     {
-        contents.push(this.core.memory[intAddress++]);
+        for(var index = 0; index < numBytes && intAddress < pcb.Limit;index++)
+        {
+            contents.push(this.core.memory[intAddress++]);
+        }
+        
+        if(intAddress > pcb.Limit || contents.length === 0)
+        {
+            contents = null;
+            this.errorLog(MemoryManager.ERROR.BOUNDS,hexAddress);
+        }
+        else
+        {
+            this.log("Retrieve from address success.");
+        }
     }
-    
-    if(intAddress > pcb.Limit || contents.length === 0)
+    else
     {
+        this.errorLog(MemoryManager.ERROR.BOUNDS, intAddress.toString(16));
         contents = null;
-        _KernelInterruptQueue.enqueue( new Interrupt(FAULT_IRQ, 
-            new Array(MEM_FAULT,"Memory address " + hexAddress + 
-            " was out of bounds for process " + pcb.pid + "'s page.")));    }
-    
+    }
     
     return contents;
 };
@@ -229,7 +287,6 @@ MemoryManager.prototype.retrieveContentsFromAddress = function(hexAddress, numBy
 MemoryManager.prototype.retrieveFromPage = function(hexAddress, page)
 {    
     var intAddress = parseInt(hexAddress,16) + this.pageSize * page;
-   
     
     return intAddress >= this.core.memory.limitAddress ? "@@" : this.core.memory[intAddress];
 };
