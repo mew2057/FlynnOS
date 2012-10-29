@@ -6,6 +6,7 @@
 function Scheduler()
 {
     this.processEnqueued = false;
+    this.breakQueued = false;
 }
 
 Scheduler.log = function (msg)
@@ -21,7 +22,7 @@ Scheduler.prototype.activesToString = function(){};
 Scheduler.prototype.toString = function(){};
 Scheduler.prototype.getReadyQueue = function(){};
 
-// Round Robin
+// Round Robin Currently an issue with quantum of 3 and 1
 //-------------------------------
 RoundRobin.prototype = new Scheduler;
 
@@ -32,7 +33,7 @@ function RoundRobin ()
     // The number of cycles that a process has focus in the scheduler.
     // Defaults to 6.
     this.quantum = RoundRobin.DEFAULT_QUANTUM;
-    this.tick = 0;
+    this.tick = 1;
     this.readyQueue = [];
 }
 
@@ -50,27 +51,43 @@ RoundRobin.prototype.setQuantum = function(quant)
 };
 RoundRobin.prototype.isReady = function()
 {    
-    if(this.tick++ >= this.quantum)
+    if(this.tick++ >= this.quantum && !this.breakQueued)
     {
         _KernelInterruptQueue.enqueue(new Interrupt(CONTEXT_IRQ, []));
+        Scheduler.log("Initiating context switch");
     }
 };
 
 RoundRobin.prototype.processNext = function(cpu, finished)
 {
+    if (finished)
+    {
+        this.breakQueued = false;
+    }
+    else if(this.breakQueued)
+    {
+        return;
+    }
     
+            
     if(this.readyQueue.length >  0)
     {
+        
         if(!finished && cpu.pcb)
         {
             cpu.pcb.update(cpu);
             this.readyQueue.push(cpu.pcb);
         }
+        else if (finished)
+        {
+            Scheduler.log(" pid " + cpu.pcb.pid + " is finished executing");
+        }
+        
         var pcb = this.readyQueue.shift();
-
+        
         cpu.setStateFromPCB(pcb);
         
-        Scheduler.log("pid " + cpu.pcb.pid + " is now executing");
+        Scheduler.log("pid " + cpu.pcb.pid + " is now queued to execute");
     }
     else if(finished)
     {
@@ -79,7 +96,7 @@ RoundRobin.prototype.processNext = function(cpu, finished)
         this.processEnqueued = false;
     }
     
-    this.tick = 0;
+    this.tick = 1;
 };
 
 RoundRobin.prototype.scheduleProcess = function(cpu, pcb)

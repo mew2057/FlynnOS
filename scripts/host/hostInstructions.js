@@ -186,7 +186,7 @@ function hostLoadY(hexValues,cpu)
     if (hexValues.length === 1) 
     {
         cpu.Yreg = parseInt(hexValues[0],16);
-        instrLog("LDX-Y register is now " + cpu.Xreg);
+        instrLog("LDY-Y register is now " + cpu.Xreg);
 
     }
     else if( hexValues.length === 2 )

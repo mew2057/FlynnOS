@@ -95,18 +95,19 @@ function krnOnCPUClockPulse()
         // Process the first interrupt on the interrupt queue.
         // TODO: Implement a priority queue based on the IRQ number/id to enforce interrupt priority.
         var interrupt = _KernelInterruptQueue.dequeue();
+
         krnInterruptHandler(interrupt.irq, interrupt.params);        
     }
     else if (_Scheduler.processEnqueued && (!_StepEnabled || (_StepEnabled && _Step))) // If there are no interrupts then run a CPU cycle if there is anything being processed.
-    { 
-        _Scheduler.isReady();        
-        
+    {        
         if(_CPU.pcb)
         {
             _CPU.cycle();
             _Step = false;
         }
-    }    
+        _Scheduler.isReady();        
+
+    }
     else                       // If there are no interrupts and there is nothing being executed then just be idle.
     {
         //I disabled Idle, because it was annoying.
@@ -238,7 +239,9 @@ function krnBreakISR(params)
     {
         _StdIn.putText("PID: " + params[0].pcb.pid + " Terminated");
     }
-    
+        
+    // Raise the next interrupt and prevent other scheduling interrupts.
+    _Scheduler.breakQueued = true;
     _KernelInterruptQueue.enqueue(new Interrupt(CONTEXT_IRQ, [true]));
 }
 

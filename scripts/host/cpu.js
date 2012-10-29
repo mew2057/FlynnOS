@@ -20,6 +20,7 @@ function cpu()
     this.Xreg  = 0;     // X register
     this.Yreg  = 0;     // Y register
     this.Zflag = 0;     // Z-ero flag (Think of it as "isZero".)
+    
     this.pcb = null;
     
     this.init = function() 
