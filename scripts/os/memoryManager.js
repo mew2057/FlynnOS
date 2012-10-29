@@ -28,6 +28,12 @@ function MemoryManager(coreMem)
             this.pagesInUse[page] = false;
         }
     };
+    
+    // Init the memory display. 
+    // I moved the draw invocations to here to reduce the number of times the 
+    // DOM gets changed (which can slow the webpage).
+    updateMemDisplay(this);
+
 }
 
 MemoryManager.prototype.pageToOffset = function(pageNumber)
@@ -116,6 +122,10 @@ MemoryManager.prototype.store = function(hexAddress, toStore, pcb)
         }
         rc = 0;
         this.log("Store success");
+        // Updates the memory display only when a change to the memory occurs.
+        // This is the only way memory may be changed so it's perfect for reducing the
+        // the redraw calls.
+        updateMemDisplay(this);
     }
     
     return rc;

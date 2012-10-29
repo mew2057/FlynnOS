@@ -47,6 +47,7 @@ RoundRobin.prototype.setQuantum = function(quant)
 {
     this.quantum = quant;
     Scheduler.log("quantum is now " + this.quantum);
+    return true;
 
 };
 RoundRobin.prototype.isReady = function()
@@ -58,7 +59,7 @@ RoundRobin.prototype.isReady = function()
     }
 };
 
-RoundRobin.prototype.processNext = function(cpu, finished)
+RoundRobin.prototype.processNext = function(cpu, finished, terminated)
 {
     if (finished)
     {
@@ -80,7 +81,7 @@ RoundRobin.prototype.processNext = function(cpu, finished)
         }
         else if (finished)
         {
-            Scheduler.log(" pid " + cpu.pcb.pid + " is finished executing");
+            Scheduler.log(" pid " + cpu.pcb.pid + (terminated ? " terminated": " is finished executing"));
         }
         
         var pcb = this.readyQueue.shift();
@@ -91,7 +92,7 @@ RoundRobin.prototype.processNext = function(cpu, finished)
     }
     else if(finished)
     {
-        Scheduler.log(" pid " + cpu.pcb.pid + " is finished executing");
+        Scheduler.log(" pid " + cpu.pcb.pid + (terminated ? " terminated":" is finished executing"));
         cpu.pcb = null;    
         this.processEnqueued = false;
     }
@@ -119,27 +120,35 @@ RoundRobin.prototype.scheduleProcess = function(cpu, pcb)
 
 RoundRobin.prototype.removeFromSchedule = function(cpu, pid)
 {
+    // I think I can make this slicker, but it's easier to take advantage of 
+    // the Break IRQ so CPU executing processes can stop in a consistent manner.
     if(cpu.pcb && cpu.pcb.pid === pid)
     {
         _KernelInterruptQueue.enqueue(new Interrupt(BRK_IRQ, new Array(cpu,true)));
+        _StdIn.putText("PID: " + pid + " Terminated.");
+        
+        this.breakQueued = true;
         this.processEnqueued = this.readyQueue.length > 0;
+    
     }
     else
     {
         for(var index = 0; index < this.readyQueue.length; index ++)
         {
-            if(this.readyQueue[index])
+            console.log(this.readyQueue[index].pid,pid);
+            if(this.readyQueue[index].pid === pid)
             {
-                this.readyQueue.slice(index,1);
-                _StdIn.putText("PID:" + pid + " Removed from ready queue.");
+                _Terminated.enqueue(this.readyQueue[index]);
+                this.readyQueue.splice(index,1);
+                
+                _StdIn.putText("PID: " + pid + " Terminated.");
                 Scheduler.log("pid " + pid + " killed" );
                 break;
             }
         }
         
-        this.processEnqueued = this.readyQueue.length > 0 || cpu.pcb != null;
+        this.processEnqueued = this.readyQueue.length > 0 || cpu.pcb !== null;
     }
-    
     
 };
 

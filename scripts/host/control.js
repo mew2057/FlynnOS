@@ -97,11 +97,13 @@ function simBtnHaltOS_click()
 
 function simBtnReset_click()
 {
-    // The easiest and most thorough way to do this is to reload (not refresh) the document.
-    location.reload(true);  
-    // That boolean parameter is the 'forceget' flag. When it is true it causes the page to always
-    // be reloaded from the server. If it is false or not specified, the browser may reload the 
-    // page from its cache, which is not what we want.
+    //location.reload(true);  
+    // Shutdown the kernel and clearout the clock. The rest will be handled by the GC.
+    krnShutdown();
+    _OSclock = 0;
+    
+    // Start the host again.
+    simBtnStartOS_click();
 }
 
 /**

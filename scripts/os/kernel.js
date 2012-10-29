@@ -80,7 +80,6 @@ function krnShutdown()
     krnTrace("end shutdown OS");
 }
 
-
 function krnOnCPUClockPulse() 
 {
     /* This gets called from the host hardware every time there is a hardware clock pulse. 
@@ -118,7 +117,6 @@ function krnOnCPUClockPulse()
     updateTaskBar();
     updateCPUDisplay(_CPU);
     updatePCBDisplay([_Residents,_Scheduler,_Terminated, _CPU.pcb]);
-    updateMemDisplay(_MemoryManager);
 }
 
 
@@ -235,11 +233,6 @@ function krnBreakISR(params)
     _MemoryManager.reclaimPage(params[0].pcb.page);
     _Terminated.enqueue(params[0].pcb);
     
-    if(params[1])
-    {
-        _StdIn.putText("PID: " + params[0].pcb.pid + " Terminated");
-    }
-        
     // Raise the next interrupt and prevent other scheduling interrupts.
     _Scheduler.breakQueued = true;
     _KernelInterruptQueue.enqueue(new Interrupt(CONTEXT_IRQ, [true]));
@@ -459,6 +452,6 @@ function krnActivePIDS ()
  */
 function krnKillProcess(pid)
 {    
-    _Scheduler.removeFromSchedule(_CPU, pid);
+    _Scheduler.removeFromSchedule(_CPU, parseInt(pid,10));
 }
 
