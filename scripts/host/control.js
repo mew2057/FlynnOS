@@ -99,11 +99,14 @@ function simBtnReset_click()
 {
     //location.reload(true);  
     // Shutdown the kernel and clearout the clock. The rest will be handled by the GC.
-    krnShutdown();
-    _OSclock = 0;
+    if(_OSclock > 0)
+    {
+        krnShutdown();
+        _OSclock = 0;
     
-    // Start the host again.
-    simBtnStartOS_click();
+        // Start the host again.
+        simBtnStartOS_click();
+    }
 }
 
 /**

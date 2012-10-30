@@ -56,6 +56,7 @@ function krnBootstrap()      // Page 8.
     // 
     // ... more?
     //
+    initPCBDisplay();
 
     // Enable the OS Interrupts.  (Not the CPU clock interrupt, as that is done in the hardware sim.)
     krnTrace("Enabling the interrupts.");
@@ -116,7 +117,7 @@ function krnOnCPUClockPulse()
     // Update the status and time in the task bar.
     updateTaskBar();
     updateCPUDisplay(_CPU);
-    updatePCBDisplay([_Residents,_Scheduler,_Terminated, _CPU.pcb]);
+    updatePCBDisplay([_Residents,_Scheduler,_Terminated,_CPU.pcb]);
 }
 
 

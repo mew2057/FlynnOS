@@ -372,6 +372,25 @@ function updateCPUDisplay(cpu)
     $("#zCell").text(cpu.Zflag.toString(16));
 }
 
+function initMemDisplay(memoryManager)
+{
+    if(document.getElementById("pages") === null)
+    {
+        $("#memCell").html('<ul id="pages"></ul>');
+        
+        for(var page = 0; page < memoryManager.pageNum; page++)
+        {
+            $("#pages").append('<li id="page-' + page + '" class="memPageTab"><a class="pageLink" href="#page'+page+'">Page ' + page + '</a></li>');        
+            $("#memCell").append('<div id="page'+page+'" class="tabBox">'+page+'</div>');
+        }
+        
+        $("#memCell").tabs();
+    }
+
+    /// TODO make it so clicking power 2x doesn't ruin everything.
+    updateMemDisplay(memoryManager);
+}
+
 /**
  * Updates the memory display with the contents of core memory.
  * 
@@ -380,37 +399,45 @@ function updateCPUDisplay(cpu)
  */
 function updateMemDisplay(memoryManager)
 {
-    $("#memDiv").text("");
-    
-    for (var page = 0,lineWidth = 5;page <  memoryManager.pageNum; page ++)
-    {
-        var pageHead = "-------page " +  page +"-------";
+
+    var pageDiv = "";
+    var table = "";
+
+    for (var page =0,lineWidth = 10;page <  memoryManager.pageNum; page ++)
+    {            
+        pageDiv = "#page"+page;
         
-        if(page !== 0)
-        {
-            pageHead = "<br/><br/>" + pageHead;
-        }
-            
-        if(page % lineWidth !== 0 || page === 0)
-        {
-            pageHead += "</br>";   
-        }
-        
-        $("#memDiv").append(pageHead); 
-        
-        for (var index = 0; index < memoryManager.pageSize;index ++)
+        table ='<table class="pageTable"><tr><td>0x' + padZeros("0",2).toUpperCase()+ ": </td><td>" 
+                    + memoryManager.retrieveFromPage("00",page).toUpperCase() +"</td>";
+                    
+        for (var index = 1; index < memoryManager.pageSize;index ++)
         {
             if( index % lineWidth !== 0)
             {
-                $("#memDiv").append(memoryManager.retrieveFromPage(index.toString(16),page).toUpperCase() + " ");
+               table += "<td>" + memoryManager.retrieveFromPage(index.toString(16),page).toUpperCase() + "</td>";
             }
             else
             {
-                $("#memDiv").append("<br/>0x" + padZeros(index.toString(16),2)+ ": " 
-                    + memoryManager.retrieveFromPage(index.toString(16),page).toUpperCase() +" ");
+               table += "</tr><tr><td>0x" + padZeros(index.toString(16).toUpperCase(),2)+ ":</td><td>" 
+                    + memoryManager.retrieveFromPage(index.toString(16),page).toUpperCase() +"</td>";
             }            
         }
+        $(pageDiv).html(table + "</tr></table>");
+        table = "";
     }
+}
+
+function changeTabDisplay (page)
+{
+    if(!isNaN(page))
+        $( "#memCell" ).tabs( "option", "selected", page);
+
+}
+function initPCBDisplay()
+{
+    $("#pcbDiv").tabs();        
+    $( "#pcbDiv" ).tabs( "option", "selected", 0);
+
 }
 
 /**
@@ -418,36 +445,36 @@ function updateMemDisplay(memoryManager)
  * I made this somewhat more robust than asked.
  * 
  * @param pcbs The Process Control blocks whose states must be represented in the 
- *  DOM.
+ *  DOM._Residents,_Scheduler,_Terminated, _CPU.pcb
+ *  0- Residents  (tab 0)
+ *  1- Scheduled  (tab 1)
+ *  2- Terminated (tab 2)
+ *  3- Executing  (tab 1)
  */
 function updatePCBDisplay(params)
 {
-    var html = 'Executing<br/><table class="pcbTable"><tr> <td>PID</td> <td>PC</td> <td>ACC</td> <td>X</td> <td>Y</td>'+
+    var head = '<table class="pcbTable"><tr> <td>PID</td> <td>PC</td> <td>ACC</td> <td>X</td> <td>Y</td>'+
         '<td>Z</td> <td>BASE</td> <td>LIMIT</td> </tr>';
+    // Tab 1
+    var html = 'Executing<br/>' + head;
     if(params[3])
     {
         html += params[3].toString();
     }
     html += "</table>";
     
+    html +='<br/>Ready<br/>' + head +  params[1].toString() + "</table>";
     
-    html +='<br/>Residents<br/><table class="pcbTable"><tr> <td>PID</td> <td>PC</td> <td>ACC</td> <td>X</td> <td>Y</td>'+
-        '<td>Z</td> <td>BASE</td> <td>LIMIT</td> </tr>';
-        
-    html += params[0].toString() + "</table>"; 
+    $("#Active").html(html);
+    html = "";
     
-    html +='<br/>Ready<br/><table class="pcbTable"><tr> <td>PID</td> <td>PC</td> <td>ACC</td> <td>X</td> <td>Y</td>'+
-        '<td>Z</td> <td>BASE</td> <td>LIMIT</td> </tr>';
-        
-    html += params[1].toString() + "</table>";   
+    // Tab 0
+    $("#Residents").html(head + params[0].toString() + "</table>");
     
-    html +='<br/>Terminated<br/><table class="pcbTable"><tr> <td>PID</td> <td>PC</td> <td>ACC</td> <td>X</td> <td>Y</td>'+
-        '<td>Z</td> <td>BASE</td> <td>LIMIT</td> </tr>';
-        
-    html += params[2].toString() + "</table>";   
-    
-    $("#pcbDiv").html(html);
+    // Tab 2    
+    $("#Terminated").html(head + params[2].toString() + "</table>");
 }
+
 /**
  * A button class that allows for animated images to be used as buttons.
  */

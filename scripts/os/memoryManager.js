@@ -19,7 +19,9 @@ function MemoryManager(coreMem)
     this.pageSize = this.core.frameSize;
     
     this.pagesInUse = new Array(this.pageNum);
-    
+
+    initMemDisplay(this);
+
     this.init = function()
     {
         for(var page = 0; page < this.pageNum; page ++)
@@ -27,13 +29,11 @@ function MemoryManager(coreMem)
             //this.pages[page] = page;
             this.pagesInUse[page] = false;
         }
+        
+        // Init the memory display. 
+        // I moved the draw invocations to here to reduce the number of times the 
+        // DOM gets changed (which can slow the webpage).
     };
-    
-    // Init the memory display. 
-    // I moved the draw invocations to here to reduce the number of times the 
-    // DOM gets changed (which can slow the webpage).
-    updateMemDisplay(this);
-
 }
 
 MemoryManager.prototype.pageToOffset = function(pageNumber)
@@ -125,7 +125,7 @@ MemoryManager.prototype.store = function(hexAddress, toStore, pcb)
         // Updates the memory display only when a change to the memory occurs.
         // This is the only way memory may be changed so it's perfect for reducing the
         // the redraw calls.
-        updateMemDisplay(this);
+        updateMemDisplay(this,pcb?pcb.page:null);
     }
     
     return rc;
@@ -161,6 +161,7 @@ MemoryManager.prototype.storeProgram = function(toStore, residents)
             // Assigns the PID and gives the PCB a base and limit.
             currentPCB  = residents.createNewPCB([baseAddress, 
                 (baseAddress + this.pageSize - 1)], page);
+            changeTabDisplay(page);
             break;
         case 1:
             this.errorLog(MemoryManager.ERROR.FULL);
@@ -187,6 +188,9 @@ MemoryManager.prototype.retrieveContents = function(hexAddress,pcb)
     if(intAddress < pcb.Limit)
     {
        this.log(this.core.memory[intAddress] + " loaded from " + hexAddress);
+       // All other retrievals are always predicated by a retrieve contents.
+       changeTabDisplay(pcb.page);
+
        return this.core.memory[intAddress];
     }
     else

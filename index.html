@@ -12,6 +12,9 @@
 
     <!-- The JQuery libraries used in beautification -->
     <script type="text/javascript" src="libraries/jquery-1.8.1.min.js"></script>    
+    <script type="text/javascript" src="libraries/jquery-ui-1.9.1.custom.min.js"></script>    
+    
+
 
     <script type="text/javascript" src="scripts/cycles.js"></script>
 
@@ -94,14 +97,7 @@
                         </td>
                     </tr>
                     <tr>
-                        <td id="memCell">
-                            <div id="memDiv"class ="textBox">
-                                <ul id="pages">
-                                    <li >
-                                    <li>
-                                    <li>
-                                </ul>
-                            </div>
+                        <td id="memCell" class ="textBox">
                         </td>
                         
                         <td id="cpu_pcbCell">
@@ -122,9 +118,14 @@
                                 </table>                                
                             </div>
                             <div id="pcbDiv" class="textBox">
-                                <table id ="pcbTable">
-                                    
-                                </table>
+                                <ul id="pcbs">
+                                    <li id="resTab" class="pcbTab"><a class="pcbLink" href="#Residents">Residents</a></li>
+                                    <li id="actTab" class="pcbTab"><a class="pcbLink" href="#Active">Active</a></li>
+                                    <li id="termTab" class="pcbTab"><a class="pcbLink" href="#Terminated">Terminated</a></li>                                   
+                                </ul>
+                                <div id="Residents" class="tabBox"></div>
+                                <div id="Active" class="tabBox"></div>
+                                <div id="Terminated" class="tabBox"></div>
                             </div>
                         </td>
                     </tr>                    
