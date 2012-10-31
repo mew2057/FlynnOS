@@ -407,18 +407,18 @@ function updateMemDisplay(memoryManager)
     {            
         pageDiv = "#page"+page;
         
-        table ='<table class="pageTable"><tr><td>0x' + padZeros("0",2).toUpperCase()+ ": </td><td>" 
-                    + memoryManager.retrieveFromPage("00",page).toUpperCase() +"</td>";
+        table ='<table class="pageTable"><tr id="' + 0 +'"><td>0x' + padZeros("0",2).toUpperCase()+ ": </td>"  
+            + '<td id="'+ 0 +'">' + memoryManager.retrieveFromPage("00",page).toUpperCase() +"</td>";
                     
         for (var index = 1; index < memoryManager.pageSize;index ++)
         {
             if( index % lineWidth !== 0)
             {
-               table += "<td>" + memoryManager.retrieveFromPage(index.toString(16),page).toUpperCase() + "</td>";
+               table += '<td id="'+index+'">' + memoryManager.retrieveFromPage(index.toString(16),page).toUpperCase() + "</td>";
             }
             else
             {
-               table += "</tr><tr><td>0x" + padZeros(index.toString(16).toUpperCase(),2)+ ":</td><td>" 
+               table += '</tr><tr id="' + index +'"><td>0x' + padZeros(index.toString(16).toUpperCase(),2) + ':</td><td id="'+ index + '">'
                     + memoryManager.retrieveFromPage(index.toString(16),page).toUpperCase() +"</td>";
             }            
         }
@@ -429,7 +429,7 @@ function updateMemDisplay(memoryManager)
 
 function changeTabDisplay (page)
 {
-    if(!isNaN(page))
+    if(!isNaN(page) && _SwitchPageView)
         $( "#memCell" ).tabs( "option", "selected", page);
 
 }

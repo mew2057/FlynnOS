@@ -100,12 +100,18 @@ function krnOnCPUClockPulse()
     }
     else if (_Scheduler.processEnqueued && (!_StepEnabled || (_StepEnabled && _Step))) // If there are no interrupts then run a CPU cycle if there is anything being processed.
     {        
+       
+         // This goes second since the break interrupt may clobber another process.
+        _Scheduler.isReady();   
+        // User mode for cpu instructions.
+        _Mode = 1;
         if(_CPU.pcb)
         {
             _CPU.cycle();
             _Step = false;
         }
-        _Scheduler.isReady();        
+        // Kernel mode for kernel operations.
+        _Mode = 0;   
 
     }
     else                       // If there are no interrupts and there is nothing being executed then just be idle.
@@ -146,7 +152,7 @@ function krnInterruptHandler(irq, params)    // This is the Interrupt Handler Ro
     krnTrace("Handling IRQ~" + irq);
 
     // Save CPU state. (I think we do this elsewhere.)
-
+    
     // Invoke the requested Interrupt Service Routine via Switch/Case rather than an Interrupt Vector.
     // TODO: Use Interrupt Vector in the future.
     // Note: There is no need to "dismiss" or acknowledge the interrupts in our design here.  
@@ -235,8 +241,8 @@ function krnBreakISR(params)
     _Terminated.enqueue(params[0].pcb);
     
     // Raise the next interrupt and prevent other scheduling interrupts.
-    _Scheduler.breakQueued = true;
-    _KernelInterruptQueue.enqueue(new Interrupt(CONTEXT_IRQ, [true]));
+    //_Scheduler.breakQueued = true;
+    _Scheduler.processNext(_CPU,true);
 }
 
 /**
@@ -264,7 +270,7 @@ function krnSystemCallISR(params)
             // Get the String of characters from the core memory through the 
             // manager.
             var outputChars = _MemoryManager.retrieveContentsToLimit(
-                    params[1].toString(16), "00", _CPU.pcb);
+                    params[1].toString(16), "00", params[2]);
             
             // If the memory request was successful, output the string.
             if(outputChars)

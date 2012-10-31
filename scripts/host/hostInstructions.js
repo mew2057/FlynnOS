@@ -324,6 +324,9 @@ function hostIncrementByte(hexValues,cpu)
  */
 function hostBreakProcess(hexValues,cpu)
 {
+    // This drops any queued context switch interrupts so the break isn't clobbered.
+    _Break = true;
+    
     _KernelInterruptQueue.enqueue(new Interrupt(BRK_IRQ, new Array(cpu)));
     instrLog("BRK-Interrupt fired");
 }
@@ -340,7 +343,7 @@ function hostBreakProcess(hexValues,cpu)
 function hostSystemCall(hexValues,cpu)
 {
     _KernelInterruptQueue.enqueue(new Interrupt(SYSTEM_IRQ, new Array(cpu.Xreg, 
-        cpu.Yreg)));
+        cpu.Yreg, cpu.pcb)));
     instrLog("SYS-Interrupt fired");
 
 }

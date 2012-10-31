@@ -45,6 +45,7 @@ var _MemoryManager = null;
 var _CoreMemory = null;
 var _OSclock = 0;       // Page 23.
 var _Mode = 0;   // 0 = Kernel Mode, 1 = User Mode.  See page 21.
+var _Break = false; //  Specifies if a break has been enqueued by the host.
 var _KernelStatus = "default"; // The kernel status field specified by iProject1
 var _KernelLoadedProgram = ""; 
 var _Scheduler = null; //
@@ -112,3 +113,6 @@ var _UserLocation = "Off the Grid.";
 
 // The limit to the number of characters in the log div.
 var LOG_CHAR_LIMIT = 6000;
+
+var _SwitchPageView = true;
+

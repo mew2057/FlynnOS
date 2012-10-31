@@ -6,7 +6,6 @@
 function Scheduler()
 {
     this.processEnqueued = false;
-    this.breakQueued = false;
 }
 
 Scheduler.log = function (msg)
@@ -52,7 +51,7 @@ RoundRobin.prototype.setQuantum = function(quant)
 };
 RoundRobin.prototype.isReady = function()
 {    
-    if(this.tick++ >= this.quantum && !this.breakQueued)
+    if(this.tick++ >= this.quantum)
     {
         _KernelInterruptQueue.enqueue(new Interrupt(CONTEXT_IRQ, []));
         Scheduler.log("Initiating context switch");
@@ -61,15 +60,14 @@ RoundRobin.prototype.isReady = function()
 
 RoundRobin.prototype.processNext = function(cpu, finished, terminated)
 {
-    if (finished)
+    if (finished )
     {
-        this.breakQueued = false;
+        _Break = false;
     }
-    else if(this.breakQueued)
+    else if(_Break)
     {
         return;
     }
-    
             
     if(this.readyQueue.length >  0)
     {
@@ -127,7 +125,8 @@ RoundRobin.prototype.removeFromSchedule = function(cpu, pid)
         _KernelInterruptQueue.enqueue(new Interrupt(BRK_IRQ, new Array(cpu,true)));
         _StdIn.putText("PID: " + pid + " Terminated.");
         
-        this.breakQueued = true;
+        // Set the break flag to clear out any other context switches.
+        _Break = true;
         this.processEnqueued = this.readyQueue.length > 0;
     
     }
@@ -135,7 +134,6 @@ RoundRobin.prototype.removeFromSchedule = function(cpu, pid)
     {
         for(var index = 0; index < this.readyQueue.length; index ++)
         {
-            console.log(this.readyQueue[index].pid,pid);
             if(this.readyQueue[index].pid === pid)
             {
                 _Terminated.enqueue(this.readyQueue[index]);

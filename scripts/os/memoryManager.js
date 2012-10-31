@@ -101,10 +101,15 @@ MemoryManager.prototype.store = function(hexAddress, toStore, pcb)
     // Translate the hex address to int.
     var intAddress = pcb ? parseInt(hexAddress,16)  + pcb.Base : parseInt(hexAddress,16);
     var limit = pcb ? pcb.Limit : intAddress + this.pageSize;
+    var base  = pcb ? pcb.Base  : intAddress;
     var rc = -1;
     
+    // Working on improving the bounds checking.
     // If the address is already out of bounds notify the invoking function.
-    if( intAddress >= limit)
+    if( limit > this.core.limitAddress ||
+        base < this.core.baseAddress   ||
+        intAddress >= limit            || 
+        intAddress < base) 
     {
         // Doesn't stop the CPU but notifies the user of a detected errror.
         this.errorLog(MemoryManager.ERROR.BOUNDS, hexAddress);
@@ -152,7 +157,7 @@ MemoryManager.prototype.storeProgram = function(toStore, residents)
     
     var baseAddress = this.pageToOffset(page);
 
-    var returnCode =page != -1 ? this.store(baseAddress.toString(16),toStore): 1;
+    var returnCode =page != -1 ? this.store(baseAddress.toString(16),toStore) : 1;
     var currentPCB = -1;
     
     switch (returnCode)
@@ -185,10 +190,15 @@ MemoryManager.prototype.retrieveContents = function(hexAddress,pcb)
 {
     var intAddress = parseInt(hexAddress,16) + pcb.Base;
    
-    if(intAddress < pcb.Limit)
+   // verifies the intAddress is within the bounds and the hexAddress was non negative.
+    if(intAddress >= pcb.Base                && 
+       intAddress <  pcb.Limit               && 
+       pcb.Limit  <= this.core.limitAddress  && 
+       pcb.Base   >= this.core.baseAddress)
     {
        this.log(this.core.memory[intAddress] + " loaded from " + hexAddress);
        // All other retrievals are always predicated by a retrieve contents.
+       // This changes the page of memory presently being displayed.
        changeTabDisplay(pcb.page);
 
        return this.core.memory[intAddress];
@@ -218,7 +228,11 @@ MemoryManager.prototype.retrieveContentsToLimit = function(hexAddress, boundingV
     var intAddress = parseInt(hexAddress,16) + pcb.Base;
     var contents = [];
     
-    if(intAddress < pcb.Limit)
+    // verifies the intAddress is within the bounds and the hexAddress was non negative.
+    if(intAddress >= pcb.Base                && 
+       intAddress <  pcb.Limit               && 
+       pcb.Limit  <= this.core.limitAddress  && 
+       pcb.Base   >= this.core.baseAddress)
     {
         do {
             contents.push(this.core.memory[intAddress++]);
@@ -229,7 +243,6 @@ MemoryManager.prototype.retrieveContentsToLimit = function(hexAddress, boundingV
         {
             this.errorLog(MemoryManager.ERROR.BOUNDS, intAddress.toString(16));
             contents = null;
-    
         }
         else
         {
@@ -263,7 +276,11 @@ MemoryManager.prototype.retrieveContentsFromAddress = function(hexAddress, numBy
     var intAddress = parseInt(hexAddress,16) + pcb.Base;
     var contents = [];
     
-    if(intAddress < pcb.Limit)
+    // verifies the intAddress is within the bounds and the hexAddress was non negative.
+    if(intAddress >= pcb.Base                && 
+       intAddress <  pcb.Limit               && 
+       pcb.Limit  <= this.core.limitAddress  && 
+       pcb.Base   >= this.core.baseAddress)
     {
         for(var index = 0; index < numBytes && intAddress < pcb.Limit;index++)
         {
