@@ -380,17 +380,23 @@ function initMemDisplay(memoryManager)
         
         for(var page = 0; page < memoryManager.pageNum; page++)
         {
-            $("#pages").append('<li id="page-' + page + '" class="memPageTab"><a class="pageLink" href="#page'+page+'">Page ' + page + '</a></li>');        
+            $("#pages").append('<li id="page-' + page + '" class="memPageTab"><a class="pageLink" href="#page'+page+'">Page ' + page + '</a></li>');   
+            
             $("#memCell").append('<div id="page'+page+'" class="tabBox">'+page+'</div>');
         }
         
         $("#memCell").tabs();
+        $("#pages").append('<li id="autoSwitch" class="memPageTab"><a id="cycleButton" class="toggleButton" href="javascript:toggleCycle()">Cycling</a></li>');   
     }
-
+    
     /// TODO make it so clicking power 2x doesn't ruin everything.
     updateMemDisplay(memoryManager);
 }
-
+function toggleCycle()
+{
+    _SwitchPageView = !_SwitchPageView;
+    $("#cycleButton").text(_SwitchPageView ? "Cycling" : "Static");
+}
 /**
  * Updates the memory display with the contents of core memory.
  * 

@@ -198,7 +198,6 @@ cpu.prototype.read = function(instruction)
     
     if(contents === null)
     {
-        console.log(contents, count);
         this.errorLog(cpu.ERROR.MEM,this.PC-count);
     }
     

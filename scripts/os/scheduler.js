@@ -136,6 +136,8 @@ RoundRobin.prototype.removeFromSchedule = function(cpu, pid)
         {
             if(this.readyQueue[index].pid === pid)
             {
+                _MemoryManager.reclaimPage(this.readyQueue[index].page);
+                
                 _Terminated.enqueue(this.readyQueue[index]);
                 this.readyQueue.splice(index,1);
                 

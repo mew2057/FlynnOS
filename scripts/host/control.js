@@ -116,7 +116,7 @@ function simLoadProgram()
 {   
     // I enforce characters between hex pairs on one line, but spaces and new 
     // lines make for sticky situations handled by this line of code.
-    var program = document.getElementById('taExtProgs').value.toLowerCase().replace(/[ ]*\n[ ]*/g," ");
+    var program = document.getElementById('taExtProgs').value.toLowerCase().replace(/[ ]*\n[ ]*/g," ").trim();
     
     return program;
 }
