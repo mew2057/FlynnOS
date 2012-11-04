@@ -216,7 +216,6 @@ RoundRobin.prototype.isReady = function()
    // console.log(this.tick);
     if(this.tick++ >= this.quantum)
     {
-        console.log("in it");
         _KernelInterruptQueue.enqueue(new Interrupt(CONTEXT_IRQ, []));
         Scheduler.log("Initiating context switch");
     }
