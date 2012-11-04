@@ -35,6 +35,17 @@ PCB.prototype.update = function(cpu)
     this.Zflag = cpu.Zflag;
 };
 
+/**
+ * Clears out the per execution details of a process (eg PC,Acc...)
+ */
+PCB.prototype.clearCPUDetails = function()
+{
+    this.PC    = 0;
+    this.Acc   = 0;
+    this.Xreg  = 0;
+    this.Yreg  = 0;
+    this.Zflag = 0;
+};
 
 /**
  * The toString function, enough said.
@@ -69,6 +80,15 @@ function ResidentList()
     // Manages pids.
     this.leadPID = 0;
 }
+
+/**
+ * The size gettor for the ResidentList class.
+ * @return The number of residents on the list.
+ */
+ResidentList.prototype.getSize = function()
+{
+    return this.residents.length;
+};
 
 /**
  * Finds the pcb with the supplied pid.

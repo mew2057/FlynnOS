@@ -295,11 +295,17 @@ function animateHalt ()
     
 }
 
+/**
+ * Trigger when clicking the step button.
+ */
 function stepAction()
 {
     _Step = !_Step;
 }
 
+/**
+ * Triggers when clicking the step toggle button.
+ */
 function toggleStep()
 {
     _StepEnabled = !_StepEnabled;
@@ -372,26 +378,38 @@ function updateCPUDisplay(cpu)
     $("#zCell").text(cpu.Zflag.toString(16));
 }
 
+/**
+ * Initializes the memory display with a memory manager (necessary with the 
+ * addition of JQuery tabs).
+ * Page MUST be refreshed if you change the page count!
+ * 
+ * @param memoryManager The accessor to the core memory in the kernel. 
+ */
 function initMemDisplay(memoryManager)
 {
     if(document.getElementById("pages") === null)
     {
+        // Set up the unordered list.
         $("#memCell").html('<ul id="pages"></ul>');
         
+        // Add the lists and divs for each page.    
         for(var page = 0; page < memoryManager.pageNum; page++)
         {
             $("#pages").append('<li id="page-' + page + '" class="memPageTab"><a class="pageLink" href="#page'+page+'">Page ' + page + '</a></li>');   
             
             $("#memCell").append('<div id="page'+page+'" class="tabBox">'+page+'</div>');
         }
-        
+        // set up the tabs then specify the toggle for the tab cycling.
         $("#memCell").tabs();
         $("#pages").append('<li id="autoSwitch" class="memPageTab"><a id="cycleButton" class="toggleButton" href="javascript:toggleCycle()">Cycling</a></li>');   
     }
     
-    /// TODO make it so clicking power 2x doesn't ruin everything.
     updateMemDisplay(memoryManager);
 }
+
+/**
+ * Toggles the cycling of the memory pages (essential in debugging). 
+ */
 function toggleCycle()
 {
     _SwitchPageView = !_SwitchPageView;
@@ -405,40 +423,60 @@ function toggleCycle()
  */
 function updateMemDisplay(memoryManager)
 {
-
-    var pageDiv = "";
-    var table = "";
-
-    for (var page =0,lineWidth = 10;page <  memoryManager.pageNum; page ++)
+    // place holder variables.
+    var pageDiv = "",table = "";
+    
+    // Display 10 entries per line and a page of memory per div.
+    for (var page =0,lineWidth = 10; page <  memoryManager.pageNum; page ++)
     {            
         pageDiv = "#page"+page;
         
-        table ='<table class="pageTable"><tr id="' + 0 +'"><td>0x' + padZeros("0",2).toUpperCase()+ ": </td>"  
-            + '<td id="'+ 0 +'">' + memoryManager.retrieveFromPage("00",page).toUpperCase() +"</td>";
+        // Set up the table for the page.
+        table ='<table class="pageTable"><tr id="' + 0 +'"><td>0x' + 
+            padZeros("0",2).toUpperCase()+ ': </td><td id="'+ 0 +'">' + 
+            memoryManager.retrieveFromPage("00",page).toUpperCase() +"</td>";
                     
+        // Output the data within the cells.
         for (var index = 1; index < memoryManager.pageSize;index ++)
         {
+            // If this index is not the final index output it, 
+            // else a table row and memory address needs to be added to the output.
             if( index % lineWidth !== 0)
             {
-               table += '<td id="'+index+'">' + memoryManager.retrieveFromPage(index.toString(16),page).toUpperCase() + "</td>";
+               table += '<td id="'+index+'">' + memoryManager.retrieveFromPage(
+                    index.toString(16),page).toUpperCase() + "</td>";
             }
             else
             {
-               table += '</tr><tr id="' + index +'"><td>0x' + padZeros(index.toString(16).toUpperCase(),2) + ':</td><td id="'+ index + '">'
-                    + memoryManager.retrieveFromPage(index.toString(16),page).toUpperCase() +"</td>";
+               table += '</tr><tr id="' + index +'"><td>0x' + padZeros(
+                    index.toString(16).toUpperCase(),2) + ':</td><td id="' +
+                    index + '">' + memoryManager.retrieveFromPage(
+                        index.toString(16),page).toUpperCase() +"</td>";
             }            
         }
+        
+        // Add the table to the DOM then return.
         $(pageDiv).html(table + "</tr></table>");
         table = "";
     }
 }
 
+/**
+ * Changes the tab that is presently selected as per the active memory page.
+ * 
+ * @param page the presently active memory page.
+ */
 function changeTabDisplay (page)
 {
     if(!isNaN(page) && _SwitchPageView)
         $( "#memCell" ).tabs( "option", "selected", page);
 
 }
+
+/**
+ * Initializes the display for the process control blocks, uses the JQuery tabs 
+ * for a slicker presentation.
+ */
 function initPCBDisplay()
 {
     $("#pcbDiv").tabs();        
@@ -451,7 +489,7 @@ function initPCBDisplay()
  * I made this somewhat more robust than asked.
  * 
  * @param pcbs The Process Control blocks whose states must be represented in the 
- *  DOM._Residents,_Scheduler,_Terminated, _CPU.pcb
+ *  DOM.
  *  0- Residents  (tab 0)
  *  1- Scheduled  (tab 1)
  *  2- Terminated (tab 2)
@@ -459,8 +497,9 @@ function initPCBDisplay()
  */
 function updatePCBDisplay(params)
 {
-    var head = '<table class="pcbTable"><tr> <td>PID</td> <td>PC</td> <td>ACC</td> <td>X</td> <td>Y</td>'+
-        '<td>Z</td> <td>BASE</td> <td>LIMIT</td> </tr>';
+    var head = '<table class="pcbTable"><tr><td>PID</td> <td>PC</td><td>ACC'+
+        '</td><td>X</td><td>Y</td><td>Z</td><td>BASE</td><td>LIMIT</td> </tr>';
+        
     // Tab 1
     var html = 'Executing<br/>' + head;
     if(params[3])

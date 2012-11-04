@@ -21,6 +21,7 @@ function Shell()
     this.putPrompt   = shellPutPrompt;
     this.handleInput = shellHandleInput;
     this.execute     = shellExecute;
+    this.drop        = shellDropLine;
 }
 
 function shellInit()
@@ -170,6 +171,19 @@ function shellInit()
 function shellPutPrompt()
 {
     _StdIn.putText(this.promptStr);
+}
+
+/**
+ * Drops the line down prompt and input all. 
+ */
+function shellDropLine()
+{
+    // Drop the line then output whatever was typed but not executed (inspired by how AIX handles this).
+    _StdIn.advanceLine();
+    this.putPrompt();
+    
+    if(_StdIn.buffer.getSize() > 0)
+        _StdIn.putText(_StdIn.buffer);
 }
 
 function shellHandleInput(buffer)
@@ -585,14 +599,7 @@ function shellSetQ (args)
 {
     if(args.length > 0)
     {
-        if(!isNaN(args[0]) && args[0] > 0)
-        {
-            krnSetQuantum(args[0]);
-        }
-        else
-        {
-            _StdIn.putText("The supplied quanta is not a valid positive number greater than 0.");
-        }
+        krnSetQuantum(args[0]);
     }
     else
     {

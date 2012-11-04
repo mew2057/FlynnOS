@@ -88,6 +88,7 @@ cpu.prototype.errorLog = function(errorCode, param)
         default:
     }
     
+    // Enqueue the message as a fault interrupt and log the message.
     _KernelInterruptQueue.enqueue(new Interrupt(FAULT_IRQ, [CPU_FAULT, msg, _CPU]));
     this.log(msg);
 };

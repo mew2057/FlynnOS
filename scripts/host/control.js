@@ -58,6 +58,12 @@ function simLog(msg, source)
     // Optionally udpate a log database or some streaming service.
 }
 
+function simClearLog(msg, source)
+{
+    $("#logDiv").text("");
+}
+
+
 //
 // Control Events
 //
@@ -101,8 +107,10 @@ function simBtnReset_click()
     // Shutdown the kernel and clearout the clock. The rest will be handled by the GC.
     if(_OSclock > 0)
     {
+        globalReset();
         krnShutdown();
         _OSclock = 0;
+        simClearLog(); // Clears the log
     
         // Start the host again.
         simBtnStartOS_click();

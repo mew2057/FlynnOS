@@ -9,15 +9,19 @@
 /**
   * The Memory manager function that should handle all accesses to Core Memory.
   * 
+  * @param coreMem The core memory in "hardware" that this manager points to. 
   */
 function MemoryManager(coreMem)
 {
     this.core = coreMem;
+    
+    // This just formalizes the number of pages.
     this.pageNum = 3;
 
     // pageSize === frameSize
     this.pageSize = this.core.frameSize;
     
+    // A set that keeps track of what pages currently have a pcb assigned to them.
     this.pagesInUse = new Array(this.pageNum);
 
     initMemDisplay(this);
@@ -26,37 +30,50 @@ function MemoryManager(coreMem)
     {
         for(var page = 0; page < this.pageNum; page ++)
         {
-            //this.pages[page] = page;
             this.pagesInUse[page] = false;
         }
-        
-        // Init the memory display. 
-        // I moved the draw invocations to here to reduce the number of times the 
-        // DOM gets changed (which can slow the webpage).
     };
 }
 
+/**
+ * Retruns the base address of the page (converts the PAGE TO the OFFSET).
+ * 
+ * @param pageNumber The page number you are requestin the base address for.
+ */
 MemoryManager.prototype.pageToOffset = function(pageNumber)
 {
     return pageNumber * this.pageSize; 
 };
 
-
+/**
+ * Reclaims the page by making it available in the pagesInUse set.
+ * @param page The page number to save.
+ */
 MemoryManager.prototype.reclaimPage = function(page)
 {
     if(page < this.pagesInUse.length)
     {
-        //this.pages.push(page);
         this.pagesInUse[page] = false;
     }
+    
+    this.log("Page " + page + " has been reclaimed");
 };
 
+// Error enumeration (standardizes some frequent errors to error codes.
 MemoryManager.ERROR = {
-    "BOUNDS"     :0,
-    "STORE_OVER" :1,
-    "FULL"       :2
+    "BOUNDS"     : 0,
+    "STORE_OVER" : 1,
+    "FULL"       : 2
     
 };
+
+/**
+ * An error logger tailored for the MemoryManager.
+ * 
+ * @param errorCode Defines the general message.
+ * 
+ * @param param Localized data for the error.
+ */
 MemoryManager.prototype.errorLog = function(errorCode, param)
 {
     var msg = "";
@@ -64,7 +81,7 @@ MemoryManager.prototype.errorLog = function(errorCode, param)
     switch(errorCode)
     {
         case MemoryManager.ERROR.STORE_OVER:
-            msg = "Memory Address overflow on store.";
+            msg = "Memory Address overflow on store";
             break;
         case MemoryManager.ERROR.BOUNDS:
             msg = "Memory access was not within page bounds: " + param;
@@ -76,9 +93,15 @@ MemoryManager.prototype.errorLog = function(errorCode, param)
     }
     
     this.log(msg);
-    _KernelInterruptQueue.enqueue( new Interrupt(FAULT_IRQ, [MEM_FAULT,msg]));
+    _KernelInterruptQueue.enqueue(new Interrupt(FAULT_IRQ, [MEM_FAULT,msg]));
 };
 
+/**
+ * A general logger for the MemoryManager, this ensures that the source is
+ * constant: "O_MEM".
+ * 
+ * @param msg The message to send along.
+ */
 MemoryManager.prototype.log = function(msg)
 {
     simLog(msg,"O_MEM");
@@ -307,7 +330,8 @@ MemoryManager.prototype.retrieveContentsFromAddress = function(hexAddress, numBy
 };
 
 /**
- * Retrieves from coreMemory with a page offset This is a specialty method used by the canvasAnimations (not actually used in the OS).
+ * Retrieves from coreMemory with a page offset This is a specialty method used by the canvasAnimations 
+ * (not actually used in the OS, actually a helper for quick output in the display).
  * 
  * @param hexAddress The logical hexAddress.
  * 

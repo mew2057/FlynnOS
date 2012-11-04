@@ -217,32 +217,30 @@ function krnFaultISR(params)
             break;
     }
     
-    _StdIn.putText(message + " " + params[1]);
+    // Drop the prompt down so the error message is more readable.
+    _OsShell.drop();
     
-    if(params[0] === INST_FAULT || params[0] === CPU_FAULT)
+    _StdIn.putText(message + " " + params[1]);
+
+    //kill process if fault came from the CPU. ( not all memory faults come from the cpu).
+    if((params[0] === INST_FAULT || params[0] === CPU_FAULT) && params[2].pcb != null)
     {
-        krnKillProcess(params[2].pid);
+        krnKillProcess(params[2].pcb.pid);
     }
+    
+    // Drop the prompt down so the error message is more readable.
+  //  _OsShell.drop();
 }
 
 /**
  * Removes the PCB from the ready queue (this is subject to change as I develop 
  * the Scheduler).
  * 
- * @params 0 - CPU
+ * @params  param 0 - boolean value for whether or not the execution is finished.
  */
 function krnBreakISR(params)
 {
-    //This will be more complicated come project 3
-    params[0].pcb.update(params[0]);
-    
-    // Reclaims the page and places the pcb in the terminated queue(I think the scheduler may need to do this)
-    _MemoryManager.reclaimPage(params[0].pcb.page);
-    _Terminated.enqueue(params[0].pcb);
-    
-    // Raise the next interrupt and prevent other scheduling interrupts.
-    //_Scheduler.breakQueued = true;
-    _Scheduler.processNext(_CPU,true);
+    _Scheduler.breakExecution(params[0]);
 }
 
 /**
@@ -320,6 +318,11 @@ function krnTrace(msg)
    }
 }
    
+/**
+ * The OSOD, master control is NOT pleased with you.
+ * 
+ * @param msg The error message.
+ */
 function krnTrapError(msg)
 {
     simLog("OS ERROR - TRAP: " + msg);
@@ -328,6 +331,10 @@ function krnTrapError(msg)
     krnShutdown();
 }
 
+/**
+ * Performs a context switch...
+ * @param params 0 - The 
+ */
 function krnContextSwitch(params)
 {
     _Scheduler.processNext(_CPU,params[0]);
@@ -336,7 +343,9 @@ function krnContextSwitch(params)
 /**
  * Checks to ensure that each instruction in a program String has a valid 
  * corresponding Instruction in the Instruction Set.
+ * 
  * @param program The String form of a user program to be loaded to memory.
+ * 
  * @return An array containing op codes if valid, null if any op codes were bad.
  */
 function krnVerifyInstructions(program)
@@ -426,14 +435,23 @@ function krnRunProgram(pid)
     
 }
 
+/**
+ * Runs all of the resident processes on the resident list.
+ */
 function krnRunResidents()
 {
-    for(var index in _Residents)
+    for(var index = 0, length = _Residents.getSize(); index < length; index++)
     {
         _Scheduler.scheduleProcess(_CPU, _Residents.popBlock());
     }
 }
 
+
+/**
+ * Sets the quantum of the Round Robin scheduler.
+ * 
+ * @param quantum Dr. Beckett's new... The new quantum for a round robin scheduler.
+ */
 function krnSetQuantum(quantum)
 {
     // If the quantum is a valid number and the scheduler has a quantum allow it to be set.
@@ -447,6 +465,11 @@ function krnSetQuantum(quantum)
     }
 }
 
+/**
+ * Retrieves a list of presently executing process identifiers.
+ * 
+ * @return A string of pids that are either active on the CPU or ready queue.
+ */
 function krnActivePIDS ()
 {
     return _Scheduler.activesToString(_CPU);
@@ -455,6 +478,7 @@ function krnActivePIDS ()
 
 /**
  * Kills the executing process with matching pid.
+ * 
  * @param pid The process to stop.
  */
 function krnKillProcess(pid)

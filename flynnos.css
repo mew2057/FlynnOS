@@ -125,7 +125,7 @@ ul#pages
 .pcbTab
 {
     display: inline;
-    padding: 5px;
+    padding: 3px;
     border-left: dotted 1px;
 }
 
@@ -144,7 +144,7 @@ li#resTab.pcbTab
 ul#pcbs
 {
     list-style-type:none; 
-    text-align: left;
+    text-align: center;
     width: 100%;
     border-bottom: solid 2px;
     margin:0;   
@@ -168,7 +168,7 @@ ul#pcbs
 
 #pcbDiv div.tabBox
 {
-    height: 87%;
+    height: 85%;
 }
 
 /* THIS NEEDS THE a tag JOHN! */
