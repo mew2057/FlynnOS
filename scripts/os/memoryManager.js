@@ -270,7 +270,6 @@ MemoryManager.prototype.retrieveContentsToLimit = function(hexAddress, boundingV
         else
         {
            this.log("Retrieve to character success.");
-
         }
     }
     else

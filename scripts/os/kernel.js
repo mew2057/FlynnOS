@@ -100,9 +100,6 @@ function krnOnCPUClockPulse()
     }
     else if (_Scheduler.processEnqueued && (!_StepEnabled || (_StepEnabled && _Step))) // If there are no interrupts then run a CPU cycle if there is anything being processed.
     {        
-       
-         // This goes second since the break interrupt may clobber another process.
-        _Scheduler.isReady();   
         // User mode for cpu instructions.
         _Mode = 1;
         if(_CPU.pcb)
@@ -112,6 +109,12 @@ function krnOnCPUClockPulse()
         }
         // Kernel mode for kernel operations.
         _Mode = 0;   
+        
+        // This goes after the cycle to easily handle interrupt collisions 
+        // (eg a break and context switch) There is a wasted cycle regardless 
+        // when scheduling.
+        _Scheduler.isReady();   
+
 
     }
     else                       // If there are no interrupts and there is nothing being executed then just be idle.
@@ -333,7 +336,7 @@ function krnTrapError(msg)
 
 /**
  * Performs a context switch...
- * @param params 0 - The 
+ * @param params 0 - The status of the program.
  */
 function krnContextSwitch(params)
 {

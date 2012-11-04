@@ -323,10 +323,7 @@ function hostIncrementByte(hexValues,cpu)
  * @param cpu The cpu that this instruction addresses.
  */
 function hostBreakProcess(hexValues,cpu)
-{
-    // This drops any queued context switch interrupts so the break isn't clobbered.
-    _Break = true;
-    
+{    
     _KernelInterruptQueue.enqueue(new Interrupt(BRK_IRQ, new Array(cpu)));
     instrLog("BRK-Interrupt fired");
 }

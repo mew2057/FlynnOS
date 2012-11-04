@@ -11,6 +11,7 @@
 function Scheduler()
 {
     this.processEnqueued = false;
+    this.breakFlag = false;
 }
 
 //------------------------------
@@ -58,24 +59,23 @@ Scheduler.prototype.reclaimPCB = function(pcb)
     _Terminated.enqueue(pcb);
 };
 
-// The following functions access the "Hardware" for the break flag.
 /**
- * Checks the _Break flag in the "hardware"
+ * Checks the break flag.
  * 
  * @return the state of the flag (true or false)
  */
 Scheduler.prototype.checkBreak = function()
 {
-    return _Break;
+    return this.BreakFlag;
 };
 
 /**
- * Sets the value of the break flag in "hardware".
+ * Sets the value of the break flag.
  * @param isBreaking The new state of the flag.
  */
 Scheduler.prototype.setBreak = function(isBreaking)
 {
-    _Break = isBreaking;
+    this.BreakFlag = isBreaking;
 };
 
 /**
@@ -84,13 +84,16 @@ Scheduler.prototype.setBreak = function(isBreaking)
  */
 Scheduler.prototype.breakExecution = function(cpu)
 {
+    this.setBreak(true);
+    
     cpu.pcb.update(cpu);
     
     // Reclaims the page and places the pcb in the terminated queue
     this.reclaimPCB(cpu.pcb);
     
-    // Raise the next interrupt and prevent other scheduling interrupts.
-    this.processNext(cpu,true);
+    // Raise the next interrupt and prevent other scheduling interrupts.    
+    _KernelInterruptQueue.enqueue(new Interrupt(CONTEXT_IRQ, [true]));
+
 };
 
 //------------------------------
@@ -210,8 +213,10 @@ RoundRobin.prototype.setQuantum = function(quant)
  */
 RoundRobin.prototype.isReady = function()
 {    
+   // console.log(this.tick);
     if(this.tick++ >= this.quantum)
     {
+        console.log("in it");
         _KernelInterruptQueue.enqueue(new Interrupt(CONTEXT_IRQ, []));
         Scheduler.log("Initiating context switch");
     }
@@ -229,7 +234,7 @@ RoundRobin.prototype.isReady = function()
 RoundRobin.prototype.processNext = function(cpu, finished, terminated)
 {
     
-    // If hardware level break is set and this is hit from a break, set revert the break.
+    // If  break is set and this is hit from a break, set the break to false.
     if (finished)
     {
         this.setBreak(false);

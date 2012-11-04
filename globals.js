@@ -44,7 +44,6 @@ var _CPU = null;
 var _InstructionSet = null; 
 var _CoreMemory = null;
 var _OSclock = 0;       // Page 23.
-var _Break = false; //  Specifies if a break has been enqueued.
 
 //Kernel
 var _StepEnabled = false;
@@ -99,7 +98,6 @@ function globalReset()
     _OSclock = 0;       // Page 23.
     _CPU = null;
     _InstructionSet = null; 
-    _Break = false; //  Specifies if a break has been enqueued 
 
     _StepEnabled = false;
     _Step = false;
