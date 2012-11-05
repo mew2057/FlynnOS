@@ -219,20 +219,20 @@ function krnFaultISR(params)
             message = "Memory Fault:";
             break;
     }
-    
-    // Drop the prompt down so the error message is more readable.
-    _OsShell.drop();
-    
+
     _StdIn.putText(message + " " + params[1]);
 
     //kill process if fault came from the CPU. ( not all memory faults come from the cpu).
     if((params[0] === INST_FAULT || params[0] === CPU_FAULT) && params[2].pcb != null)
     {
+        _OsShell.drop();
         krnKillProcess(params[2].pcb.pid);
     }
+    else
+    {
+        _OsShell.drop();
+    }
     
-    // Drop the prompt down so the error message is more readable.
-  //  _OsShell.drop();
 }
 
 /**

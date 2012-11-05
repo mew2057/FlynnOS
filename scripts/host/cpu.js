@@ -74,16 +74,16 @@ cpu.prototype.errorLog = function(errorCode, param)
     switch(errorCode)
     {
         case cpu.ERROR.OP:
-            msg += "Bad memory address on opcode fetch PC=" + param + ".";
+            msg += "Bad memory address on opcode fetch PC=" + param;
             break;
         case cpu.ERROR.OPCODE:
-            msg += "Invalid opcode " + param + ".";
+            msg += "Invalid opcode " + param;
             break;
         case cpu.ERROR.MEM:
-            msg += "Couldn't access memory contents at " + param + ".";
+            msg += "Couldn't read contents begining at memory address " + param;
             break;
         case cpu.ERROR.INST:
-            msg += "Invalid Instruction (How did you get here?!?!).";
+            msg += "Invalid Instruction (How did you get here?!?!)";
             break;
         default:
     }
@@ -113,7 +113,8 @@ cpu.prototype.cycle = function()
     var opcode = this.fetch();
     if(opcode === null)
     {
-        this.errorLog(cpu.ERROR.OP, (this.PC -1));
+        // Revert the PC to the crash point.
+        this.errorLog(cpu.ERROR.OP, (--this.PC));
         return;
     }
     
@@ -124,7 +125,7 @@ cpu.prototype.cycle = function()
         return;
     }
     
-    var contents = this.read(instruction);  
+    var contents = this.read(instruction);
     if(contents === null)
     {
         return;
@@ -183,8 +184,8 @@ cpu.prototype.read = function(instruction)
         case 0:
             break;
         case 1:
-            contents = [_MemoryManager.retrieveContents(this.PC.toString(16),
-                            this.pcb)];
+            contents = _MemoryManager.retrieveContentsFromAddress(this.PC.toString(16),1,
+                            this.pcb);
             this.PC ++;
             break;
         case 2:
@@ -196,10 +197,12 @@ cpu.prototype.read = function(instruction)
             contents = null;
             break;
     }
-    
+
+    // If the details were not found and the count was non zero throw an error.
     if(contents === null)
     {
-        this.errorLog(cpu.ERROR.MEM,this.PC-count);
+        this.PC -= count;
+        this.errorLog(cpu.ERROR.MEM,this.PC);
     }
     
     return contents;

@@ -212,12 +212,11 @@ RoundRobin.prototype.setQuantum = function(quant)
  * that the context switch is enqueued. 
  */
 RoundRobin.prototype.isReady = function()
-{    
-   // console.log(this.tick);
+{
     if(this.tick++ >= this.quantum)
     {
         _KernelInterruptQueue.enqueue(new Interrupt(CONTEXT_IRQ, []));
-        Scheduler.log("Initiating context switch");
+        Scheduler.log("Checking for context switch");
     }
 };
 
@@ -267,7 +266,8 @@ RoundRobin.prototype.processNext = function(cpu, finished, terminated)
     }
     else if(finished)
     {
-        Scheduler.log(" pid " + cpu.pcb.pid + (terminated ? " terminated":" is finished executing"));
+        Scheduler.log(" pid " + cpu.pcb.pid + (terminated ? " terminated":" is" +
+            " finished executing") + ", no remaining processes");
         cpu.pcb = null;    
         this.processEnqueued = false;
         

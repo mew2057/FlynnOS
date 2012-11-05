@@ -131,7 +131,7 @@ MemoryManager.prototype.store = function(hexAddress, toStore, pcb)
     // If the address is already out of bounds notify the invoking function.
     if( limit > this.core.limitAddress ||
         base < this.core.baseAddress   ||
-        intAddress >= limit            || 
+        intAddress >= limit            ||
         intAddress < base) 
     {
         // Doesn't stop the CPU but notifies the user of a detected errror.
@@ -176,11 +176,10 @@ MemoryManager.prototype.store = function(hexAddress, toStore, pcb)
 MemoryManager.prototype.storeProgram = function(toStore, residents)
 {
     var page = this.pagesInUse.indexOf(false);
-    this.pagesInUse[page] = true;
     
     var baseAddress = this.pageToOffset(page);
 
-    var returnCode =page != -1 ? this.store(baseAddress.toString(16),toStore) : 1;
+    var returnCode = page != -1 ? this.store(baseAddress.toString(16),toStore) : 1;
     var currentPCB = -1;
     
     switch (returnCode)
@@ -188,7 +187,9 @@ MemoryManager.prototype.storeProgram = function(toStore, residents)
         case 0:
             // Assigns the PID and gives the PCB a base and limit.
             currentPCB  = residents.createNewPCB([baseAddress, 
-                (baseAddress + this.pageSize - 1)], page);
+                (baseAddress + this.pageSize)], page);
+            
+            this.pagesInUse[page] = true;
             changeTabDisplay(page);
             break;
         case 1:
@@ -211,7 +212,7 @@ MemoryManager.prototype.storeProgram = function(toStore, residents)
  */
 MemoryManager.prototype.retrieveContents = function(hexAddress,pcb)
 {
-    var intAddress = parseInt(hexAddress,16) + pcb.Base;
+   var intAddress = parseInt(hexAddress,16) + pcb.Base;
    
    // verifies the intAddress is within the bounds and the hexAddress was non negative.
     if(intAddress >= pcb.Base                && 
