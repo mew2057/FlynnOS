@@ -38,13 +38,13 @@ function instrError (error, params)
     switch(error)
     {
         case ERROR.MEM:
-            msg += "bad memory request at " + params[1] + ".";
+            msg += "bad memory request for address 0x" + params[1];
             break;
         case ERROR.OPERAND:
-            msg += "incorrect operand total.";
+            msg += "incorrect operand total";
             break;
         case ERROR.BRANCH:
-            msg += "branch address may not exceed 256 or be under 0: " + params[1] + ".";
+            msg += "branch address may not exceed 256 or be under 0: " + params[1] + "(decimal)";
             break;
         default:
     }
@@ -243,6 +243,7 @@ function hostCompareX(hexValues,cpu)
  * BNE - Branch Not Equal: Branches the number of bytes specified in the operand
  * as a two's complement integer if the Z flag is NOT set. The branched address 
  * is relative to the current Program Counter value. 
+ * This is relative to the memory address of the SECOND operand!
  * 
  * I feel it is necessary to note that I consider the supplied operand a two's 
  * compliment number meaning a user may only jump half the page size with one branch.
@@ -274,7 +275,7 @@ function hostBranchNotEqual(hexValues,cpu)
         // Make sure the PC doesn't exceed the page size.
         if(cpu.PC < 0 || cpu.PC > _MemoryManager.pageSize)
         {
-            instrError(ERROR.BRANCH, ["BNE", hexValues[0]]);
+            instrError(ERROR.BRANCH, ["BNE", cpu.PC]);
         }
         else
         {
