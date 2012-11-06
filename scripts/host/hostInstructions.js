@@ -243,10 +243,8 @@ function hostCompareX(hexValues,cpu)
  * BNE - Branch Not Equal: Branches the number of bytes specified in the operand
  * as a two's complement integer if the Z flag is NOT set. The branched address 
  * is relative to the current Program Counter value. 
- * This is relative to the memory address of the SECOND operand!
+ * This is relative to the memory address after the operand!
  * 
- * I feel it is necessary to note that I consider the supplied operand a two's 
- * compliment number meaning a user may only jump half the page size with one branch.
  * 
  * @param hexValues The operand(s) of the instruction.
  * @param cpu The cpu that this instruction addresses.
@@ -257,23 +255,17 @@ function hostBranchNotEqual(hexValues,cpu)
     {
         var branchAddress = parseInt(hexValues[0],16);
         
-        /*
-         * As the leading bit carries the sign of the number in two's complement
-         * And our CPU is 8bit 128 and a bitwise or will extract the important bit.
-         * If the leading bit is 1 then the result is truthy and it is necessary
-         * to do some work.
-         */
-        if(128 & branchAddress)
+        // Add the branch to the Program Counter.
+        cpu.PC += branchAddress;
+        
+        // If the PC exceeds or equals the page size loop it back around
+        if(cpu.PC >= _MemoryManager.pageSize)
         {
-            cpu.PC -= (256 - branchAddress);
-        }
-        else
-        {
-            cpu.PC += branchAddress;
+            cpu.PC -= _MemoryManager.pageSize;
         }
         
-        // Make sure the PC doesn't exceed the page size.
-        if(cpu.PC < 0 || cpu.PC > _MemoryManager.pageSize)
+        // If we're negative or greater than or equal to the page size we have a problem.
+        if(cpu.PC < 0 || cpu.PC >= _MemoryManager.pageSize)
         {
             instrError(ERROR.BRANCH, ["BNE", cpu.PC]);
         }

@@ -208,6 +208,17 @@ RoundRobin.prototype.setQuantum = function(quant)
 };
 
 /**
+ * A quantum gettor.
+ * 
+ * @return The quantum number.
+ */
+RoundRobin.prototype.getQuantum = function()
+{
+    return this.quantum;    
+};
+
+
+/**
  * Checks to see if the scheduler is ready enqueue a context switch and logs 
  * that the context switch is enqueued. 
  */

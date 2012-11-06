@@ -292,7 +292,7 @@ function krnSystemCallISR(params)
         default:
             // Notifies the user that the System Call type was unsupported.
             _KernelInterruptQueue.enqueue( new Interrupt(FAULT_IRQ, 
-                new Array(INST_FAULT,"Unsupported system call type.")));
+                new Array(INST_FAULT,"Unsupported system call type.", _CPU)));
             break;
     }
 }
@@ -457,7 +457,7 @@ function krnRunResidents()
  */
 function krnSetQuantum(quantum)
 {
-    // If the quantum is a valid number and the scheduler has a quantum allow it to be set.
+    // If the quantum is a valid number and the scheduler has a quantum set the quantum.
     if(_Scheduler.setQuantum)
     {
         _Scheduler.setQuantum(quantum);
@@ -467,6 +467,23 @@ function krnSetQuantum(quantum)
         _StdIn.putText("The scheduler doesn't have a quantum.");
     }
 }
+
+/**
+ * Displays the current quantum of the Scheduler (if found).
+ */
+function krnGetQuantum()
+{
+    // If  the scheduler has a quantum display it.
+    if(_Scheduler.getQuantum)
+    {
+       _StdIn.putText("Quantum:" + _Scheduler.getQuantum());
+    }
+    else
+    {
+        _StdIn.putText("The scheduler doesn't have a quantum.");
+    }
+}
+
 
 /**
  * Retrieves a list of presently executing process identifiers.

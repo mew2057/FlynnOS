@@ -103,15 +103,13 @@ cpu.prototype.log = function(msg)
     simLog(msg,"H_CPU");
 };
 
-
-
 /**
  * The cycle funtion protoype for the cpu. Used in executing processes.
  */
 cpu.prototype.cycle = function()
 {
     var opcode = this.fetch();
-    if(opcode === null)
+    if(!opcode || opcode === null)
     {
         // Revert the PC to the crash point.
         this.errorLog(cpu.ERROR.OP, (--this.PC));
@@ -119,14 +117,14 @@ cpu.prototype.cycle = function()
     }
     
     var instruction = this.decode(opcode);    
-    if(instruction === null)
+    if(!instruction || instruction === null)
     {
         this.errorLog(cpu.ERROR.OPCODE, opcode);
         return;
     }
     
     var contents = this.read(instruction);
-    if(contents === null)
+    if(!contents || contents === null)
     {
         return;
     }
@@ -199,7 +197,7 @@ cpu.prototype.read = function(instruction)
     }
 
     // If the details were not found and the count was non zero throw an error.
-    if(contents === null)
+    if(!contents || contents === null)
     {
         this.PC -= count;
         this.errorLog(cpu.ERROR.MEM,this.PC);

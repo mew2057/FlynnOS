@@ -145,6 +145,12 @@ function shellInit()
     this.commandList[this.commandList.length]=sc;
     
     sc = new ShellCommand();
+    sc.command ="getq";
+    sc.description = " - Returns the current scheduler quantum.";
+    sc.funct = shellGetQ;
+    this.commandList[this.commandList.length]=sc;
+    
+    sc = new ShellCommand();
     sc.command ="active";
     sc.description = " - Displays the pids that are on the active queue.";
     sc.funct = shellActive;
@@ -536,7 +542,7 @@ function shellLoad (args)
         }
          else if (args[0] == "cycles")
         {
-            CycleGame.init(0,2,2,"#display");  
+            CycleGame.init(0,1,2,"#display");  
             //I need to kill the OS since it lags the gameplay
             simBtnHaltOS_click();
         }
@@ -607,16 +613,33 @@ function shellSetQ (args)
     }
 }
 
+/**
+ *  Gets the quantum of the kernel scheduler. 
+ */
+function shellGetQ ()
+{
+    krnGetQuantum();
+}
+
+/**
+ * Displays the active processes.
+ */
 function shellActive ()
 {
     _StdIn.putText(krnActivePIDS());   
 }
 
+/**
+ * Runs all processes on the Resident's List.
+ */
 function shellRunAll ()
 {
     krnRunResidents();
 }
 
+/**
+ * Kills the specified process.
+ */
 function shellKill(args)
 {
     if(args.length > 0)
