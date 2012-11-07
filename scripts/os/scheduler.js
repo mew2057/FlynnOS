@@ -99,9 +99,7 @@ Scheduler.prototype.breakExecution = function(cpu)
 //------------------------------
 
 
-// The psuedo interface for the schedulers, I know in JavaScript it isn't 
-// necessary, but my Java training is showing though...
-
+// The psuedo interface (more like an abstract class) for the schedulers.
 /**
  * Checks to see if the scheduler is ready enqueue a context switch. (useless for
  * non premptive implementations)
