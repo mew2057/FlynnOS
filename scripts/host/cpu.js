@@ -100,7 +100,7 @@ cpu.prototype.errorLog = function(errorCode, param)
  */
 cpu.prototype.log = function(msg)
 {
-    simLog(msg,"H_CPU");
+    simLog(msg,LOGGER_SOURCE.CPU);
 };
 
 /**

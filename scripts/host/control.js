@@ -42,17 +42,17 @@ function simLog(msg, source)
     var now = new Date().getTime();
 
     // Build the log string.   
-    var str = "({ clock:" + clock + ", source:" + source + ", msg:" + msg + ", now:" + now  + " })"  + "\n";    
-
+   // var str = "{ clock:" + clock + ", source:" + source + ", msg:" + msg + ", now:" + now  + " }"  + "\n";    
     // Update the log console.
-    
+    var str = '<tr class="' + source + '"><td>' + clock + '</td><td class="src">' + source + ":</td><td>" + msg + "</td></tr>";
+
     // The length of the div exceeds the globally defined character limit   
     // wipe out the final half of characters.(note this is actually the "first")
     // Please note this purposefully ignores tags on the check.
     if( $("#logDiv").text().length > LOG_CHAR_LIMIT)
     {
         var txt = $("#logDiv").html();
-        $("#logDiv").html(txt.substr(0, txt.indexOf("\n", LOG_CHAR_LIMIT/2)));
+        $("#logDiv").html(txt.substr(0, txt.indexOf("</tr>", LOG_CHAR_LIMIT/2)));
     }
     $("#logDiv").prepend(str + "<br/>");
     // Optionally udpate a log database or some streaming service.
@@ -92,8 +92,8 @@ function simBtnStartOS_click()
 
 function simBtnHaltOS_click()
 {
-    simLog("emergency halt", "host");
-    simLog("Attempting Kernel shutdown.", "host");
+    simLog("emergency halt", LOGGER_SOURCE.HOST);
+    simLog("Attempting Kernel shutdown.",LOGGER_SOURCE.HOST);
     // Call the OS sutdown routine.
     krnShutdown();
     // Stop the JavaScript interval that's simulating our clock pulse.

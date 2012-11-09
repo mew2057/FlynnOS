@@ -15,7 +15,7 @@
 //
 function krnBootstrap()      // Page 8.
 {
-    simLog("bootstrap", "host");  // Use simLog because we ALWAYS want this, even if _Trace is off.    
+    simLog("bootstrap",LOGGER_SOURCE.HOST);  // Use simLog because we ALWAYS want this, even if _Trace is off.    
 
 
     // Initialize our global queues.
@@ -311,12 +311,12 @@ function krnTrace(msg)
          // We can't log every idle clock pulse because it would lag the browser very quickly.
          if (_OSclock % 10 == 0)  // Check the CPU_CLOCK_INTERVAL in globals.js for an 
          {                        // idea of the tick rate and adjust this line accordingly.
-            simLog(msg, "OS");          
+            simLog(msg, LOGGER_SOURCE.OS);          
          }         
       }
       else
       {
-       simLog(msg, "OS");
+       simLog(msg, LOGGER_SOURCE.OS);
       }
    }
 }

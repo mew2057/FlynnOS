@@ -33,8 +33,18 @@ var DIGIT_PUNCTUATIONS= [')','!','@','#','$','%','^','&','*','('];
 // The instruction count for the CPU.
 var INSTRUCTION_COUNT = 256;
 // The limit to the number of characters in the log div.
-var LOG_CHAR_LIMIT = 6000;
-
+var LOG_CHAR_LIMIT = 500000;
+// Defines the logger sources.
+var LOGGER_SOURCE = {
+    "SRC":["CPU","INST","MEM","SCH","HOST","OS","ALL"],
+    "CPU" :"CPU",
+    "INST":"INST",
+    "MEM" :"MEM",
+    "SCH" :"SCH",
+    "HOST":"HOST",
+    "OS"  :"OS",
+    "ALL" :"ALL"
+};
 
 //
 // Global Variables
@@ -157,7 +167,3 @@ var CANVAS_TRAP_OUTLINES = "#fcde0e";
 var CANVAS_RADIUS =  15;
 var CANVAS_OFFSET = CANVAS_RADIUS;  
 var CANVAS_BASE_Y_OFFSET = 10;
-
-
-
-

@@ -186,4 +186,18 @@ div.tabBox
     overflow:auto;
 }
 
+/* Logger */
 
+td.src
+{
+    text-align:right;
+}
+
+div#logDrop
+{
+    z-index:1;
+    position:absolute;
+    top:0px;
+    background-color: #b5ffff;
+
+}

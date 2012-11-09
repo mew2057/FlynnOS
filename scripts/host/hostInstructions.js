@@ -21,7 +21,7 @@ var ERROR = {
  */
 function instrLog (msg)
 {
-    simLog(msg, "H_INST");
+    simLog(msg, LOGGER_SOURCE.INST);
 }
 
 /**

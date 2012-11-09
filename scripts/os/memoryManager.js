@@ -104,7 +104,7 @@ MemoryManager.prototype.errorLog = function(errorCode, param)
  */
 MemoryManager.prototype.log = function(msg)
 {
-    simLog(msg,"O_MEM");
+    simLog(msg,LOGGER_SOURCE.MEM);
 };
 
 /**
