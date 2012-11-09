@@ -12,7 +12,7 @@
 // Global Constants
 //
 var APP_NAME = "FlynnOS";  // 'cause I was at a loss for a better name.
-var APP_VERSION = "0.1";
+var APP_VERSION = "0.3";
 var APP_DESCRIPTION = "Welcome to The Grid: A digital frontier.";
 var CPU_CLOCK_INTERVAL = 100;   // in ms, or milliseconds, so 1000 = 1 second.
 // Interrupt ReQuests.
