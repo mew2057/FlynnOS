@@ -36,14 +36,23 @@ var INSTRUCTION_COUNT = 256;
 var LOG_CHAR_LIMIT = 500000;
 // Defines the logger sources.
 var LOGGER_SOURCE = {
-    "SRC":["CPU","INST","MEM","SCH","HOST","OS","ALL"],
+    "SRC":["CPU","INST","MEM","SCH","HOST","OS","DISP-ALL"],
     "CPU" :"CPU",
     "INST":"INST",
     "MEM" :"MEM",
     "SCH" :"SCH",
     "HOST":"HOST",
     "OS"  :"OS",
-    "ALL" :"ALL"
+    "DISP-ALL" :"DISP-ALL"
+};
+var _LOGGER_VIEW = {
+    "CPU" : true,
+    "INST": true,
+    "MEM" : true,
+    "SCH" : true,
+    "HOST": true,
+    "OS"  : true,
+    "DISP-ALL" : true
 };
 
 //
@@ -143,6 +152,16 @@ function globalReset()
     // Global Device Driver Objects - page 12
     //
     krnKeyboardDriver = null;
+    
+    _LOGGER_VIEW = {
+        "CPU" : true,
+        "INST": true,
+        "MEM" : true,
+        "SCH" : true,
+        "HOST": true,
+        "OS"  : true,
+        "DISP-ALL" : true
+    };
 }
 
 // Canvas animations stuff

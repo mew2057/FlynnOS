@@ -187,17 +187,74 @@ div.tabBox
 }
 
 /* Logger */
+div#logDiv
+{
+    float:left;
+}
 
 td.src
 {
     text-align:right;
 }
 
-div#logDrop
+div#logDrop.textBox
 {
-    z-index:1;
-    position:absolute;
-    top:0px;
-    background-color: #b5ffff;
+    position                   : relative;
+    z-index                    : 1;
+    top                        : 15px;
+    height                     : 20px;
+    width                      : 15px;
+    padding                    : 0px;
+    margin                     : 0px;
+    border-radius              : 0px;
+    border-top-right-radius    : 15px;
+    border-bottom-right-radius : 15px;
+    overflow                   : hidden;
+} 
 
+div#logDrop a.optionTab
+{
+    text-decoration:none;
+    color: #b5ffff;
+    padding : 1px;
+    margin: 0px;
+}
+
+div#logDrop a.optionTab:hover
+{
+    text-decoration:none;
+    color: #040809;
+    background-color: #b5ffff;
+}
+
+div#logDrop a.toggled
+{
+    text-decoration:line-through
+}
+
+a#toggleOption
+{   
+    text-decoration:none;
+    color: #b5ffff;
+    float   : right;
+    padding : 2px;
+}
+
+a#toggleOption:hover 
+{
+    text-decoration:none;
+    color: #b5ffff ;
+    background-color: transparent;
+}
+
+ul#optionMenu
+{
+    list-style-type:none; 
+    width: 100%;
+    margin:0px;   
+    padding:2px;    
+}
+ul#optionMenu li
+{
+    border-bottom:1px dashed;
 }

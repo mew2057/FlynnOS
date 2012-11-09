@@ -17,6 +17,7 @@ var buttons=[];     // The buttons on the taskbar.
 function canvasInit()
 {
     drawTaskBar();
+    initLoggerDropDown();
 }
 
 /**
@@ -58,8 +59,6 @@ function drawTaskBar ()
     $("#taskBar").mousedown(buttonClick);    
     $("#taskBar").mousemove(buttonAnimate);
     $("#taskBar").mouseout(buttonAnimate);
-   /* $("#taskBar").dblclick(function(e){e.stopPropagation();
-        e.preventDefault();});*/
 }
 
 /**
@@ -247,13 +246,121 @@ function loadTaskButtons()
     
 }
 
+//----------------------
+// Logger Options
+//----------------------
+function initLoggerDropDown()
+{
+    hideOptionMenu();
+    // Make sure this gets initialized properly.
+    updateLogStyle(LOGGER_SOURCE["DISP-ALL"]);
+}
 
+/**
+ * Hides the options.
+ */
+function hideOptionMenu()
+{
+    // Hides the options.
+    $("#logDrop").animate({
+        width:"15px",
+        height:"20px"
+    },function(){
+        $("#logDrop").html('<a id="toggleOption" href="javascript:showOptionMenu' +
+            '()" >\u22B2</a></br>');
+    });
+
+    
+}
+
+/**
+ * Shows the option list for the user to toggle specific elements of.
+ */
+function showOptionMenu()
+{
+    // Sets up the list.
+    $("#logDrop").append('<ul id="optionMenu"></ul>');
+    
+    // Builds the list.
+    for(var index = 0, length =LOGGER_SOURCE.SRC.length; index < length; index++)
+    {
+        $("#optionMenu").append('<li><a id="'+ LOGGER_SOURCE.SRC[index] +
+            '" href="#" onClick="updateLogStyle(this.id);" class="optionTab ' + 
+            (_LOGGER_VIEW[LOGGER_SOURCE.SRC[index]] ? "":"toggled") +'"">' + 
+            LOGGER_SOURCE.SRC[index] +"</a></li>");
+    }
+    
+    // Specify the animation pop out.
+    $("#logDrop").animate({
+        width:"45px",
+        height:"236px"
+    },function()
+    {
+        $("#toggleOption").text('\u22B3');
+        $("#toggleOption").attr("href", "javascript:hideOptionMenu()");
+    });
+}
+
+/**
+ * Updates the style of the logger (what's displayed and what isn't).
+ * @param src The class name of the row type to show or hide.
+ */
+function updateLogStyle(src)
+{
+    // If DISP_ALL display all of the things.
+    // Else time to do some toggles.
+    if(src === "DISP-ALL")
+    {
+        for (var index =0,length =LOGGER_SOURCE.SRC.length; index < length; index++)
+        {
+            // Make the table visible.
+            $("tr."+LOGGER_SOURCE.SRC[index]).css("display", "table-row");
+            
+            // Let the user know that a table is bno longer toggled.
+            $("#"+LOGGER_SOURCE.SRC[index]).attr("class","optionTab");
+            
+            // Let the logger know it can display this now.
+            _LOGGER_VIEW[LOGGER_SOURCE.SRC[index]] = true;
+        }
+    }
+    else
+    {    
+        // If the display is valid and has the table row option set it to none.
+        // Else if the class hasn't been loaded check to see if a toggle should be performed.
+        // Else just make it visible.
+        if($("tr."+src).css("display") && $("tr."+src).css("display") === "table-row" )
+        {
+            $("tr."+src).css({display:"none"});
+            
+            $("#"+src).attr("class","optionTab toggled");
+            
+            _LOGGER_VIEW[src]=false;
+        }
+        else if(!$("tr."+src).css("display") && _LOGGER_VIEW[src] !== false)
+        {
+            $("tr."+src).css({display:"none"});
+            
+            $("#"+src).attr("class","optionTab toggled");
+            
+            _LOGGER_VIEW[src]=false;
+        }
+        else
+        {
+            $("tr."+src).css("display", "table-row");
+            
+            $("#"+src).attr("class","optionTab");
+         
+            _LOGGER_VIEW[src]=true;
+        }
+    }
+}
 
 /**
  * Slides down the console and text boxes and intitates the os.
  */
 function animateStart ()
 {
+    
     
     $("#display").slideDown(300);
         

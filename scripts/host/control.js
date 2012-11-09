@@ -39,13 +39,14 @@ function simLog(msg, source)
     var clock = _OSclock;
 
     // Note the REAL clock in milliseconds since January 1, 1970.
-    var now = new Date().getTime();
+    //var now = new Date().getTime();
 
     // Build the log string.   
    // var str = "{ clock:" + clock + ", source:" + source + ", msg:" + msg + ", now:" + now  + " }"  + "\n";    
     // Update the log console.
-    var str = '<tr class="' + source + '"><td>' + clock + '</td><td class="src">' + source + ":</td><td>" + msg + "</td></tr>";
-
+    var str = '<tr class="' + source + '" style ="display:' + (_LOGGER_VIEW[source] ? "table-row":"none") + 
+        '"><td>' + clock + '</td><td class="src">' + source + ":</td><td>" + msg + "</td></tr>";
+        
     // The length of the div exceeds the globally defined character limit   
     // wipe out the final half of characters.(note this is actually the "first")
     // Please note this purposefully ignores tags on the check.
@@ -55,12 +56,15 @@ function simLog(msg, source)
         $("#logDiv").html(txt.substr(0, txt.indexOf("</tr>", LOG_CHAR_LIMIT/2)));
     }
     $("#logDiv").prepend(str + "<br/>");
+    
     // Optionally udpate a log database or some streaming service.
 }
 
 function simClearLog(msg, source)
 {
     $("#logDiv").text("");
+    // This needs to be reset and since this is visual I thought it would fit here best.
+    initLoggerDropDown();
 }
 
 
