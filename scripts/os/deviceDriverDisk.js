@@ -229,8 +229,6 @@ function DiskFindFreeSpace ()
             found = true;
             break;
         }
-        newID.increment();
-        
     }while (newID.increment());
     
     return found?newID:null;
@@ -256,18 +254,17 @@ function DiskFormat ()
     DiskCreateFile("test");
     console.log(localStorage);
     console.log(DiskFindFile("test"));
-    DiskWriteFile("test","Testing 12345678910 hello hello hello Testing 12345678910 h");
+    DiskWriteFile("test","Testing 12345678910 hello hello hello Testing 12345678910 hello");
+    DiskWriteFile("test","Yo dawg");
     console.log(localStorage);
-    DiskDelete("test");
-    console.log(localStorage);
-    
+   // DiskDelete("test");
+   // console.log(localStorage);
+    /*
     DiskCreateFile("tes");
      console.log(DiskFindFile("tes"));
     DiskWriteFile("tes","Testing 12345678910 hello hello hello Testing 123456789");
     console.log(localStorage);
-
-
-    
+    */
 }
 
 function DiskCreateFile (fileName)
@@ -301,20 +298,54 @@ function DiskCreateFile (fileName)
 function DiskWriteFile (fileName, data)
 {
     // TODO file overflow.
-    var dataChars = DiskStringToHex(data);
+    var dataChars  = DiskStringToHex(data);
     var fileHandle = DiskRetrieveTSB(DiskFindFile(fileName));
+    var currentID  = fileHandle.nextID;
+    var content    = DiskRetrieveTSB(fileHandle.nextID);
     
-    console.log(fileHandle);
-    
-    var content = DiskRetrieveTSB(fileHandle.nextID);
-    
-    for (var index = 0; index < FileID.BSIZE - 4; index ++)
+    content.data[0] = dataChars[0];
+     
+    for (var index = 1; index < dataChars.length; index ++)
     {
-        content.data[index] = dataChars[index];
+        if( (index + 4) % 64 === 0 && 
+            content.nextID.track === 0  && 
+            content.nextID.sector === 0 && 
+            content.nextID.block === 0)
+        {
+            content.nextID = DiskFindFreeSpace();
+            
+            DiskWriteToTSB(currentID, content);
+            
+            currentID = content.nextID;     
+            
+            content = DiskRetrieveTSB(currentID);
+            
+            content.statusBit = FileBlock.OCC;
+        }
+        else if ( (index + 4) % 64 === 0)
+        {
+           DiskWriteToTSB(currentID, content);
+            
+            currentID = content.nextID;     
+            
+            content = DiskRetrieveTSB(currentID);
+            
+            content.statusBit = FileBlock.OCC;   
+        }
+        content.data[index % 60] = dataChars[index];
+       
+    }
+    // TODO clear out unrelated data chains.
+    console.log("yoy",content.nextID);
+    if(content.nextID.track !== 0 || content.nextID.sector !== 0 ||  content.nextID.block !== 0)
+    {
+        console.log("oyo",content.nextID);
+        DiskDeleteID(content.nextID);
+        content.nextID = new FileID();
     }
     
     
-   DiskWriteToTSB(fileHandle.nextID, content);
+   DiskWriteToTSB(currentID, content);
 }
 
 function DiskReadFile (fileName)
@@ -324,23 +355,29 @@ function DiskReadFile (fileName)
 
 function DiskDelete (fileName)
 {   
+   DiskDeleteID(DiskFindFile(fileName));
+}
+
+function DiskDeleteID(tsb)
+{
     // TODO chains
-    var clearID          = DiskFindFile(fileName);
+    var clearID          = tsb;
+    var currentID        = clearID;
     var fileHandle       = DiskRetrieveTSB(clearID);
+    var fileContent      = null;
+    
     fileHandle.statusBit = FileBlock.EMPTY;
     
     DiskWriteToTSB(clearID, fileHandle);
     
-    var fileContent      = null;
-    clearID              = fileHandle.nextID;
+    clearID = fileHandle.nextID;
     
     do{
+        currentID             = clearID;
         fileContent           = DiskRetrieveTSB(clearID);
         fileContent.statusBit = FileBlock.EMPTY;
         DiskWriteToTSB (clearID, fileContent);
         
         clearID               = fileContent.nextID;
-    }while(clearID.track !== 0 && clearID.sector !== 0 && clearID.block != 0);
+    }while(currentID.track !== 0 || currentID.sector !== 0 ||  currentID.block !== 0);
 }
-
-
