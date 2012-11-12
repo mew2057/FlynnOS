@@ -43,7 +43,8 @@ function krnBootstrap()      // Page 8.
     // Initialize standard input and output to the _Console.
     _StdIn  = _Console;
     _StdOut = _Console;
-
+  
+DiskFormat();
 
     // Load the Keyboard Device Driver
     krnTrace("Loading the keyboard device driver.");
