@@ -69,8 +69,8 @@ FileID.prototype.toStore = function()
 };
 
 
-FileBlock.EMPTY = "00";
-FileBlock.OCC   = "01";
+FileBlock.EMPTY   = "00";
+FileBlock.OCC     = "01";
 
 function FileBlock(fileID)
 {
@@ -89,6 +89,14 @@ function FileBlock(fileID)
                     "00", "00", "00", "00" ,"00",
                     "00", "00", "00", "00" ,"00"];
 }
+
+FileBlock.zero = function(data)
+{
+    for (var index = 0; index < data.length; index++)
+    {
+        data[index] = "00";
+    }
+};
 
 DeviceDriverDisk.prototype = new DeviceDriver;  // "Inherit" from prototype DeviceDriver in deviceDriver.js.
 
@@ -251,17 +259,18 @@ function DiskFormat ()
         DiskWriteToTSB(newID,tempFile);
     }
     
+    /*
     DiskCreateFile("test");
     console.log(localStorage);
     console.log(DiskFindFile("test"));
     DiskWriteFile("test","Testing 12345678910 hello hello hello Testing 12345678910 hello");
+    DiskReadFile("test");
     DiskWriteFile("test","Yo dawg");
     console.log(localStorage);
-   // DiskDelete("test");
-   // console.log(localStorage);
-    /*
+    DiskDelete("test");
+    console.log(localStorage);
     DiskCreateFile("tes");
-     console.log(DiskFindFile("tes"));
+    console.log(DiskFindFile("tes"));
     DiskWriteFile("tes","Testing 12345678910 hello hello hello Testing 123456789");
     console.log(localStorage);
     */
@@ -297,7 +306,6 @@ function DiskCreateFile (fileName)
 
 function DiskWriteFile (fileName, data)
 {
-    // TODO file overflow.
     var dataChars  = DiskStringToHex(data);
     var fileHandle = DiskRetrieveTSB(DiskFindFile(fileName));
     var currentID  = fileHandle.nextID;
@@ -333,24 +341,67 @@ function DiskWriteFile (fileName, data)
             content.statusBit = FileBlock.OCC;   
         }
         content.data[index % 60] = dataChars[index];
-       
-    }
-    // TODO clear out unrelated data chains.
-    console.log("yoy",content.nextID);
-    if(content.nextID.track !== 0 || content.nextID.sector !== 0 ||  content.nextID.block !== 0)
-    {
-        console.log("oyo",content.nextID);
-        DiskDeleteID(content.nextID);
-        content.nextID = new FileID();
     }
     
+    // Clear out the remaining data in the block.
+    for (var clearIndex = index % 60; clearIndex < 60;clearIndex++)
+    {
+        content.data[clearIndex] = "00";
+    }
+    
+    // Destroy any remaining chains of data.
+    if(content.nextID.track !== 0 || content.nextID.sector !== 0 ||  content.nextID.block !== 0)
+    {
+        DiskDeleteID(content.nextID);
+        
+        // Zero the nextID.
+        content.nextID = new FileID();
+    }    
     
    DiskWriteToTSB(currentID, content);
 }
 
-function DiskReadFile (fileName)
+function DiskReadFile (fileName, literal)
 {
+    var currentID      = DiskFindFile(fileName);
+    var currentContent = DiskRetrieveTSB(currentID);
+    var aggregateValues = [];
     
+    currentID          = currentContent.nextID;
+    
+    while (currentID.track !== 0 || currentID.sector !== 0 ||  currentID.block !== 0)
+    {
+        currentContent = DiskRetrieveTSB(currentID);
+        
+        aggregateValues = aggregateValues.concat(currentContent.data);
+        
+        currentID      = currentContent.nextID;
+    }
+    
+    // Literal is to be used for code, otherwise assume a null terminated and encoded string.
+    if(literal === true)
+    {
+        return aggregateValues;
+    }
+    else
+    {
+        return DiskConvertFromHex(aggregateValues);
+    }
+}
+
+function DiskConvertFromHex(chars)
+{
+    var str         = "";
+    
+    for (var index in chars)
+    {
+        str+= String.fromCharCode("0x" + chars[index]);
+        
+        if(chars[index] === "00")
+            break;
+    }
+    
+    return str;
 }
 
 function DiskDelete (fileName)
@@ -360,24 +411,23 @@ function DiskDelete (fileName)
 
 function DiskDeleteID(tsb)
 {
-    // TODO chains
-    var clearID          = tsb;
-    var currentID        = clearID;
-    var fileHandle       = DiskRetrieveTSB(clearID);
+    var currentID        = tsb;
+    var fileHandle       = DiskRetrieveTSB(currentID);
     var fileContent      = null;
     
     fileHandle.statusBit = FileBlock.EMPTY;
     
-    DiskWriteToTSB(clearID, fileHandle);
+    FileBlock.zero(fileHandle.data);
     
-    clearID = fileHandle.nextID;
+    DiskWriteToTSB(currentID, fileHandle);    
+    currentID = fileHandle.nextID;
     
-    do{
-        currentID             = clearID;
-        fileContent           = DiskRetrieveTSB(clearID);
+    while(currentID.track !== 0 || currentID.sector !== 0 ||  currentID.block !== 0)
+    {
+        fileContent           = DiskRetrieveTSB(currentID);
         fileContent.statusBit = FileBlock.EMPTY;
-        DiskWriteToTSB (clearID, fileContent);
-        
-        clearID               = fileContent.nextID;
-    }while(currentID.track !== 0 || currentID.sector !== 0 ||  currentID.block !== 0);
+        FileBlock.zero(fileContent.data);        
+        DiskWriteToTSB (currentID, fileContent);
+        currentID              = fileContent.nextID;
+    }
 }
