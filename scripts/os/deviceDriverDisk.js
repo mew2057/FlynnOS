@@ -117,13 +117,46 @@ function krnDiskDriverEntry()
 
 function krnDiskDispatch(params)
 {
-    //do something
-}
+    switch(params[0])
+    {
+        case "create":
+            DiskCreateFile(params[1]); // Assumes that the filename is a string.
+            break;
+        case "write":
+            // params 1 - filename (string)
+            // params 2 - data (string or array of hex digits)
+            DiskWriteFile(params[1], params[2]);    
+            break;
+        case "read":
+            // TODO place this data somewhere worthwhile.
+            DiskReadFile(params[1],params[2]);
+            break;
+        case "delete":
+            DiskDelete(params[1]);
+            break;
+        case "format":
+            DiskFormat();
+            break;    
+        default:
+            break;
 
+    }
+
+}
+// ----------------------- Helper functions -----------------------------------
+/**
+ * Converts a string to an array containing hexadecimal values for storage.
+ * 
+ * @param toConvert The string in question to convert to hexadecimal.
+ * 
+ * @return A null terminated character array (think cstring but with hex).
+ */
 function DiskStringToHex(toConvert)
 {
+    // Make the string into an array.
     var charArray = toConvert.split('');
     
+    // convert to the hex char codes.
     for (var index = 0; index < charArray.length; index++)
     {
         charArray[index] = padZeros(charArray[index].charCodeAt(0).toString(16),2);
@@ -134,9 +167,20 @@ function DiskStringToHex(toConvert)
     return charArray;
 }
 
+/**
+ * The actual accessor for the HDD, ensures a consistent data formatting even in 
+ * the case of reclaimed FileIDs (what I call the TSB object).
+ * 
+ * @param tsb A FileID object that points to the desired location.
+ * 
+ * @return null if address was bad. 
+ *          a FileBlock if address was good.
+ */
 function DiskRetrieveTSB (tsb)
 {
-    var contents = localStorage["FlynnOS:"+tsb.track + "," + tsb.sector + "," + tsb.block];
+    // Note the FlynnOS prefix ensures that my filesystem doesn't collide with any other keys.
+    var contents = localStorage["FlynnOS:"+tsb.track + "," + tsb.sector + "," +     
+        tsb.block];
     
     if(contents)
         return JSON.parse(contents);
@@ -144,14 +188,36 @@ function DiskRetrieveTSB (tsb)
     return null;
 }
 
+/**
+ * The writer to the file system. Ensures a consistent fileID pattern.
+ * 
+ * @param tsb A FileID object that points to the desired location.
+ * 
+ * @param block The block that needs to be written to the file system.
+ * 
+ */
 function DiskWriteToTSB (tsb, block)
 {
-    localStorage["FlynnOS:"+tsb.track + "," + tsb.sector + "," + tsb.block] = JSON.stringify(block);
+    // TODO should there be a check here?
+    localStorage["FlynnOS:"+tsb.track + "," + tsb.sector + "," + tsb.block] 
+        = JSON.stringify(block);
 }
 
+/**
+ * Used in the FindFile function, compares the fileName being sought against the 
+ * contents of the file directory.
+ * 
+ * @param fileName The file name you wish to verify.
+ * 
+ * @param data The data that you want to check for the file name.
+ * 
+ * @return True if the fileName is a match, false otehrwise.
+ */
 function DiskCompareFileName (fileName, data)
 {
     var retVal = true;
+    
+    // Check the data for only as long as the filename is.
     for (var index=0; index <  fileName.length; index++)
     {
         retVal = (retVal && fileName[index] === data[index]);
@@ -162,22 +228,31 @@ function DiskCompareFileName (fileName, data)
     return retVal;
 }
 
+/**
+ * Attempts to find the file on the file system with a matching name.
+ * 
+ * @param fileName The file name to seek out.
+ * 
+ * @return The location of the file as a FileID, null if not found.
+ */
 function DiskFindFile (fileName)
 {
-    if(fileName.length > FileID.BSIZE)
+    // If the fileName exceeds the block size it doesn't exist.
+    if(fileName.length > FileID.BSIZE - 4)
     {
         //error 
         return;
     }
     
-    var fileChars = DiskStringToHex(fileName);
-    
+    // Make the fileName a hexarray and set up the place holders.
+    var fileChars = DiskStringToHex(fileName);    
     var newID = new FileID();
     var block = null;
     
     // Jump the MBR.
     newID.increment();
     
+    // Seek it out and break out when the file is found or at the end of the track.
     while (newID.track < 1)
     {        
         block = DiskRetrieveTSB(newID);
@@ -189,20 +264,28 @@ function DiskFindFile (fileName)
         newID.increment();
     }
     
+    // sets the newID to null if the file wasn't discovered.
     if( newID.track === 1)
         newID = null;
     
     return newID;    
 }
 
+/**
+ * Searches for the first file with the status bit set to "00" in the file system.
+ * 
+ * @return null if the directory space is full.
+ */
 function DiskFindFreeFile ()
 {
+    // Placeholder variables.
     var newID = new FileID();
     var block = null;
     
     // Jump the MBR.
     newID.increment();
     
+    // Search for the first empty file.
     while (newID.track < 1)
     {        
         block = DiskRetrieveTSB(newID);
@@ -214,14 +297,21 @@ function DiskFindFreeFile ()
         newID.increment();
     }
      
+     
+    // If true then no empty file space is present (at least for the handle).
     if( newID.track === 1)
         newID = null;
     
     return newID;
 }
 
+/**
+ * Finds the first free data location on the file system.
+ * @return null if the free space was not present, the id if found.
+ */
 function DiskFindFreeSpace ()
 {
+    // XXX match this to DiskFindFreeFile?
     var newID = new FileID();
     var block = null;    
     var found = false;
@@ -241,9 +331,13 @@ function DiskFindFreeSpace ()
     
     return found?newID:null;
 }
+// ----------------------- End helper functions --------------------------------
 
 
-
+/**
+ * The file system formatter. Zeroes out the entire file system in accordance to the 
+ * base formatting for the file system.
+ */
 function DiskFormat ()
 {
     var newID = new FileID();
@@ -264,7 +358,7 @@ function DiskFormat ()
     console.log(localStorage);
     console.log(DiskFindFile("test"));
     DiskWriteFile("test","Testing 12345678910 hello hello hello Testing 12345678910 hello");
-    DiskReadFile("test");
+    console.log(DiskReadFile("test"));
     DiskWriteFile("test","Yo dawg");
     console.log(localStorage);
     DiskDelete("test");
@@ -276,9 +370,13 @@ function DiskFormat ()
     */
 }
 
+/**
+ * Creates a file on the file system and allocates its first block on the "HDD"
+ * @param fileName The name of the new file.
+ */
 function DiskCreateFile (fileName)
 {
-    // TODO size chacking.
+    // TODO size chacking, already existing check.
     var fileDescriptor    = new FileBlock();
     var contentDescriptor = new FileBlock();
     var fileHandle = DiskFindFreeFile();
@@ -304,9 +402,18 @@ function DiskCreateFile (fileName)
     }
 }
 
+/**
+ * Write the supplied data to the specified filename.
+ * 
+ * @param fileName A string containing the user defined filename.
+ * 
+ * @param data Either a string or array of Hex character codes (this is for the 
+ *      sake of making swap simpler).
+ *
+ */
 function DiskWriteFile (fileName, data)
 {
-    var dataChars  = DiskStringToHex(data);
+    var dataChars  = typeof data === "string" ? DiskStringToHex(data) : data;
     var fileHandle = DiskRetrieveTSB(DiskFindFile(fileName));
     var currentID  = fileHandle.nextID;
     var content    = DiskRetrieveTSB(fileHandle.nextID);

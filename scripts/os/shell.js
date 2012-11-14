@@ -168,8 +168,36 @@ function shellInit()
     sc.funct = shellKill;
     this.commandList[this.commandList.length]=sc;
     
+    sc = new ShellCommand();
+    sc.command ="create";
+    sc.description = " <filename> - Creates a file on the fs with the supplied filename.";
+    sc.funct = shellCreate;
+    this.commandList[this.commandList.length]=sc;
     
-    //
+    sc = new ShellCommand();
+    sc.command ="read";
+    sc.description = " <filename> - Reads the data to the specified file.";
+    sc.funct = shellRead;
+    this.commandList[this.commandList.length]=sc;
+
+    sc = new ShellCommand();
+    sc.command ="write";
+    sc.description = " <filename> <data> - Writes the data to the specified file (overwrites).";
+    sc.funct = shellWrite;
+    this.commandList[this.commandList.length]=sc;
+    
+    sc = new ShellCommand();
+    sc.command ="delete";
+    sc.description = " <filename> - Deletes specified file.";
+    sc.funct = shellDelete;
+    this.commandList[this.commandList.length]=sc;
+    
+    sc = new ShellCommand();
+    sc.command ="format";
+    sc.description = " formats the file system.";
+    sc.funct = shellFormat;
+    this.commandList[this.commandList.length]=sc;
+
     // Display the initial prompt.
     this.putPrompt();
 }
@@ -650,5 +678,34 @@ function shellKill(args)
     {
         _StdIn.putText("Please supply a program id.");
     }
+}
+
+function shellCreate(args)
+{
+    
+}
+
+function shellRead(args)
+{
+    
+}
+
+function shellWrite(args)
+{
+    var filename = args.shift();
+    var data     = args.join(" ");
+    new Interrupt();
+    
+    
+}
+
+function shellDelete(args)
+{
+    
+}
+
+function shellFormat()
+{
+    
 }
 
