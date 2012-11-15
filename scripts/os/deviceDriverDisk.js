@@ -146,6 +146,9 @@ function krnDiskDispatch(params)
         case FS_OPS.FORMAT:
             results = DiskFormat();
             break;    
+        case FS_OPS.LS:
+            results = DiskList();
+            break;    
         default:
             break;
     }
@@ -388,6 +391,7 @@ function DiskFormat ()
  *         2 - good data allocation bad file handle creation.
  *         3 - everything worked out.
  *         >3 - bad fileName. 
+ *         <0 - file already exists.
  */
 function DiskCreateFile (fileName)
 {
@@ -408,6 +412,11 @@ function DiskCreateFile (fileName)
     // Do a check of the file name.
     var fileChars = DiskStringToHex(fileName);
     retCode += fileChars.length > FileID.BSIZE-4 ? 4 : 0;
+    
+    // Checks
+    if(DiskFindFile(fileName) !== null)
+        retCode *= -1;
+    
     
     // RetCode 3 indicates a valid file.
     if(retCode === 3)
@@ -603,4 +612,29 @@ function DiskDeleteID(tsb)
         DiskWriteToTSB (currentID, fileContent);
         currentID              = fileContent.nextID;
     }
+}
+
+function DiskList(tsb)
+{
+    // Placeholder variables.
+    var searchID = new FileID();
+    var block = null;
+    var fileList = [];
+    
+    // Jump the MBR.
+    searchID.increment();
+    
+    // Search for the first empty file.
+    while (searchID.track < 1)
+    {        
+        block = DiskRetrieveTSB(searchID);
+        
+        if (block.statusBit === "01")
+        {
+            fileList.push(DiskConvertFromHex(block.data));
+        }
+        searchID.increment();
+    }
+    
+    return fileList;
 }

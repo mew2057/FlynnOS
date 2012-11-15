@@ -62,7 +62,8 @@ var FS_OPS = {
     "READ":1,
     "WRITE":2,
     "DELETE":3,
-    "FORMAT":4
+    "FORMAT":4,
+    "LS":5
 };
     
 

@@ -544,3 +544,9 @@ function krnDiskFormat(callBack)
     _KernelInterruptQueue.enqueue(new Interrupt(DISK_REQUEST_IRQ,
         [FS_OPS.FORMAT, null, null, callBack]));
 }
+
+function krnDiskLS(callBack)
+{
+    _KernelInterruptQueue.enqueue(new Interrupt(DISK_REQUEST_IRQ,
+        [FS_OPS.LS, null, null, callBack]));
+}

@@ -194,10 +194,16 @@ function shellInit()
     
     sc = new ShellCommand();
     sc.command ="format";
-    sc.description = " formats the file system.";
+    sc.description = " -Formats the file system.";
     sc.funct = shellFormat;
     this.commandList[this.commandList.length]=sc;
 
+    sc = new ShellCommand();
+    sc.command ="ls";
+    sc.description = " - Displays file names on file system.";
+    sc.funct = shellLS;
+    this.commandList[this.commandList.length]=sc;
+    
     // Display the initial prompt.
     this.putPrompt();
 }
@@ -705,5 +711,10 @@ function shellDelete(args)
 function shellFormat()
 {
     krnDiskFormat();
+}
+
+function shellLS()
+{
+    krnDiskLS();
 }
 
