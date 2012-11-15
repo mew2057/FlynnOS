@@ -37,6 +37,11 @@ function krnBootstrap()      // Page 8.
     krnDisplayDriver.driverEntry();
     krnTrace(krnDisplayDriver.status);
     
+    krnTrace("Loading the disk device driver.");
+    krnDiskDriver = new DeviceDriverDisk();
+    krnDiskDriver.driverEntry();
+    krnTrace(krnDiskDriver.status);
+
     // Initialize the Console.
     _Console.init();
 
@@ -185,7 +190,11 @@ function krnInterruptHandler(irq, params)    // This is the Interrupt Handler Ro
         case CONTEXT_IRQ:
             krnContextSwitch(params);
             break;
-            
+        case DISK_REQUEST_IRQ:
+            krnDiskDriver.isr(params);
+            break;
+        case DISK_RESPONSE_IRQ:
+            break;            
         default: 
             krnTrapError("Invalid Interrupt Request. irq=" + irq + " params=[" + params + "]");
     }
@@ -507,3 +516,31 @@ function krnKillProcess(pid)
     _Scheduler.removeFromSchedule(_CPU, parseInt(pid,10));
 }
 
+function krnDiskCreate(fileName, callBack)
+{
+    _KernelInterruptQueue.enqueue(new Interrupt(DISK_REQUEST_IRQ,
+        [FS_OPS.CREATE,fileName, null, callBack]));
+}
+
+function krnDiskRead(fileName, literal, callBack)
+{
+    _KernelInterruptQueue.enqueue(new Interrupt(DISK_REQUEST_IRQ,
+        [FS_OPS.READ, fileName, literal, callBack]));
+}
+function krnDiskWrite(fileName, data, callBack)
+{
+    _KernelInterruptQueue.enqueue(new Interrupt(DISK_REQUEST_IRQ,
+        [FS_OPS.WRITE, fileName, data, callBack]));
+}
+
+function krnDiskDelete(fileName, callBack)
+{
+    _KernelInterruptQueue.enqueue(new Interrupt(DISK_REQUEST_IRQ,
+        [FS_OPS.DELETE, fileName, null, callBack]));
+}
+
+function krnDiskFormat(callBack)
+{
+    _KernelInterruptQueue.enqueue(new Interrupt(DISK_REQUEST_IRQ,
+        [FS_OPS.FORMAT, null, null, callBack]));
+}

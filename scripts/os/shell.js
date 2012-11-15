@@ -682,30 +682,28 @@ function shellKill(args)
 
 function shellCreate(args)
 {
-    
+    krnDiskCreate(args[0]);
 }
 
 function shellRead(args)
 {
-    
+    krnDiskRead(args[0]);
 }
 
 function shellWrite(args)
 {
     var filename = args.shift();
     var data     = args.join(" ");
-    new Interrupt();
-    
-    
+    krnDiskWrite(filename, data);
 }
 
 function shellDelete(args)
 {
-    
+    krnDiskDelete(args[0]);
 }
 
 function shellFormat()
 {
-    
+    krnDiskFormat();
 }
 

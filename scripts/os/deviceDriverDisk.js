@@ -115,32 +115,42 @@ function krnDiskDriverEntry()
     this.status = "loaded";
 }
 
+/**
+ * 
+ * @param params 0 - fs operation
+ *               1 - fileName
+ *               2 - data
+ *               3 - callback function 
+ */
 function krnDiskDispatch(params)
 {
+    // TODO Make the results of these function calls mean something...
+    var results = null;
+
     switch(params[0])
     {
-        case "create":
-            DiskCreateFile(params[1]); // Assumes that the filename is a string.
+        case FS_OPS.CREATE:
+            results = DiskCreateFile(params[1]); // Assumes that the filename is a string.   
             break;
-        case "write":
+        case FS_OPS.READ:
+            results = DiskReadFile(params[1],params[2]);
+            break;
+        case FS_OPS.WRITE:
             // params 1 - filename (string)
             // params 2 - data (string or array of hex digits)
-            DiskWriteFile(params[1], params[2]);    
+            results = DiskWriteFile(params[1], params[2]);    
+            break;      
+        case FS_OPS.DELETE:
+            results = DiskDelete(params[1]);
             break;
-        case "read":
-            // TODO place this data somewhere worthwhile.
-            DiskReadFile(params[1],params[2]);
-            break;
-        case "delete":
-            DiskDelete(params[1]);
-            break;
-        case "format":
-            DiskFormat();
+        case FS_OPS.FORMAT:
+            results = DiskFormat();
             break;    
         default:
             break;
-
     }
+    console.log(results);
+    _KernelInterruptQueue.enqueue(new Interrupt(DISK_RESPONSE_IRQ,[params[0],results,params[3]]));
 
 }
 // ----------------------- Helper functions -----------------------------------
@@ -153,7 +163,7 @@ function krnDiskDispatch(params)
  */
 function DiskStringToHex(toConvert)
 {
-    // Make the string into an array.
+    // Make the string into an array of hex strings.
     var charArray = toConvert.split('');
     
     // convert to the hex char codes.
@@ -162,7 +172,10 @@ function DiskStringToHex(toConvert)
         charArray[index] = padZeros(charArray[index].charCodeAt(0).toString(16),2);
     }
     
-    charArray[index] = "00";
+    // If it doesn't exactly fill the block null terminate the string.
+    // As index is exactly the length we don't need to get the length from the array.
+    if(index % 60 !== 0)
+        charArray[index] = "00";
     
     return charArray;
 }
@@ -239,9 +252,8 @@ function DiskFindFile (fileName)
 {
     // If the fileName exceeds the block size it doesn't exist.
     if(fileName.length > FileID.BSIZE - 4)
-    {
-        //error 
-        return;
+    { 
+        return null;
     }
     
     // Make the fileName a hexarray and set up the place holders.
@@ -311,7 +323,6 @@ function DiskFindFreeFile ()
  */
 function DiskFindFreeSpace ()
 {
-    // XXX match this to DiskFindFreeFile?
     var newID = new FileID();
     var block = null;    
     var found = false;
@@ -327,9 +338,24 @@ function DiskFindFreeSpace ()
             found = true;
             break;
         }
-    }while (newID.increment());
+    }while(newID.increment());
     
     return found?newID:null;
+}
+
+function DiskConvertFromHex(chars)
+{
+    var str         = "";
+    
+    for (var index in chars)
+    {
+        str+= String.fromCharCode("0x" + chars[index]);
+        
+        if(chars[index] === "00")
+            break;
+    }
+    
+    return str;
 }
 // ----------------------- End helper functions --------------------------------
 
@@ -352,74 +378,140 @@ function DiskFormat ()
     {
         DiskWriteToTSB(newID,tempFile);
     }
-    
-    /*
-    DiskCreateFile("test");
-    console.log(localStorage);
-    console.log(DiskFindFile("test"));
-    DiskWriteFile("test","Testing 12345678910 hello hello hello Testing 12345678910 hello");
-    console.log(DiskReadFile("test"));
-    DiskWriteFile("test","Yo dawg");
-    console.log(localStorage);
-    DiskDelete("test");
-    console.log(localStorage);
-    DiskCreateFile("tes");
-    console.log(DiskFindFile("tes"));
-    DiskWriteFile("tes","Testing 12345678910 hello hello hello Testing 123456789");
-    console.log(localStorage);
-    */
 }
 
 /**
  * Creates a file on the file system and allocates its first block on the "HDD"
  * @param fileName The name of the new file.
+ * @return 0 - both file handle creation and data allocation failed.
+ *         1 - good file handle creation bad data allocation.
+ *         2 - good data allocation bad file handle creation.
+ *         3 - everything worked out.
+ *         >3 - bad fileName. 
  */
 function DiskCreateFile (fileName)
 {
-    // TODO size chacking, already existing check.
+    var retCode = 0;
+    
+    // Make the blocks
     var fileDescriptor    = new FileBlock();
     var contentDescriptor = new FileBlock();
+    
+    // Check for an available file.
     var fileHandle = DiskFindFreeFile();
+    retCode += fileHandle === null ? 0 : 1;
+    
+    // Check for available file data space.
     var contentID  = DiskFindFreeSpace();
+    retCode += contentID === null ? 0 : 2;
+    
+    // Do a check of the file name.
     var fileChars = DiskStringToHex(fileName);
+    retCode += fileChars.length > FileID.BSIZE-4 ? 4 : 0;
     
-    
-    if(fileHandle !== null && contentID !== null)
+    // RetCode 3 indicates a valid file.
+    if(retCode === 3)
     {
+        // Set up the file block that will contain the file name and a chain to the file.
         fileDescriptor.nextID       = contentID;
         fileDescriptor.statusBit    = FileBlock.OCC;
         
-        for ( var index = 0, length = fileChars.length > FileID.BSIZE? FileID.BSIZE : fileChars.length; index < length;index++)
+        // Add the name to the file block
+        for ( var index = 0, length = fileChars.length > FileID.BSIZE? FileID.BSIZE : fileChars.length; 
+            index < length;
+            index++)
         {
             fileDescriptor.data[index] = fileChars[index];
         }
     
+        // Set the data status bit.
         contentDescriptor.statusBit = FileBlock.OCC;
         
+        // Writes the prepared blocks to the actual file system.
         DiskWriteToTSB(contentID,contentDescriptor);
-        
         DiskWriteToTSB(fileHandle,fileDescriptor);
+    }
+    
+    return retCode;
+}
+
+/**
+ * Reads the specified file from the file system if found.
+ * By supplying the literal field as true function returns an array of the 
+ * whole chain of hex digits. If literal is not set the hex is decoded as a null 
+ * terminated string.
+ * 
+ * @param fileName The max 60 character fileName that is to be read.
+ * @param literal  Optional - Specifies whether this should return the exact 
+ *                  contents (e.g. array of hex codes when set true) or the 
+ *                  decoded null terminated ascii string.
+ * @return literal === true - An array of hex values.
+ *         literal === false or undefined - A string.
+ *         badFileName - null.
+ */
+function DiskReadFile (fileName, literal)
+{
+    var currentID      = DiskFindFile(fileName);
+    
+    // If the ID is null here it is assumed the file wasn't found.
+    if(currentID === null)
+        return null;
+        
+    // Get the first content block and start the  aggregation variable out.
+    var currentContent  = DiskRetrieveTSB(currentID);
+    var aggregateValues = [];    
+    currentID           = currentContent.nextID;
+    
+    // Until the chain ends aggregate the file contents.
+    while (currentID.track !== 0 || currentID.sector !== 0 ||  currentID.block !== 0)
+    {
+        currentContent  = DiskRetrieveTSB(currentID);
+        
+        aggregateValues = aggregateValues.concat(currentContent.data);
+        
+        currentID       = currentContent.nextID;
+    }
+    
+    // Literal is to be used for code, otherwise assume a null terminated and encoded string.
+    if(literal === true)
+    {
+        return aggregateValues;
+    }
+    else
+    {
+        return DiskConvertFromHex(aggregateValues);
     }
 }
 
 /**
- * Write the supplied data to the specified filename.
+ * Write the supplied data to the specified filename. This is an overwrite!
  * 
  * @param fileName A string containing the user defined filename.
  * 
  * @param data Either a string or array of Hex character codes (this is for the 
  *      sake of making swap simpler).
  *
+ *
  */
 function DiskWriteFile (fileName, data)
 {
+    // TODO increase robustness of return!
+    // Check to see which type of data we're dealing with and react acordingly.
     var dataChars  = typeof data === "string" ? DiskStringToHex(data) : data;
-    var fileHandle = DiskRetrieveTSB(DiskFindFile(fileName));
+    
+    // Convert the file name and check to see if it is valid.
+    var hexName    = DiskFindFile(fileName);
+    if(hexName === null)
+        return null;
+    
+    // If all was good start building.
+    var fileHandle = DiskRetrieveTSB(hexName);
     var currentID  = fileHandle.nextID;
     var content    = DiskRetrieveTSB(fileHandle.nextID);
     
     content.data[0] = dataChars[0];
-     
+    
+    // Iterate over the data length and write to the file, allocating new blocks as needed.
     for (var index = 1; index < dataChars.length; index ++)
     {
         if( (index + 4) % 64 === 0 && 
@@ -468,54 +560,28 @@ function DiskWriteFile (fileName, data)
    DiskWriteToTSB(currentID, content);
 }
 
-function DiskReadFile (fileName, literal)
-{
-    var currentID      = DiskFindFile(fileName);
-    var currentContent = DiskRetrieveTSB(currentID);
-    var aggregateValues = [];
-    
-    currentID          = currentContent.nextID;
-    
-    while (currentID.track !== 0 || currentID.sector !== 0 ||  currentID.block !== 0)
-    {
-        currentContent = DiskRetrieveTSB(currentID);
-        
-        aggregateValues = aggregateValues.concat(currentContent.data);
-        
-        currentID      = currentContent.nextID;
-    }
-    
-    // Literal is to be used for code, otherwise assume a null terminated and encoded string.
-    if(literal === true)
-    {
-        return aggregateValues;
-    }
-    else
-    {
-        return DiskConvertFromHex(aggregateValues);
-    }
-}
-
-function DiskConvertFromHex(chars)
-{
-    var str         = "";
-    
-    for (var index in chars)
-    {
-        str+= String.fromCharCode("0x" + chars[index]);
-        
-        if(chars[index] === "00")
-            break;
-    }
-    
-    return str;
-}
-
+/**
+ * Deletes the supplied file.
+ * 
+ * @param fileName The file string that doesn't exceed 60 characters.
+ * 
+ */
 function DiskDelete (fileName)
 {   
-   DiskDeleteID(DiskFindFile(fileName));
+    var hexName = DiskFindFile(fileName);
+    
+    if(hexName !== null)
+        DiskDeleteID(hexName);
+    else
+        console.log("failure");
 }
 
+/**
+ * Deletes the supplied track, sector block.
+ * 
+ * @param tsb The Track, Sector and Block to delete.
+ * 
+ */
 function DiskDeleteID(tsb)
 {
     var currentID        = tsb;

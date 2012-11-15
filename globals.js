@@ -24,6 +24,8 @@ var FAULT_IRQ = 3;
 var BRK_IRQ = 4;
 var TRAP_IRQ = 5;
 var CONTEXT_IRQ = 6;
+var DISK_REQUEST_IRQ = 7;
+var DISK_RESPONSE_IRQ = 8;
 // Fault Types.
 var INST_FAULT = 1; //An instruction fault.
 var MEM_FAULT  = 2; //A memory fault.
@@ -54,6 +56,15 @@ var _LOGGER_VIEW = {
     "OS"  : true,
     "DISP-ALL" : true
 };
+
+var FS_OPS = {
+    "CREATE":0,
+    "READ":1,
+    "WRITE":2,
+    "DELETE":3,
+    "FORMAT":4
+};
+    
 
 //
 // Global Variables
