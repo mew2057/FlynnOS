@@ -194,8 +194,9 @@ function consolePutText(txt, input)
                 // encountered while coding project 2. (wraparound comment 
                 // somewhat intended)
                 var tokens = txt.toString().split(" ");    
-
+                
                 var offsetLength = 0;
+                
                 if(tokens.length > 1)
                 {
                     offsetLength = DRAWING_CONTEXT.measureText(DEFAULT_FONT, 
@@ -206,7 +207,6 @@ function consolePutText(txt, input)
                 
                 for (var index in tokens)
                 {
-                    
                     offset = DRAWING_CONTEXT.measureText(DEFAULT_FONT, 
                         DEFAULT_FONT_SIZE,tokens[index]);
 

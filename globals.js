@@ -24,8 +24,8 @@ var FAULT_IRQ = 3;
 var BRK_IRQ = 4;
 var TRAP_IRQ = 5;
 var CONTEXT_IRQ = 6;
-var DISK_REQUEST_IRQ = 7;
-var DISK_RESPONSE_IRQ = 8;
+var DISK_IRQ = 7;
+
 // Fault Types.
 var INST_FAULT = 1; //An instruction fault.
 var MEM_FAULT  = 2; //A memory fault.
@@ -38,13 +38,14 @@ var INSTRUCTION_COUNT = 256;
 var LOG_CHAR_LIMIT = 500000;
 // Defines the logger sources.
 var LOGGER_SOURCE = {
-    "SRC":["CPU","INST","MEM","SCH","HOST","OS","DISP-ALL"],
+    "SRC":["CPU","INST","MEM","SCH","HOST","OS","DISK","DISP-ALL"],
     "CPU" :"CPU",
     "INST":"INST",
     "MEM" :"MEM",
     "SCH" :"SCH",
     "HOST":"HOST",
     "OS"  :"OS",
+    "DISK":"DISK",
     "DISP-ALL" :"DISP-ALL"
 };
 var _LOGGER_VIEW = {
@@ -54,10 +55,12 @@ var _LOGGER_VIEW = {
     "SCH" : true,
     "HOST": true,
     "OS"  : true,
+    "DISK": true,
     "DISP-ALL" : true
 };
 
 var FS_OPS = {
+    "OPS" : ["CREATE","READ","WRITE","DELETE","FORMAT","LS"],
     "CREATE":0,
     "READ":1,
     "WRITE":2,

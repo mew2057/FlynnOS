@@ -5,7 +5,9 @@
    
    The Kernel Disk Device Driver.
    ---------------------------------- */
-   
+
+
+
 FileID.T = 4;
 FileID.S = 8;
 FileID.B = 8;
@@ -110,6 +112,26 @@ function DeviceDriverDisk()                     // Add or override specific attr
     // "Constructor" code.
 }
 
+DeviceDriverDisk.feedbackMessage={
+    "CREATE":{
+        0:{"message": "File Creation Failed: Handle and Data Allocation failure", "retVal":false},
+        1:{"message": "File Creation Failed: Data Allocation failure", "retVal":false},
+        2:{"message": "File Creation Failed: Handle Creation failure", "retVal":false},
+        3:{"message": "File Creation Success", "retVal":true},
+        "-1":{"message": "Bad File Name, your file has bad characters (Quite frankly I'm impressed)", "retVal":false},
+        4:{"message": "Bad File Name, please ensure your file doesn't already exist", "retVal":false}
+        },
+    "WRITE":{
+        
+    
+    }
+};
+
+DeviceDriverDisk.prototype.log = function(msg)
+{
+    simLog(msg,LOGGER_SOURCE.DISK);
+};
+
 function krnDiskDriverEntry()
 {
     this.status = "loaded";
@@ -120,42 +142,127 @@ function krnDiskDriverEntry()
  * @param params 0 - fs operation
  *               1 - fileName
  *               2 - data
- *               3 - callback function 
+ *               3 - callback function [invoking object, function, args]
  */
 function krnDiskDispatch(params)
 {
-    // TODO Make the results of these function calls mean something...
-    var results = null;
-
+    var results = "";
+    var response = {"message": "", "retVal":""};
+    
     switch(params[0])
     {
         case FS_OPS.CREATE:
             results = DiskCreateFile(params[1]); // Assumes that the filename is a string.   
+            
+            response.retVal = true;
+            
+            if(results < 0)
+            {
+                results *= -1;
+                response.message += DeviceDriverDisk.feedbackMessage.CREATE["-1"].message;
+                response.retVal = DeviceDriverDisk.feedbackMessage.CREATE["-1"].retVal;
+            }
+            
+            if(results > 3)
+            {
+                results -= 4;
+                response.message += response.message === "" ?  "" : "; ";
+                response.message += DeviceDriverDisk.feedbackMessage.CREATE["4"].message;
+                response.retVal = response.retVal && DeviceDriverDisk.feedbackMessage.CREATE["4"].retVal;
+            }
+            
+            response.message = (response.message === "" ?  "" : "; ") + response.message;
+            response.message = DeviceDriverDisk.feedbackMessage.CREATE[results].message + response.message;
+            response.retVal = response.retVal && DeviceDriverDisk.feedbackMessage.CREATE[results].retVal;
+            
+            
             break;
         case FS_OPS.READ:
             results = DiskReadFile(params[1],params[2]);
+            
+            if(results === null)
+            {
+                response.message = "File \"" + params[1] + "\" not found!";
+                response.retVal  = null;
+            }
+            else
+            {
+                response.message = results.toString();
+                response.retVal  = results; 
+            }
+            
             break;
+            
         case FS_OPS.WRITE:
             // params 1 - filename (string)
             // params 2 - data (string or array of hex digits)
+            
             results = DiskWriteFile(params[1], params[2]);    
+            
             break;      
+            
         case FS_OPS.DELETE:
+            
             results = DiskDelete(params[1]);
+            
+            response.retVal = results;
+            
+            if(results)
+            {
+                response.message = "Deletion of \"" + params[1] + "\" was a success!";
+            }
+            else
+            {
+                response.message = "Deletion of \"" + params[1] + "\" failed!";
+            }
             break;
+            
         case FS_OPS.FORMAT:
             results = DiskFormat();
+            
+            if(results)
+            {
+                response = {"message":"Disk Format was successful!", "retVal":true};
+            }
+            else
+            {
+                response = {"message":"Disk Format was unsuccessful!", "retVal":false};
+            }
+            
             break;    
+            
         case FS_OPS.LS:
             results = DiskList();
-            break;    
+            
+            for(var index in results)
+            {
+                response.message+=results[index] + " ";
+            }
+            
+            response.retVal = results;
+            
+            break;
+            
         default:
             break;
     }
-    console.log(results);
-    _KernelInterruptQueue.enqueue(new Interrupt(DISK_RESPONSE_IRQ,[params[0],results,params[3]]));
-
+    
+    this.log(FS_OPS.OPS[params[0]] + " : " + response.message);
+    
+    if(params[3] && params[3].putText && response.message != null)
+    {
+        params[3].putText(response.message);
+    }
+    else if (params[3] && params[3].length > 0 )
+    {
+        params[3][1].call(params[3][0], params[3][2], response.retVal);
+    }
+    else{
+        this.log("No callback specified.");
+    }
+    
 }
+
 // ----------------------- Helper functions -----------------------------------
 /**
  * Converts a string to an array containing hexadecimal values for storage.
@@ -381,6 +488,9 @@ function DiskFormat ()
     {
         DiskWriteToTSB(newID,tempFile);
     }
+    
+    // I see no forseeable manner in which this can fail that wouldn't crash the OS as well.
+    return true;
 }
 
 /**
@@ -411,7 +521,7 @@ function DiskCreateFile (fileName)
     
     // Do a check of the file name.
     var fileChars = DiskStringToHex(fileName);
-    retCode += fileChars.length > FileID.BSIZE-4 ? 4 : 0;
+    retCode += (fileChars !== null && fileChars.length <= FileID.BSIZE-4) ? 0 : 4;
     
     // Checks
     if(DiskFindFile(fileName) !== null)
@@ -518,12 +628,16 @@ function DiskWriteFile (fileName, data)
     var currentID  = fileHandle.nextID;
     var content    = DiskRetrieveTSB(fileHandle.nextID);
     
-    content.data[0] = dataChars[0];
-    
+    if(dataChars[0])
+        content.data[0] = dataChars[0];
+    else
+        content.data[0] = "00";
+        console.log(dataChars);
+
     // Iterate over the data length and write to the file, allocating new blocks as needed.
     for (var index = 1; index < dataChars.length; index ++)
     {
-        if( (index + 4) % 64 === 0 && 
+        if( index  % 60 === 0 && 
             content.nextID.track === 0  && 
             content.nextID.sector === 0 && 
             content.nextID.block === 0)
@@ -537,8 +651,10 @@ function DiskWriteFile (fileName, data)
             content = DiskRetrieveTSB(currentID);
             
             content.statusBit = FileBlock.OCC;
+            
+            DiskWriteToTSB(currentID, content);
         }
-        else if ( (index + 4) % 64 === 0)
+        else if ( index % 60 === 0)
         {
            DiskWriteToTSB(currentID, content);
             
@@ -549,24 +665,27 @@ function DiskWriteFile (fileName, data)
             content.statusBit = FileBlock.OCC;   
         }
         content.data[index % 60] = dataChars[index];
+                console.log(content.data.toString());
+
     }
-    
+
     // Clear out the remaining data in the block.
     for (var clearIndex = index % 60; clearIndex < 60;clearIndex++)
     {
         content.data[clearIndex] = "00";
     }
-    
+    console.log(content.data);
     // Destroy any remaining chains of data.
     if(content.nextID.track !== 0 || content.nextID.sector !== 0 ||  content.nextID.block !== 0)
     {
+
         DiskDeleteID(content.nextID);
         
         // Zero the nextID.
         content.nextID = new FileID();
     }    
-    
-   DiskWriteToTSB(currentID, content);
+
+    DiskWriteToTSB(currentID, content);
 }
 
 /**
@@ -574,15 +693,22 @@ function DiskWriteFile (fileName, data)
  * 
  * @param fileName The file string that doesn't exceed 60 characters.
  * 
+ * @return true - file found
+ *         false - file not found.
  */
 function DiskDelete (fileName)
 {   
     var hexName = DiskFindFile(fileName);
     
     if(hexName !== null)
+    {
         DiskDeleteID(hexName);
+        return true;
+    }
     else
-        console.log("failure");
+    {
+        return false;
+    }
 }
 
 /**
@@ -596,13 +722,14 @@ function DiskDeleteID(tsb)
     var currentID        = tsb;
     var fileHandle       = DiskRetrieveTSB(currentID);
     var fileContent      = null;
-    
     fileHandle.statusBit = FileBlock.EMPTY;
     
     FileBlock.zero(fileHandle.data);
     
     DiskWriteToTSB(currentID, fileHandle);    
     currentID = fileHandle.nextID;
+    fileHandle.nextID = new FileID();
+
     
     while(currentID.track !== 0 || currentID.sector !== 0 ||  currentID.block !== 0)
     {
@@ -611,6 +738,8 @@ function DiskDeleteID(tsb)
         FileBlock.zero(fileContent.data);        
         DiskWriteToTSB (currentID, fileContent);
         currentID              = fileContent.nextID;
+        fileContent.nextID     = new FileID();
+        console.log(currentID.track,currentID.sector,currentID.block);
     }
 }
 

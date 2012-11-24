@@ -63,8 +63,8 @@ MemoryManager.prototype.reclaimPage = function(page)
 MemoryManager.ERROR = {
     "BOUNDS"     : 0,
     "STORE_OVER" : 1,
-    "FULL"       : 2
-    
+    "FULL"       : 2,
+    "FS"         : 3
 };
 
 /**
@@ -88,6 +88,9 @@ MemoryManager.prototype.errorLog = function(errorCode, param)
             break;
         case MemoryManager.ERROR.FULL:
             msg = "No remaining space in memory";
+            break;
+        case MemoryManager.ERROR.FS:
+            msg = "File System Error when writing pid: " + param + " to swap space";
             break;
         default:
     }
@@ -193,14 +196,30 @@ MemoryManager.prototype.storeProgram = function(toStore, residents)
             changeTabDisplay(page);
             break;
         case 1:
-            this.errorLog(MemoryManager.ERROR.FULL);
+            currentPCB = this.createProgramFS(toStore,residents);
+           // this.errorLog(MemoryManager.ERROR.FULL);
             break;
     }
 
     return currentPCB;
 };
 
-
+MemoryManager.prototype.createProgramFS = function(toStore, residents)
+{
+    var currentPCB  = residents.getBlock(residents.createNewPCB(["@S",0], -1));
+    currentPCB.Base = "@S"+currentPCB.pid;
+    
+    krnDiskCreate(currentPCB.Base, [this, this.storeProgramFS, [currentPCB, toStore]]);
+    
+    return currentPCB.pid;
+};
+MemoryManager.prototype.storeProgramFS = function(args, creationStatus)
+{
+    if(creationStatus)
+        krnDiskWrite(args[0].Base, args[1],[]);
+    else
+        this.errorLog(MemoryManager.ERROR.FS, args[0].pid);
+};
 /**
  * Retrieves the contents of a memory cell.
  * 
@@ -242,6 +261,7 @@ MemoryManager.prototype.retrieveContents = function(hexAddress,pcb)
  * 
  * @param boundingValue The hex value that marks the delimiter in memory for 
  *  the collection.
+ * 
  * @param pcb The process control block for the process that made the request.
  * 
  * @return null if out of bounds, the contents if found.

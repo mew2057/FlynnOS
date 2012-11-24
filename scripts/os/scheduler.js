@@ -150,3 +150,29 @@ Scheduler.prototype.activesToString = function(){};
  */
 Scheduler.prototype.toString = function(){};
 
+Scheduler.prototype.startSwap = function(pcbOut, pcbIn){
+    krnDiskRead(pcbIn.Base, true, [this, this.swapOut, [pcbOut, pcbIn]])
+};
+
+Scheduler.prototype.swapOut = function(pcbs, fsData)
+{
+    var toDisk = _MemoryManager.retrieveContentsFromAddress(pcbs[0].Base, pcbs[0].Limit - pcbs[0].Base, pcbs[0]);
+    
+    var tempBase = pcbs[0].Base;
+    pcbs[0].Base = pcbs[1].Base;
+    
+    pcbs[1].Base = tempBase;
+    pcbs[1].Base = pcbs[0].Limit;
+    pcbs[1].page = pcbs[0].page;
+    pcbs[0].page = -1;
+
+    
+    _MemoryManager.store(pcbs[1].Base, fsData, pcbs[1])
+    
+    krnDiskWrite(pcbs[0].Base, toDisk, [this, this.swapComplete,[]]);
+};
+
+Scheduler.prototype.swapComplete = function(args, status)
+{
+    console.log(status);
+};

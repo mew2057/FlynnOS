@@ -49,7 +49,8 @@ function krnBootstrap()      // Page 8.
     _StdIn  = _Console;
     _StdOut = _Console;
   
-DiskFormat();
+    // Sets up the disk, may work somewhere else better...
+    DiskFormat();
 
     // Load the Keyboard Device Driver
     krnTrace("Loading the keyboard device driver.");
@@ -190,11 +191,9 @@ function krnInterruptHandler(irq, params)    // This is the Interrupt Handler Ro
         case CONTEXT_IRQ:
             krnContextSwitch(params);
             break;
-        case DISK_REQUEST_IRQ:
+        case DISK_IRQ:
             krnDiskDriver.isr(params);
             break;
-        case DISK_RESPONSE_IRQ:
-            break;            
         default: 
             krnTrapError("Invalid Interrupt Request. irq=" + irq + " params=[" + params + "]");
     }
@@ -518,35 +517,35 @@ function krnKillProcess(pid)
 
 function krnDiskCreate(fileName, callBack)
 {
-    _KernelInterruptQueue.enqueue(new Interrupt(DISK_REQUEST_IRQ,
-        [FS_OPS.CREATE,fileName, null, callBack]));
+    _KernelInterruptQueue.enqueue(new Interrupt(DISK_IRQ,
+        [FS_OPS.CREATE,fileName, null, callBack ? callBack : _StdIn]));
 }
 
 function krnDiskRead(fileName, literal, callBack)
 {
-    _KernelInterruptQueue.enqueue(new Interrupt(DISK_REQUEST_IRQ,
-        [FS_OPS.READ, fileName, literal, callBack]));
+    _KernelInterruptQueue.enqueue(new Interrupt(DISK_IRQ,
+        [FS_OPS.READ, fileName, literal, callBack ? callBack : _StdIn]));
 }
 function krnDiskWrite(fileName, data, callBack)
 {
-    _KernelInterruptQueue.enqueue(new Interrupt(DISK_REQUEST_IRQ,
-        [FS_OPS.WRITE, fileName, data, callBack]));
+    _KernelInterruptQueue.enqueue(new Interrupt(DISK_IRQ,
+        [FS_OPS.WRITE, fileName, data, callBack ? callBack : _StdIn]));
 }
 
 function krnDiskDelete(fileName, callBack)
 {
-    _KernelInterruptQueue.enqueue(new Interrupt(DISK_REQUEST_IRQ,
-        [FS_OPS.DELETE, fileName, null, callBack]));
+    _KernelInterruptQueue.enqueue(new Interrupt(DISK_IRQ,
+        [FS_OPS.DELETE, fileName, null, callBack ? callBack : _StdIn]));
 }
 
 function krnDiskFormat(callBack)
 {
-    _KernelInterruptQueue.enqueue(new Interrupt(DISK_REQUEST_IRQ,
-        [FS_OPS.FORMAT, null, null, callBack]));
+    _KernelInterruptQueue.enqueue(new Interrupt(DISK_IRQ,
+        [FS_OPS.FORMAT, null, null, callBack ? callBack : _StdIn]));
 }
 
 function krnDiskLS(callBack)
 {
-    _KernelInterruptQueue.enqueue(new Interrupt(DISK_REQUEST_IRQ,
-        [FS_OPS.LS, null, null, callBack]));
+    _KernelInterruptQueue.enqueue(new Interrupt(DISK_IRQ,
+        [FS_OPS.LS, null, null, callBack ? callBack : _StdIn]));
 }
