@@ -717,26 +717,32 @@ function DiskDelete (fileName)
 function DiskDeleteID(tsb)
 {
     var currentID        = tsb;
+    var tempID           = currentID;
     var fileHandle       = DiskRetrieveTSB(currentID);
     var fileContent      = null;
     fileHandle.statusBit = FileBlock.EMPTY;
     
     FileBlock.zero(fileHandle.data);
     
-    DiskWriteToTSB(currentID, fileHandle);    
-    currentID = fileHandle.nextID;
+    tempID = fileHandle.nextID;
     fileHandle.nextID = new FileID();
-
     
+    DiskWriteToTSB(currentID, fileHandle);    
+    
+    currentID = tempID;
+
     while(currentID.track !== 0 || currentID.sector !== 0 ||  currentID.block !== 0)
     {
         fileContent           = DiskRetrieveTSB(currentID);
         fileContent.statusBit = FileBlock.EMPTY;
-        FileBlock.zero(fileContent.data);        
+        
+        FileBlock.zero(fileContent.data);    
+        
+        tempID                = fileContent.nextID;
+        fileContent.nextID    = new FileID();
+
         DiskWriteToTSB (currentID, fileContent);
-        currentID              = fileContent.nextID;
-        fileContent.nextID     = new FileID();
-        console.log(currentID.track,currentID.sector,currentID.block);
+        currentID             = tempID;
     }
 }
 

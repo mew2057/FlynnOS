@@ -136,7 +136,7 @@ RoundRobin.prototype.processNext = function(cpu, finished, terminated)
             if(!finished && cpu.pcb)
                 this.readyQueue.pop();
             
-            this.startSwap(cpu.pcb, tempPCB,this.readyQueue, cpu);
+            this.startSwap(cpu.pcb, tempPCB, cpu);
         }
         else
         {
@@ -149,7 +149,6 @@ RoundRobin.prototype.processNext = function(cpu, finished, terminated)
     {
         Scheduler.log("PID " + cpu.pcb.pid + (terminated ? " terminated":" is" +
             " finished executing") + ", no remaining processes");
-                            console.log(_MemoryManager.pagesInUse,cpu.pcb.page);
 
         cpu.pcb = null;    
         this.processEnqueued = false;
@@ -197,7 +196,6 @@ RoundRobin.prototype.scheduleProcess = function(cpu, pcb)
 };
 
 /**
- * TODO get it to work with swap!
  * Removes the pcb with the supplied pid from the schedule.
  * 
  * @param cpu The cpu at the time of invocation.
@@ -234,12 +232,19 @@ RoundRobin.prototype.removeFromSchedule = function(cpu, pid)
                 // Reclaim the now defunct page.
                 this.reclaimPCB(this.readyQueue[index]);
                 
+                if(this.readyQueue[index].Base.toString().indexOf("@") !== -1)
+                {
+                    krnDiskDelete(this.readyQueue[index].Base,[])
+                }
+                
                 // Remove the element from the readyQueue.
                 this.readyQueue.splice(index,1);
                 
                 // Output the details.
                 Scheduler.toConsole("PID: " + pid + " terminated.");
                 Scheduler.log("PID " + pid + " terminated" );
+                
+                
                 break;
             }
         }
@@ -304,9 +309,9 @@ RoundRobin.prototype.swapComplete = function(args, status)
 {
     // If the pcb has a page of -1 it exists on the HDD else the page is dead.
     if(args[0].page === -1)
-        args[2].push(args[0]);
+        this.readyQueue.push(args[0]);
         
-    args[3].setStateFromPCB(args[1]);
-
-    Scheduler.log("PID " +  args[3].pcb.pid + " is now queued to execute");
+    args[2].setStateFromPCB(args[1]);
+    
+    Scheduler.log("PID " +  args[2].pcb.pid + " is now queued to execute");
 };

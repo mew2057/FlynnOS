@@ -29,7 +29,7 @@ function krnBootstrap()      // Page 8.
     _Terminated = new Queue();              // Contains the pcbs that have executed.
     _StepEnabled = false;                   // Ensures that Stepping is off on load.
     _Step = false;                          // Clears out the Step.
-    _Scheduler = new RoundRobin();          // Initializes the scheduler.
+    _Scheduler =  new RoundRobin();          // Initializes the scheduler.
 
     // Load the Display Device Driver.
     krnTrace("Loading the display device driver.");

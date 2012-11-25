@@ -59,6 +59,23 @@ MemoryManager.prototype.reclaimPage = function(page)
     this.log("Page " + page + " has been reclaimed");
 };
 
+MemoryManager.prototype.findFreePage = function(pcb)
+{
+    var firstFree = this.pagesInUse.indexOf(false);
+    
+    if(firstFree !== -1)
+    {
+        this.pagesInUse[firstFree] = true;
+        pcb.page                   = firstFree;
+        pcb.Base                   = this.pageSize*firstFree;
+        pcb.Limit                  = pcb.Base + this.pageSize;
+        
+        return true;
+    }
+    
+    return false;
+};
+
 // Error enumeration (standardizes some frequent errors to error codes.
 MemoryManager.ERROR = {
     "BOUNDS"     : 0,
