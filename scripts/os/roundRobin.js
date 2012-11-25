@@ -117,12 +117,12 @@ RoundRobin.prototype.processNext = function(cpu, finished, terminated)
         
         // If the cpu has an executing process and is not finished then the pcb 
         // state must be saved and returned to the ready queue.
+        // Else if the executing process is done, log that it is done executing.
         if(!finished && cpu.pcb)
         {
             cpu.pcb.update(cpu);
             this.readyQueue.push(cpu.pcb);
         }
-        // Else if the executing process is done, log that it is done executing.
         else if (finished)
         {
             Scheduler.log("PID " + cpu.pcb.pid + (terminated ? " terminated": " is finished executing"));
@@ -133,7 +133,10 @@ RoundRobin.prototype.processNext = function(cpu, finished, terminated)
         // This can lead to thrashing add a finished version too!
         if(tempPCB.Base.toString().indexOf("@") !== -1)
         {
-            this.startSwap(this.readyQueue[this.readyQueue.length-1], tempPCB,this.readyQueue, cpu);
+            if(!finished && cpu.pcb)
+                this.readyQueue.pop();
+            
+            this.startSwap(cpu.pcb, tempPCB,this.readyQueue, cpu);
         }
         else
         {
@@ -146,11 +149,14 @@ RoundRobin.prototype.processNext = function(cpu, finished, terminated)
     {
         Scheduler.log("PID " + cpu.pcb.pid + (terminated ? " terminated":" is" +
             " finished executing") + ", no remaining processes");
+                            console.log(_MemoryManager.pagesInUse,cpu.pcb.page);
+
         cpu.pcb = null;    
         this.processEnqueued = false;
         
         // Redisplay the prompt when all processes are done.
         Scheduler.dropConsoleLine();
+
     }
     
     // Reset the tick, Dr. Beckett is fixing a different life now.
@@ -296,8 +302,11 @@ RoundRobin.prototype.toString = function()
 
 RoundRobin.prototype.swapComplete = function(args, status)
 {
+    // If the pcb has a page of -1 it exists on the HDD else the page is dead.
+    if(args[0].page === -1)
+        args[2].push(args[0]);
+        
     args[3].setStateFromPCB(args[1]);
-    args[2][args[2].length-1] = args[0];
 
     Scheduler.log("PID " +  args[3].pcb.pid + " is now queued to execute");
 };

@@ -86,7 +86,8 @@ Scheduler.prototype.breakExecution = function(cpu)
     this.setBreak(true);
     
     cpu.pcb.update(cpu);
-    
+    console.log(cpu.pcb.page, _MemoryManager.pagesInUse[cpu.pcb.page]);
+
     // Reclaims the page and places the pcb in the terminated queue
     this.reclaimPCB(cpu.pcb);
     
@@ -156,19 +157,38 @@ Scheduler.prototype.startSwap = function(pcbOut, pcbIn, queue,cpu){
 
 Scheduler.prototype.swapOut = function(pcbs, fsData)
 {
-    var toDisk = _MemoryManager.retrieveContentsFromAddress(0,_MemoryManager.pageSize, pcbs[0]);
+    var toDisk = null;
+    var tempBase = 0;
+    var pcbActive = _MemoryManager.pagesInUse[pcbs[0].page];
     
-    var tempBase = pcbs[0].Base;
-    pcbs[0].Base = pcbs[1].Base;
+    if(pcbActive)
+    {
+        toDisk = _MemoryManager.retrieveContentsFromAddress(0,_MemoryManager.pageSize, pcbs[0]);
+    }
     
-    pcbs[1].Base = tempBase;
+    tempBase = pcbs[1].Base;
+    
+    pcbs[1].Base = pcbs[0].Base;
     pcbs[1].Limit = pcbs[0].Limit;
     pcbs[1].page = pcbs[0].page;
-    pcbs[0].page = -1;
-
-    _MemoryManager.store(0, fsData.slice(0,_MemoryManager.pageSize), pcbs[1])
     
-    krnDiskWrite(pcbs[0].Base, toDisk, [this, this.swapComplete, pcbs]);
+    
+    _MemoryManager.store(0, fsData.slice(0,_MemoryManager.pageSize), pcbs[1]);
+    
+    if(toDisk !== null)
+    {
+        
+        pcbs[0].Base = tempBase;
+        pcbs[0].page = -1;
+        
+        krnDiskWrite(pcbs[0].Base, toDisk, [this, this.swapComplete, pcbs]);
+    }
+    else
+    {
+        _MemoryManager.pagesInUse[pcbs[0].page] = true;
+        
+        krnDiskDelete(tempBase,[this, this.swapComplete, pcbs])
+    }
 };
 
 Scheduler.prototype.swapComplete = function(args, status){};
