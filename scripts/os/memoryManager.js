@@ -139,6 +139,7 @@ MemoryManager.prototype.store = function(hexAddress, toStore, pcb)
     {
         // Doesn't stop the CPU but notifies the user of a detected errror.
         this.errorLog(MemoryManager.ERROR.BOUNDS, hexAddress);
+
     }
     else if(toStore.length + intAddress > limit)
     {

@@ -632,7 +632,6 @@ function DiskWriteFile (fileName, data)
         content.data[0] = dataChars[0];
     else
         content.data[0] = "00";
-        console.log(dataChars);
 
     // Iterate over the data length and write to the file, allocating new blocks as needed.
     for (var index = 1; index < dataChars.length; index ++)
@@ -665,8 +664,6 @@ function DiskWriteFile (fileName, data)
             content.statusBit = FileBlock.OCC;   
         }
         content.data[index % 60] = dataChars[index];
-                console.log(content.data.toString());
-
     }
 
     // Clear out the remaining data in the block.
@@ -674,7 +671,7 @@ function DiskWriteFile (fileName, data)
     {
         content.data[clearIndex] = "00";
     }
-    console.log(content.data);
+    
     // Destroy any remaining chains of data.
     if(content.nextID.track !== 0 || content.nextID.sector !== 0 ||  content.nextID.block !== 0)
     {

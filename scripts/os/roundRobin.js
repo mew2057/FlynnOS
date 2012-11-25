@@ -99,7 +99,7 @@ RoundRobin.prototype.isReady = function()
  */
 RoundRobin.prototype.processNext = function(cpu, finished, terminated)
 {
-    
+    var tempPCB = null;
     // If  break is set and this is hit from a break, set the break to false.
     if (finished)
     {
@@ -128,9 +128,19 @@ RoundRobin.prototype.processNext = function(cpu, finished, terminated)
             Scheduler.log("PID " + cpu.pcb.pid + (terminated ? " terminated": " is finished executing"));
         }
         
-        // Load the leading element in the queue to the cpu.
-        cpu.setStateFromPCB(this.readyQueue.shift());
-        Scheduler.log("PID " + cpu.pcb.pid + " is now queued to execute");
+        tempPCB = this.readyQueue.shift();
+        
+        // This can lead to thrashing add a finished version too!
+        if(tempPCB.Base.toString().indexOf("@") !== -1)
+        {
+            this.startSwap(this.readyQueue[this.readyQueue.length-1], tempPCB,this.readyQueue, cpu);
+        }
+        else
+        {
+            // Load the leading element in the queue to the cpu.
+            cpu.setStateFromPCB(tempPCB);
+            Scheduler.log("PID " + cpu.pcb.pid + " is now queued to execute");
+        }
     }
     else if(finished)
     {
@@ -181,6 +191,7 @@ RoundRobin.prototype.scheduleProcess = function(cpu, pcb)
 };
 
 /**
+ * TODO get it to work with swap!
  * Removes the pcb with the supplied pid from the schedule.
  * 
  * @param cpu The cpu at the time of invocation.
@@ -281,4 +292,12 @@ RoundRobin.prototype.toString = function()
     }
     
     return retVal;
+};
+
+RoundRobin.prototype.swapComplete = function(args, status)
+{
+    args[3].setStateFromPCB(args[1]);
+    args[2][args[2].length-1] = args[0];
+
+    Scheduler.log("PID " +  args[3].pcb.pid + " is now queued to execute");
 };
