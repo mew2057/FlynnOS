@@ -204,6 +204,18 @@ function shellInit()
     sc.funct = shellLS;
     this.commandList[this.commandList.length]=sc;
     
+        sc = new ShellCommand();
+    sc.command ="setsch";
+    sc.description = " <[rr,fcfs,priority]> -Sets the scheduler of the kernel.";
+    sc.funct = shellSetS;
+    this.commandList[this.commandList.length]=sc;
+
+    sc = new ShellCommand();
+    sc.command ="getsch";
+    sc.description = " - Displays the currently employed scheduling algorithm.";
+    sc.funct = shellGetS;
+    this.commandList[this.commandList.length]=sc;
+    
     // Display the initial prompt.
     this.putPrompt();
 }
@@ -565,8 +577,12 @@ function shellLoad (args)
     }
     else
     {
-        // This is more of an easter egg than anything appreciable
-        if (args[0] == "tron")
+        if(parseInt(args[0],10) % 1 === 0)
+        {
+            krnLoadProgram(parseInt(args[0],10));
+        }
+        // This is more of an easter egg than anything appreciable.
+        else if (args[0] == "tron")
         {
            _StdIn.putText("I fight for the user!"); 
         }
@@ -716,5 +732,15 @@ function shellFormat()
 function shellLS()
 {
     krnDiskLS();
+}
+
+function shellSetS(args)
+{
+    krnSetScheduler(args[0]);
+}
+
+function shellGetS()
+{
+    krnGetScheduler();
 }
 

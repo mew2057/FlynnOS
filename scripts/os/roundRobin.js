@@ -24,6 +24,9 @@ function RoundRobin ()
     
     // Contains the enqueued processes.
     this.readyQueue = [];
+    
+    this.name = "rr";
+
 }
 
 /**
@@ -130,13 +133,19 @@ RoundRobin.prototype.processNext = function(cpu, finished, terminated)
         
         tempPCB = this.readyQueue.shift();
         
-        // This can lead to thrashing add a finished version too!
         if(tempPCB.Base.toString().indexOf("@") !== -1)
         {
             if(!finished && cpu.pcb)
                 this.readyQueue.pop();
             
-            this.startSwap(cpu.pcb, tempPCB, cpu);
+            if(cpu.pcb === null)
+            {
+                this.startInitialSwap(tempPCB,cpu);
+            }
+            else
+            {
+                this.startSwap(cpu.pcb, tempPCB, cpu);
+            }
         }
         else
         {
@@ -308,10 +317,30 @@ RoundRobin.prototype.toString = function()
 RoundRobin.prototype.swapComplete = function(args, status)
 {
     // If the pcb has a page of -1 it exists on the HDD else the page is dead.
-    if(args[0].page === -1)
+    if(args[0].page === -1 && args[3])
         this.readyQueue.push(args[0]);
         
     args[2].setStateFromPCB(args[1]);
     
     Scheduler.log("PID " +  args[2].pcb.pid + " is now queued to execute");
+};
+
+RoundRobin.prototype.findPage = function()
+{
+    var pcb = null;
+    for(var index in this.readyQueue)
+    {
+        if(this.readyQueue[index].page.toString().indexOf("@") === -1)
+        {
+            pcb = this.readyQueue[index];
+            break;
+        }
+    }
+    
+    if(pcb === null)
+    {
+        pcb = _Residents.findPage();
+    }
+    
+    return pcb;
 };

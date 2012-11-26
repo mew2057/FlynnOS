@@ -1,79 +1,160 @@
-    /*
-        priorityQueue.js
-        uses queue.js
-        This implementation is designed to ensure that as calls enter the queue 
-        with a priority they keep the order in which they had been executed (internally).
-        This has not yet been implemented in the actual kernel as of 9/8/12.
-    */
+/* -------------
+    PriorityQueue.js
+    A script containing a PriorityMinQueue data structure.
+    
+    If this resembles the VacSys project in any way, it is merely a coincidence.
+    It's not like John reviewed his priority queues with his implementation of vacsys
+    and then realized that the queues of multiple data would result 
+    in more consistent completion times and faster heap rebuilds or anything...
+   --------------*/
 
-function PriorityQueue () {
-    this.pq = [];
+/**
+ * Defines a priority queue with an array based heap implementation behind it.
+ */
+function PriorityMinQueue(){
+    this.h = [];  
 }
 
-PriorityQueue.prototype.enqueue = function(element, priority)
+/**
+ * Inserts a value into the queue based on priority. If the priority exists, it 
+ * is enqueued to a queue at that location.
+ * 
+ * @param priority The priority of the element.
+ * @param element The element being added to the queue.
+ */
+PriorityMinQueue.prototype.insert  = function (priority, element)
 {
-    var missing =true;
-    for (var index in this.pq)
+    if(!this.insertToExisting(priority,element))
     {
-        if(this.pq[index][1])
+        this.h.push({"p":priority,"v":[element]});
+        this.trickleUp(this.h.length - 1);
+    }
+};
+
+/**
+ * Checks the queue to see if a given priority exists, if found it is added to the 
+ * queue at the locaction.
+ * @param priority The priority of the element.
+ * @param element The element being added to the queue.
+ */
+PriorityMinQueue.prototype.insertToExisting = function(priority,element)
+{
+    for(var index in this.h)
+    {
+        if(this.h[index].p === priority)    
         {
-            this.pq[index][0].enqueue(element);          
-            missing = false;
+            this.h[index].v.push(element);
+            return true;
         }
     }
     
-    if(missing)
-    {
-        this.pq.push([element, priority]);
-    
-        this.swapUp(this.pq.length - 1);
-    }
+    return false;   
 };
 
-PriorityQueue.prototype.dequeue = function()
+/**
+ * Performs the trickle up for heap insertions.
+ * 
+ * @param index The index of the element to attempt to trickle up the heap.
+ */
+PriorityMinQueue.prototype.trickleUp = function(index)
 {
-    var element = this.pq[0][0].dequeue();
-    
-    if(this.pq[0][0].length() == 0)
+
+    // This is equivalent to a floor function in JavaScript.
+    var parent = ((index - 1)/2) >> 0;
+
+    // Checks to see if the priority of the checked queue is less than that
+    // of its parent in the heap. If so swap them in place in the array.
+    if(index !== 0 && this.h[index].p < 
+        this.h[parent].p)
     {
-        this.pq[0] = this.pq[this.pq.length -1];
-        this.pq.pop();
+        this.h.push(this.h[parent]);
+        this.h[parent] = this.h[index];
+        this.h[index] = this.h.pop();
         
-        this.swapDown(0);
+        this.trickleUp(parent);
     }
-    return element;
 };
 
-PriorityQueue.prototype.swapUp = function(currentIndex)
+/**
+ * Removes an element from the queue.
+ * @return The element if it is present.
+ */
+PriorityMinQueue.prototype.remove = function()
 {
-    var parent = Math.floor(currentIndex/2);
+    var toReturn = null;
     
-    if (currentIndex != 0 && 
-        this.pq[currentIndex][1] > this.pq[parent][1])
+    if(this.h.length > 0)
     {
-        var temp = this.pq[currentIndex];    
+        toReturn = this.h[0].v.shift();
         
-        this.pq[currentIndex] = this.pq[parent];
-        this.pq[parent] = temp;       
-        
-        this.swapUp(parent);
+        if(this.h[0].v.length === 0)
+        {
+            if(this.h.length > 1)
+            {
+                this.h[0] = this.h.pop();
+                this.heapRebuild(0);
+            }
+            else
+            {
+                this.h = [];   
+            }
+        }
     }
+    return toReturn;
 };
 
-PriorityQueue.prototype.swapDown = function(currentIndex)
+/**
+ * Performs the heap rebuild for removals queue removals.
+ * @param index The index of the current position of the rebuild.
+ * 
+ */
+PriorityMinQueue.prototype.heapRebuild = function(index)
 {
-    var largestChild = this.pq[2*currentIndex + 1][1] >= 
-        this.pq[2*currentIndex + 2][1] ? 2*currentIndex + 1 : 2*currentIndex + 2;
-        
-        
-    if(this.pq[largestChild][1] > this.pq[currentIndex][1])
+    if(this.h.length > 2 * index + 1)
     {
-        var swap = this.pq[currentIndex];
+        var smallestChild = 2 * index + 1;
         
-        this.pq[currentIndex] = this.pq[largestChild];
-        this.pq[largestChild] = swap;
+        // Compares children.
+        if(this.h.length > smallestChild + 1 && 
+            this.h[smallestChild].p > this.h[smallestChild + 1].p )
+        {
+            smallestChild++;
+        }
         
-        this.swapDown(largestChild);
+        // Checks parent with smallest child.
+        if(this.h[index].p > this.h[smallestChild].p)
+        {
+            this.h.push(this.h[smallestChild]);
+            this.h[smallestChild] = this.h[index];
+            this.h[index] = this.h.pop();
+            
+            this.heapRebuild(smallestChild);
+        }        
     }
 };
 
+/**
+ * @return true if empty...
+ */
+PriorityMinQueue.prototype.isEmpty = function()
+{
+    return this.h.length === 0;
+};
+
+PriorityMinQueue.prototype.clean = function()
+{
+    delete this.h;   
+};
+
+PriorityMinQueue.prototype.toString = function()
+{
+    var pqString = "";
+    for(var qIndex in this.h)
+    {
+        for(var eIndex in this.h[qIndex].v)
+        {
+            pqString += this.h[qIndex].v[eIndex].toString() + " ";
+        }
+    }
+    return pqString;
+};

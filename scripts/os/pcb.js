@@ -11,15 +11,16 @@
  */
 function PCB()
 {
-    this.pid   = 0;     // The Process IDentifier.
-    this.PC    = 0;     // Program Counter
-    this.Acc   = 0;     // Accumulator
-    this.Xreg  = 0;     // X register
-    this.Yreg  = 0;     // Y register
-    this.Zflag = 0;     // Z-ero flag 
-    this.page  = 0;     // The page of the program.
-    this.Base  = 0;     // Base of the program page in core memory. 
-    this.Limit = 0;     // The Upper limit of the program page.
+    this.pid      = 0;     // The Process IDentifier.
+    this.PC       = 0;     // Program Counter
+    this.Acc      = 0;     // Accumulator
+    this.Xreg     = 0;     // X register
+    this.Yreg     = 0;     // Y register
+    this.Zflag    = 0;     // Z-ero flag 
+    this.page     = 0;     // The page of the program.
+    this.Base     = 0;     // Base of the program page in core memory. 
+    this.Limit    = 0;     // The Upper limit of the program page.
+    this.priority = 0;
 }
 
 /**
@@ -187,6 +188,16 @@ ResidentList.prototype.popBlock = function(pid)
     
     return retVal;
     
+};
+
+ResidentList.prototype.findPage = function()
+{
+    for(var index = 0; index < this.residents.length;index++)
+    {
+        if(this.residents[index].page.toString().indexOf("@") === -1)
+            return this.residents[index];
+    }
+    return null;
 };
 
 /**

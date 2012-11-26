@@ -29,7 +29,7 @@ function krnBootstrap()      // Page 8.
     _Terminated = new Queue();              // Contains the pcbs that have executed.
     _StepEnabled = false;                   // Ensures that Stepping is off on load.
     _Step = false;                          // Clears out the Step.
-    _Scheduler =  new RoundRobin();          // Initializes the scheduler.
+    _Scheduler = new RoundRobin();          // Initializes the scheduler.
 
     // Load the Display Device Driver.
     krnTrace("Loading the display device driver.");
@@ -389,8 +389,10 @@ function krnVerifyInstructions(program)
 /**
  * Verifies that the program has valid instructions then loads it into core 
  * memory and assigns a pid which is returned to the user via console.
+ * 
+ * @param priority The priority of the program.
  */
-function krnLoadProgram()
+function krnLoadProgram(priority)
 {
     var program = simLoadProgram();
     
@@ -411,6 +413,15 @@ function krnLoadProgram()
             {                
                 _StdIn.putText( "I feel a presence. Another warrior is on the "+
                     "mesa at pid: " + pid);
+                
+                if(priority >= 0)
+                {
+                    _Residents.getBlock(pid).priority = priority;
+                }
+                else if(priority && priority < 0)
+                {
+                    _StdIn.putText( "Priority must be non negative.");
+                }
             }                
         }
         else
@@ -548,4 +559,37 @@ function krnDiskLS(callBack)
 {
     _KernelInterruptQueue.enqueue(new Interrupt(DISK_IRQ,
         [FS_OPS.LS, null, null, callBack ? callBack : _StdIn]));
+}
+
+function krnSetScheduler(newScheduler)
+{
+    if(_Scheduler.processEnqueued)
+    {
+        _StdIn.putText("Please wait for executing processes to complete!");
+    }
+    else if(_Scheduler.name === newScheduler)
+    {
+        _StdIn.putText("Scheduler is already in use!");
+    }
+    else if(newScheduler === "fcfs")
+    {
+        _Scheduler = new FCFS();
+    }
+    else if(newScheduler === "rr")
+    {
+        _Scheduler = new RoundRobin();
+    }
+    else if(newScheduler === "priority")
+    {
+        _Scheduler = new Priority();
+    }
+    else
+    {
+        _StdIn.putText("Scheduler "+  newScheduler+ " not found, supported schedulers include: [fcfs,rr,priority]")
+    }
+}
+
+function krnGetScheduler()
+{
+    _StdIn.putText("Scheduler employed is " + _Scheduler.name);
 }

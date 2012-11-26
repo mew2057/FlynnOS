@@ -11,6 +11,7 @@ function Scheduler()
 {
     this.processEnqueued = false;
     this.breakFlag = false;
+    this.name = "default";
 }
 
 //------------------------------
@@ -151,7 +152,7 @@ Scheduler.prototype.activesToString = function(){};
 Scheduler.prototype.toString = function(){};
 
 Scheduler.prototype.startSwap = function(pcbOut, pcbIn, cpu){
-    krnDiskRead(pcbIn.Base, true, [this, this.swapOut, [pcbOut, pcbIn, cpu]])
+    krnDiskRead(pcbIn.Base, true, [this, this.swapOut, [pcbOut, pcbIn, cpu, true]])
 };
 
 Scheduler.prototype.swapOut = function(pcbs, fsData)
@@ -164,7 +165,7 @@ Scheduler.prototype.swapOut = function(pcbs, fsData)
     {
         toDisk = _MemoryManager.retrieveContentsFromAddress(0,_MemoryManager.pageSize, pcbs[0]);
     }
-
+    
     tempBase = pcbs[1].Base;
     
     if(!_MemoryManager.findFreePage(pcbs[1]))
@@ -173,15 +174,14 @@ Scheduler.prototype.swapOut = function(pcbs, fsData)
         pcbs[1].Limit = pcbs[0].Limit;
         pcbs[1].page = pcbs[0].page;
     }
-
+    
     _MemoryManager.store(0, fsData.slice(0,_MemoryManager.pageSize), pcbs[1]);
     
     if(toDisk !== null)
     {
-        
         pcbs[0].Base = tempBase;
         pcbs[0].page = -1;
-
+        
         krnDiskWrite(pcbs[0].Base, toDisk, [this, this.swapComplete, pcbs]);
     }
     else
@@ -190,4 +190,18 @@ Scheduler.prototype.swapOut = function(pcbs, fsData)
     }
 };
 
+Scheduler.prototype.startInitialSwap = function(hddPCB, cpu)
+{
+    var tempPCB = new PCB();
+
+    if(!_MemoryManager.findFreePage(tempPCB, false))
+    {
+        tempPCB = this.findPage();
+    }
+    
+    krnDiskRead(hddPCB.Base, true, [this, this.swapOut, [tempPCB, hddPCB, cpu, false]]);
+};
+
 Scheduler.prototype.swapComplete = function(args, status){};
+
+Scheduler.prototype.findPage = function(){};

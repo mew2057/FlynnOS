@@ -1,6 +1,8 @@
 FCFS.prototype = new RoundRobin;
 
-function FCFS (){}
+function FCFS (){
+    this.name = "fcfs";
+}
 
 /**
  * First come first serve is literally Round Robin without the tick. Using the 

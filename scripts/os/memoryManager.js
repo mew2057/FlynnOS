@@ -59,13 +59,13 @@ MemoryManager.prototype.reclaimPage = function(page)
     this.log("Page " + page + " has been reclaimed");
 };
 
-MemoryManager.prototype.findFreePage = function(pcb)
+MemoryManager.prototype.findFreePage = function(pcb, allocate)
 {
     var firstFree = this.pagesInUse.indexOf(false);
     
     if(firstFree !== -1)
     {
-        this.pagesInUse[firstFree] = true;
+        this.pagesInUse[firstFree] = allocate ? true : false;
         pcb.page                   = firstFree;
         pcb.Base                   = this.pageSize*firstFree;
         pcb.Limit                  = pcb.Base + this.pageSize;
