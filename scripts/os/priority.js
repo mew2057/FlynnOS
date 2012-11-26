@@ -5,7 +5,7 @@ function Priority()
     this.readyQueue = new PriorityMinQueue();
     this.startExecution  = false;
     this.name = "priority";
-
+    this.ignoreQueue = [];
 }
 
 /**
@@ -60,6 +60,13 @@ Priority.prototype.processNext = function(cpu, finished, terminated)
         }
         
         tempPCB = this.readyQueue.remove();
+        
+        if(this.ignoreQueue.indexOf(tempPCB.pid) !== -1)
+        {
+            Scheduler.log("PID " + tempPCB.pid + " terminated");
+            this.ignoreQueue.splice(this.ignoreQueue.indexOf(tempPCB.pid),1);
+            tempPCB = this.readyQueue.remove();
+        }
         
         if(tempPCB.Base.toString().indexOf("@") !== -1)
         {
@@ -137,7 +144,60 @@ Priority.prototype.scheduleProcess = function(cpu, pcb)
  */
 Priority.prototype.removeFromSchedule = function(cpu, pid)
 {
-    //TODO
+    // If the pid is present in the cpu emulate a break.
+    // Else check to see if the pid is on the ready queue.
+    if(cpu.pcb && cpu.pcb.pid === pid)
+    {
+        // I opt for this methodology, as it prevents unnecessary context switches inherently.
+        // A break interrupt is enqueued as it ensures consistent handling.
+        _KernelInterruptQueue.enqueue(new Interrupt(BRK_IRQ, new Array(cpu,true)));
+        
+        // I output this here in an effort to reduce circumstantial code in the processNext function.
+        Scheduler.toConsole("PID: " + pid + " Terminated.");
+        
+        // Set the break flag to clear out any other context switches.
+        this.setBreak(true);
+        
+        // Ensures the processEnqueued field is properly changed.
+        this.processEnqueued = !this.readyQueue.isEmpty();
+    }
+    else
+    {
+        var found = false;
+        
+        for(var index in this.readyQueue.h)
+        {
+            for(var vIndex in  this.readyQueue.h[index].v)
+            {
+                if(this.readyQueue.h[index].v[vIndex].pid === pid)
+                {
+                    // Reclaim the now defunct page.
+                    this.reclaimPCB(this.readyQueue.h[index].v[vIndex]);
+                    
+                    if(this.readyQueue.h[index].v[vIndex].Base.toString().indexOf("@") !== -1)
+                    {
+                        krnDiskDelete(this.readyQueue.h[index].v[vIndex].Base,[])
+                    }
+                    
+                    this.ignoreQueue.push(pid);
+                    
+                    // Output the details.
+                    Scheduler.toConsole("PID: " + pid + " queued for terminatation.");
+                    Scheduler.log("PID " + pid + " queued for termination" );
+                    
+                    found = true;
+                    break;
+                }
+            }
+        }
+        
+        // If it wasn't found let the user know, else modify the processEnqueued state.
+        if(!found)
+        {
+            Scheduler.toConsole("PID: " + pid + "  not found!");
+            Scheduler.log("PID " + pid + " not found to terminate" );
+        }
+    }
 };
 
 /**

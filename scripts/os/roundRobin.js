@@ -158,13 +158,12 @@ RoundRobin.prototype.processNext = function(cpu, finished, terminated)
     {
         Scheduler.log("PID " + cpu.pcb.pid + (terminated ? " terminated":" is" +
             " finished executing") + ", no remaining processes");
-
+        
         cpu.pcb = null;    
         this.processEnqueued = false;
         
         // Redisplay the prompt when all processes are done.
         Scheduler.dropConsoleLine();
-
     }
     
     // Reset the tick, Dr. Beckett is fixing a different life now.
