@@ -1,3 +1,8 @@
+/* ------------
+   fcfs.js
+   
+   Effectively this scheduler is RoundRobinLite.
+   ------------ */
 FCFS.prototype = new RoundRobin;
 
 function FCFS (){

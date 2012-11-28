@@ -190,6 +190,11 @@ ResidentList.prototype.popBlock = function(pid)
     
 };
 
+/**
+ * Searches the resident list for the first pcb with a real page number.
+ * 
+ * @return null if not found or the pcb.
+ */
 ResidentList.prototype.findPage = function()
 {
     for(var index = 0; index < this.residents.length;index++)

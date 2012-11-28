@@ -7,32 +7,26 @@
    ---------------------------------- */
 
 
-
+// Defines all the file id constants.
 FileID.T = 4;
 FileID.S = 8;
 FileID.B = 8;
 FileID.BSIZE = 64;
 
+/**
+ * A fileID class to make incrementing easier for file operations.
+ */
 function FileID()
 {
     this.track  = 0;
     this.sector = 0;
     this.block  = 0;
 }
-FileID.create = function(t, s, b)
-{
-    var newBlock = new FileID();
-    
-    if (t  < FileID.T)
-        newBlock.track  = t;
-    
-    if (s < FileID.S)
-        newBlock.sector = s;
-        
-    if (b < FileID.B)
-        newBlock.block  = b;
-};
 
+/**
+ * Increments the fileID by one and cascades any carries.
+ * 
+ */
 FileID.prototype.increment = function()
 {
     this.block++;
@@ -58,26 +52,26 @@ FileID.prototype.increment = function()
     return true;
 };
 
+/**
+ * The toString functionalit of the FileID class.
+ */
 FileID.prototype.toString = function()
 {
     return "FlynnOS:"+this.track + "," + this.sector + "," + this.block;
 };
 
-FileID.prototype.toStore = function()
-{
-    return padZeros(this.track.toString(16), 2) + 
-        " " + padZeros(this.sector.toString(16), 2) + 
-        " " + padZeros(this.block.toString(16), 2) + " ";
-};
+// File Block Constants
+FileBlock.EMPTY    = "00";
+FileBlock.OCCUPIED = "01"; 
 
-
-FileBlock.EMPTY   = "00";
-FileBlock.OCC     = "01";
-
+/**
+ * Defines the file block class that represents the contents of a single track, sector and block.
+ * @param fileID The unique id for the file on the file system.
+ */
 function FileBlock(fileID)
 {
     this.statusBit = FileBlock.EMPTY;    // Init to empty.
-    this.nextID    = fileID ? fileID : new FileID();
+    this.nextID    = fileID || new FileID();
     this.data      = ["00", "00", "00", "00" ,"00",
                     "00", "00", "00", "00" ,"00",
                     "00", "00", "00", "00" ,"00",
@@ -92,16 +86,23 @@ function FileBlock(fileID)
                     "00", "00", "00", "00" ,"00"];
 }
 
+/**
+ * Zeroes an array.
+ * @param data the array to zero.
+ */
 FileBlock.zero = function(data)
 {
     for (var index = 0; index < data.length; index++)
     {
-        data[index] = "00";
+        data[index] = FileBlock.EMPTY;
     }
 };
 
 DeviceDriverDisk.prototype = new DeviceDriver;  // "Inherit" from prototype DeviceDriver in deviceDriver.js.
 
+/**
+ * The actual device driver.
+ */
 function DeviceDriverDisk()                     // Add or override specific attributes and method pointers.
 {
     // "subclass"-specific attributes.
@@ -138,7 +139,7 @@ function krnDiskDriverEntry()
 }
 
 /**
- * 
+ * The ISR. Designed to handle all legal file ops.
  * @param params 0 - fs operation
  *               1 - fileName
  *               2 - data
@@ -453,9 +454,14 @@ function DiskFindFreeSpace ()
     return found?newID:null;
 }
 
+/**
+ * Converts the hex character array to human readable characters.
+ * @param chars The hex character array that is null terminated (hopefully...)
+ * @return A string containing the converted array.
+ */
 function DiskConvertFromHex(chars)
 {
-    var str         = "";
+    var str  = "";
     
     for (var index in chars)
     {
@@ -480,7 +486,7 @@ function DiskFormat ()
     
     var tempFile = new FileBlock();
     
-    tempFile.statusBit = FileBlock.OCC;
+    tempFile.statusBit = FileBlock.OCCUPIED;
     DiskWriteToTSB(newID,tempFile);
     tempFile.statusBit = FileBlock.EMPTY;
 
@@ -533,7 +539,7 @@ function DiskCreateFile (fileName)
     {
         // Set up the file block that will contain the file name and a chain to the file.
         fileDescriptor.nextID       = contentID;
-        fileDescriptor.statusBit    = FileBlock.OCC;
+        fileDescriptor.statusBit    = FileBlock.OCCUPIED;
         
         // Add the name to the file block
         for ( var index = 0, length = fileChars.length > FileID.BSIZE? FileID.BSIZE : fileChars.length; 
@@ -544,7 +550,7 @@ function DiskCreateFile (fileName)
         }
     
         // Set the data status bit.
-        contentDescriptor.statusBit = FileBlock.OCC;
+        contentDescriptor.statusBit = FileBlock.OCCUPIED;
         
         // Writes the prepared blocks to the actual file system.
         DiskWriteToTSB(contentID,contentDescriptor);
@@ -649,7 +655,7 @@ function DiskWriteFile (fileName, data)
             
             content = DiskRetrieveTSB(currentID);
             
-            content.statusBit = FileBlock.OCC;
+            content.statusBit = FileBlock.OCCUPIED;
             
             DiskWriteToTSB(currentID, content);
         }
@@ -661,7 +667,7 @@ function DiskWriteFile (fileName, data)
             
             content = DiskRetrieveTSB(currentID);
             
-            content.statusBit = FileBlock.OCC;   
+            content.statusBit = FileBlock.OCCUPIED;   
         }
         content.data[index % 60] = dataChars[index];
     }
@@ -704,6 +710,7 @@ function DiskDelete (fileName)
     }
     else
     {
+        // TODO add a failure message!
         return false;
     }
 }
@@ -716,37 +723,48 @@ function DiskDelete (fileName)
  */
 function DiskDeleteID(tsb)
 {
+    // Do the priming work,
     var currentID        = tsb;
     var tempID           = currentID;
     var fileHandle       = DiskRetrieveTSB(currentID);
     var fileContent      = null;
+    
+    // Clear out the file handle's file block.
     fileHandle.statusBit = FileBlock.EMPTY;
-    
-    FileBlock.zero(fileHandle.data);
-    
+    FileBlock.zero(fileHandle.data);    
     tempID = fileHandle.nextID;
     fileHandle.nextID = new FileID();
     
+    // Write back the changes.
     DiskWriteToTSB(currentID, fileHandle);    
     
     currentID = tempID;
 
+    // While the tsb isn't all zeros continue to delelte the chain.
     while(currentID.track !== 0 || currentID.sector !== 0 ||  currentID.block !== 0)
     {
+        // Retrieve the content from the fs then set it as empty.
         fileContent           = DiskRetrieveTSB(currentID);
         fileContent.statusBit = FileBlock.EMPTY;
         
+        // Zero the data (for simplicity's sake not realism sake)
         FileBlock.zero(fileContent.data);    
         
+        // Save the next ID and then zero it on the fileContent block.
         tempID                = fileContent.nextID;
         fileContent.nextID    = new FileID();
-
+        
+        // Write the wiped TSB then move onto the next id.
         DiskWriteToTSB (currentID, fileContent);
         currentID             = tempID;
     }
 }
 
-function DiskList(tsb)
+/**
+ * The ls functionality. Aggregates all of the filenames that exist on the file system.
+ * @return An array containing all of the filenames in the file system.
+ */ 
+function DiskList()
 {
     // Placeholder variables.
     var searchID = new FileID();

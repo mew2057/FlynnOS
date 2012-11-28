@@ -151,57 +151,113 @@ Scheduler.prototype.activesToString = function(){};
  */
 Scheduler.prototype.toString = function(){};
 
-Scheduler.prototype.startSwap = function(pcbOut, pcbIn, cpu){
-    krnDiskRead(pcbIn.Base, true, [this, this.swapOut, [pcbOut, pcbIn, cpu, true]])
+/**
+ * The kickoff for swapping when the starting pcb exists in memor or the cpu is non null.
+ * 
+ * @param pcbMem The pcb that resides in memory.
+ * @param pcbFs The pcb that resides on the file system.
+ * @param cpu The cpu state at time of invocation.
+ */
+Scheduler.prototype.startSwap = function(pcbMem, pcbFs, cpu)
+{
+    Scheduler.log("Starting swap");
+
+    krnDiskRead(pcbFs.Base, true, [this, this.swapOut, [pcbMem, pcbFs, cpu, true]]);
 };
 
-Scheduler.prototype.swapOut = function(pcbs, fsData)
+/**
+ * Rolls the process out of memory and begins the roll in from the file system.
+ * 
+ * @param args 0 - The PCB that is being swapped out.
+ *             1 - The PCB on the fs.
+ *             2 - The cpu at the time of swap invocation.
+ *             3 - {true, false} specifies whether or not the pcb should be readded to the queue (only matters with preemption).
+ * 
+ * @param fsData An array containing the program that is currently swapped out.
+ */
+Scheduler.prototype.swapOut = function(args, fsData)
 {
+    // Set up the temporary variables.
     var toDisk = null;
     var tempBase = 0;
-    var pcbActive = _MemoryManager.pagesInUse[pcbs[0].page];
+    var pcbActive = _MemoryManager.pagesInUse[args[0].page];
     
+    // If the process in memory is real (it actually resides there) get it so it may be placed on the file system.
     if(pcbActive)
     {
-        toDisk = _MemoryManager.retrieveContentsFromAddress(0,_MemoryManager.pageSize, pcbs[0]);
+        toDisk = _MemoryManager.retrieveContentsFromAddress(0,_MemoryManager.pageSize, args[0]);
     }
     
-    tempBase = pcbs[1].Base;
+    // Set the temporary base so as to not lose the file location.
+    tempBase = args[1].Base;
     
-    if(!_MemoryManager.findFreePage(pcbs[1]))
+    // If a free page isn't available (and the pcb wasn't changed to reflect that)
+    // copy the memory based pcb address data into the swapped pcb.
+    if(!_MemoryManager.findFreePage(args[1]))
     {
-        pcbs[1].Base = pcbs[0].Base;
-        pcbs[1].Limit = pcbs[0].Limit;
-        pcbs[1].page = pcbs[0].page;
+        args[1].Base = args[0].Base;
+        args[1].Limit = args[0].Limit;
+        args[1].page = args[0].page;
     }
     
-    _MemoryManager.store(0, fsData.slice(0,_MemoryManager.pageSize), pcbs[1]);
+    // Roll in the swapped out process.
+    _MemoryManager.store(0, fsData.slice(0,_MemoryManager.pageSize), args[1]);
     
     if(toDisk !== null)
     {
-        pcbs[0].Base = tempBase;
-        pcbs[0].page = -1;
+        args[0].Base = tempBase;
+        args[0].page = -1;
         
-        krnDiskWrite(pcbs[0].Base, toDisk, [this, this.swapComplete, pcbs]);
+        // Roll out the memory process.
+        krnDiskWrite(args[0].Base, toDisk, [this, this.swapComplete, args]);
     }
     else
     {
-        krnDiskDelete(tempBase,[this, this.swapComplete, pcbs])
+        // Kill the file since we won't be needing it as the in memory process is done.
+        krnDiskDelete(tempBase,[this, this.swapComplete, args])
     }
 };
 
-Scheduler.prototype.startInitialSwap = function(hddPCB, cpu)
+/**
+ * Initializes a pcb from the file system if it has no preceeding in memory process.
+ * 
+ * @param pcbFs The pcb that references the process on the file system.
+ * 
+ * @param cpu The state of the cpu at the time of invocation.
+ */
+Scheduler.prototype.startInitialSwap = function(pcbFs, cpu)
 {
+    // Init a "fake" pcb.
     var tempPCB = new PCB();
 
+    // Find the page it will live on.
     if(!_MemoryManager.findFreePage(tempPCB, false))
     {
         tempPCB = this.findPage();
     }
-    
-    krnDiskRead(hddPCB.Base, true, [this, this.swapOut, [tempPCB, hddPCB, cpu, false]]);
+
+    Scheduler.log("Starting initial swap");
+
+    // Execute a swap as normal with a "fake" process.
+    krnDiskRead(pcbFs.Base, true, [this, this.swapOut, [tempPCB, pcbFs, cpu, false]]);
 };
 
+/**
+ * The callback that defines the behavior of the scheduler when finishing a swap.
+ *
+ * @param args 0 - The PCB that is being swapped out.
+ *             1 - The PCB on the fs.
+ *             2 - The cpu at the time of swap invocation.
+ *             3 - {true, false} specifies whether or not the pcb should be readded to the queue (only matters with preemption).
+ * 
+ * @param status The response from the File System operation.
+ */
 Scheduler.prototype.swapComplete = function(args, status){};
 
+/**
+ * Finds a pcb that has a usable memory page in either the ready queue (implementation specific)
+ * or the resident's list.
+ * 
+ * @return A pcb with a memory page {1-3}. If null is returned there are far worse problems...
+ */
 Scheduler.prototype.findPage = function(){};

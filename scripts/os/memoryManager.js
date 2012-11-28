@@ -59,13 +59,26 @@ MemoryManager.prototype.reclaimPage = function(page)
     this.log("Page " + page + " has been reclaimed");
 };
 
+/**
+ * Attempts to find a free page in the virtual memory, if present  update the 
+ * supplied pcb to point to it.
+ * 
+ * @param pcb The pcb that takes in the useful data.
+ * 
+ * @param allocate Optional: Specifies whether or not the memory manager should 
+ *      consider the page occupied defaults to false. 
+ * 
+ * @return {true,false} True if a free page was discovered.
+ */
 MemoryManager.prototype.findFreePage = function(pcb, allocate)
 {
+    // Try to find a free page.
     var firstFree = this.pagesInUse.indexOf(false);
     
+    // If a page is free build up the pcb and return true.
     if(firstFree !== -1)
     {
-        this.pagesInUse[firstFree] = allocate ? true : false;
+        this.pagesInUse[firstFree] = allocate || false;
         pcb.page                   = firstFree;
         pcb.Base                   = this.pageSize*firstFree;
         pcb.Limit                  = pcb.Base + this.pageSize;
@@ -73,6 +86,7 @@ MemoryManager.prototype.findFreePage = function(pcb, allocate)
         return true;
     }
     
+    // False is our return if not found.
     return false;
 };
 

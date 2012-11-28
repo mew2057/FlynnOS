@@ -133,11 +133,16 @@ RoundRobin.prototype.processNext = function(cpu, finished, terminated)
         
         tempPCB = this.readyQueue.shift();
         
+        // If the Base of the pcb contains an @ character it is assumed to be a swapped out process
+        // Else it resides in memory.
         if(tempPCB.Base.toString().indexOf("@") !== -1)
         {
+            // Prevents duplicate pcbs on the queue.
             if(!finished && cpu.pcb)
                 this.readyQueue.pop();
             
+            // If the pcb is null assume that the typical swap needs a little more tlc
+            // Else do a normal swap.
             if(cpu.pcb === null)
             {
                 this.startInitialSwap(tempPCB,cpu);
@@ -240,6 +245,7 @@ RoundRobin.prototype.removeFromSchedule = function(cpu, pid)
                 // Reclaim the now defunct page.
                 this.reclaimPCB(this.readyQueue[index]);
                 
+                // Clear out the swapped out process if we're killing it.
                 if(this.readyQueue[index].Base.toString().indexOf("@") !== -1)
                 {
                     krnDiskDelete(this.readyQueue[index].Base,[])
@@ -313,20 +319,41 @@ RoundRobin.prototype.toString = function()
     return retVal;
 };
 
+/**
+ * The callback that defines the behavior of the scheduler when finishing a swap.
+ *
+ * @param args 0 - The PCB that is being swapped out.
+ *             1 - The PCB on the fs.
+ *             2 - The cpu at the time of swap invocation.
+ *             3 - {true, false} specifies whether or not the pcb should be readded to the queue (only matters with preemption).
+ * 
+ * @param status The response from the File System operation.
+ */
 RoundRobin.prototype.swapComplete = function(args, status)
 {
     // If the pcb has a page of -1 it exists on the HDD else the page is dead.
     if(args[0].page === -1 && args[3])
+    {
         this.readyQueue.push(args[0]);
-        
+    }
+    
+    // Set the cpu to the freshly swapped process.
     args[2].setStateFromPCB(args[1]);
     
     Scheduler.log("PID " +  args[2].pcb.pid + " is now queued to execute");
 };
 
+/**
+ * Finds a pcb that has a usable memory page in either the ready queue (implementation specific)
+ * or the resident's list.
+ * 
+ * @return A pcb with a memory page {1-3}. If null is returned there are far worse problems...
+ */
 RoundRobin.prototype.findPage = function()
 {
     var pcb = null;
+    
+    // Simply iterate over the ready queue in an effort to find a free page.
     for(var index in this.readyQueue)
     {
         if(this.readyQueue[index].page.toString().indexOf("@") === -1)
@@ -336,6 +363,7 @@ RoundRobin.prototype.findPage = function()
         }
     }
     
+    // If the ready queue is devoid of any pcbs with a memory page surely the resident's list must have one (the swapper has already checked for free pages...)
     if(pcb === null)
     {
         pcb = _Residents.findPage();
