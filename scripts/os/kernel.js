@@ -529,36 +529,42 @@ function krnKillProcess(pid)
 function krnDiskCreate(fileName, callBack)
 {
     _KernelInterruptQueue.enqueue(new Interrupt(DISK_IRQ,
-        [FS_OPS.CREATE,fileName, null, callBack ? callBack : _StdIn]));
+        [FS_OPS.CREATE,fileName, null, callBack ? callBack : krnPutAndDrop]));
 }
 
 function krnDiskRead(fileName, literal, callBack)
 {
     _KernelInterruptQueue.enqueue(new Interrupt(DISK_IRQ,
-        [FS_OPS.READ, fileName, literal, callBack ? callBack : _StdIn]));
+        [FS_OPS.READ, fileName, literal, callBack ? callBack : krnPutAndDrop]));
 }
 function krnDiskWrite(fileName, data, callBack)
 {
     _KernelInterruptQueue.enqueue(new Interrupt(DISK_IRQ,
-        [FS_OPS.WRITE, fileName, data, callBack ? callBack : _StdIn]));
+        [FS_OPS.WRITE, fileName, data, callBack ? callBack : krnPutAndDrop]));
 }
 
 function krnDiskDelete(fileName, callBack)
 {
     _KernelInterruptQueue.enqueue(new Interrupt(DISK_IRQ,
-        [FS_OPS.DELETE, fileName, null, callBack ? callBack : _StdIn]));
+        [FS_OPS.DELETE, fileName, null, callBack ? callBack : krnPutAndDrop]));
 }
 
 function krnDiskFormat(callBack)
 {
     _KernelInterruptQueue.enqueue(new Interrupt(DISK_IRQ,
-        [FS_OPS.FORMAT, null, null, callBack ? callBack : _StdIn]));
+        [FS_OPS.FORMAT, null, null, callBack ? callBack : krnPutAndDrop]));
 }
 
 function krnDiskLS(callBack)
 {
     _KernelInterruptQueue.enqueue(new Interrupt(DISK_IRQ,
-        [FS_OPS.LS, null, null, callBack ? callBack : _StdIn]));
+        [FS_OPS.LS, null, null, callBack ? callBack : krnPutAndDrop]));
+}
+
+function krnPutAndDrop(text)
+{
+    _StdIn.putText(text);
+    _OsShell.drop();
 }
 
 function krnSetScheduler(newScheduler)

@@ -123,8 +123,9 @@ DeviceDriverDisk.feedbackMessage={
         4:{"message": "Bad File Name, please ensure your file doesn't already exist", "retVal":false}
         },
     "WRITE":{
-        
-    
+        0:{"message": "File Write Success", "retVal":true}, 
+        1:{"message": "File Write Failed: Ran out of disk space", "retVal":false},
+        2:{"message": "File Write Failed: File name not found", "retVal":true}    
     }
 };
 
@@ -198,7 +199,8 @@ function krnDiskDispatch(params)
             // params 1 - filename (string)
             // params 2 - data (string or array of hex digits)
             
-            results = DiskWriteFile(params[1], params[2]);    
+            results = DiskWriteFile(params[1], params[2]);   
+            response = DeviceDriverDisk.feedbackMessage.WRITE[results];
             
             break;      
             
@@ -250,13 +252,13 @@ function krnDiskDispatch(params)
     
     this.log(FS_OPS.OPS[params[0]] + " : " + response.message);
     
-    if(params[3] && params[3].putText && response.message != null)
-    {
-        params[3].putText(response.message);
-    }
-    else if (params[3] && params[3].length > 0 )
+    if (params[3] && Array.isArray(params[3]) )
     {
         params[3][1].call(params[3][0], params[3][2], response.retVal);
+    }    
+    else if(params[3])
+    {
+        params[3].call(null,response.message);
     }
     else{
         this.log("No callback specified.");
@@ -615,19 +617,24 @@ function DiskReadFile (fileName, literal)
  * 
  * @param data Either a string or array of Hex character codes (this is for the 
  *      sake of making swap simpler).
- *
+ * 
+ *  @return 0 - write was complete.
+ *          1 - write ran out of space.
+ *          2 - file not found.
  *
  */
 function DiskWriteFile (fileName, data)
 {
-    // TODO increase robustness of return!
     // Check to see which type of data we're dealing with and react acordingly.
     var dataChars  = typeof data === "string" ? DiskStringToHex(data) : data;
     
     // Convert the file name and check to see if it is valid.
     var hexName    = DiskFindFile(fileName);
+
     if(hexName === null)
-        return null;
+    {
+        return 2;
+    }
     
     // If all was good start building.
     var fileHandle = DiskRetrieveTSB(hexName);
@@ -648,6 +655,11 @@ function DiskWriteFile (fileName, data)
             content.nextID.block === 0)
         {
             content.nextID = DiskFindFreeSpace();
+            
+            if(content.nextID  === null)
+            {
+                return 1;
+            }
             
             DiskWriteToTSB(currentID, content);
             
@@ -687,8 +699,10 @@ function DiskWriteFile (fileName, data)
         // Zero the nextID.
         content.nextID = new FileID();
     }    
-
+    
     DiskWriteToTSB(currentID, content);
+    
+    return 0;
 }
 
 /**
