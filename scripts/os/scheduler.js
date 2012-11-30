@@ -195,26 +195,35 @@ Scheduler.prototype.swapOut = function(args, fsData)
     // copy the memory based pcb address data into the swapped pcb.
     if(!_MemoryManager.findFreePage(args[1]))
     {
+        console.log("here");
         args[1].Base = args[0].Base;
         args[1].Limit = args[0].Limit;
         args[1].page = args[0].page;
     }
-    
+    console.log(args[0]);
     // Roll in the swapped out process.
-    _MemoryManager.store(0, fsData.slice(0,_MemoryManager.pageSize), args[1]);
-    
-    if(toDisk !== null)
+    if(fsData !== null)
     {
-        args[0].Base = tempBase;
-        args[0].page = -1;
         
-        // Roll out the memory process.
-        krnDiskWrite(args[0].Base, toDisk, [this, this.swapComplete, args]);
+        _MemoryManager.store(0, fsData.slice(0,_MemoryManager.pageSize), args[1]);
+        
+        if(toDisk !== null)
+        {
+            args[0].Base = tempBase;
+            args[0].page = -1;
+            
+            // Roll out the memory process.
+            krnDiskWrite(args[0].Base, toDisk, [this, this.swapComplete, args]);
+        }
+        else
+        {
+            // Kill the file since we won't be needing it as the in memory process is done.
+            krnDiskDelete(tempBase,[this, this.swapComplete, args])
+        }
     }
     else
     {
-        // Kill the file since we won't be needing it as the in memory process is done.
-        krnDiskDelete(tempBase,[this, this.swapComplete, args])
+        Scheduler.log("Swap failed, continuing execution of previous process");
     }
 };
 
@@ -230,14 +239,18 @@ Scheduler.prototype.startInitialSwap = function(pcbFs, cpu)
     // Init a "fake" pcb.
     var tempPCB = new PCB();
 
+    
     // Find the page it will live on.
     if(!_MemoryManager.findFreePage(tempPCB, false))
     {
         tempPCB = this.findPage();
+        
+      //  console.log("bam!");
     }
+    //console.log(tempPCB.Base);
 
     Scheduler.log("Starting initial swap");
-
+console.log(tempPCB.Base);
     // Execute a swap as normal with a "fake" process.
     krnDiskRead(pcbFs.Base, true, [this, this.swapOut, [tempPCB, pcbFs, cpu, false]]);
 };

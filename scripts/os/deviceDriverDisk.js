@@ -252,13 +252,16 @@ function krnDiskDispatch(params)
     
     this.log(FS_OPS.OPS[params[0]] + " : " + response.message);
     
-    if (params[3] && Array.isArray(params[3]) )
+    if (params[3])
     {
-        params[3][1].call(params[3][0], params[3][2], response.retVal);
-    }    
-    else if(params[3])
-    {
-        params[3].call(null,response.message);
+        if(Array.isArray(params[3]) && params[3].length > 0)
+        {
+            params[3][1].call(params[3][0], params[3][2], response.retVal);
+        }    
+        else if(!Array.isArray(params[3]))
+        {
+            params[3].call(null,response.message);
+        }
     }
     else{
         this.log("No callback specified.");
@@ -324,7 +327,6 @@ function DiskRetrieveTSB (tsb)
  */
 function DiskWriteToTSB (tsb, block)
 {
-    // TODO should there be a check here?
     localStorage["FlynnOS:"+tsb.track + "," + tsb.sector + "," + tsb.block] 
         = JSON.stringify(block);
 }
@@ -724,7 +726,6 @@ function DiskDelete (fileName)
     }
     else
     {
-        // TODO add a failure message!
         return false;
     }
 }

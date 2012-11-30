@@ -90,6 +90,7 @@ Priority.prototype.processNext = function(cpu, finished, terminated)
             if(cpu.pcb === null)
             {
                 this.startInitialSwap(tempPCB,cpu);
+                console.log('made it');
             }
             else
             {
@@ -290,8 +291,9 @@ Priority.prototype.findPage = function()
         for(var vIndex in  this.readyQueue.h[index].v)
         {
             // If it's not a swapped page, consider it fair game to swap with.
-            if(this.readyQueue.h[index].v[vIndex].page.toString().indexOf("@") === -1)
+            if(this.readyQueue.h[index].v[vIndex].Base.toString().indexOf("@") === -1)
             {
+                console.log("?");
                 pcb = this.readyQueue.h[index].v[vIndex];
                 break;
             }

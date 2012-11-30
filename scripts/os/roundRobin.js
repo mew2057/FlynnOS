@@ -356,7 +356,7 @@ RoundRobin.prototype.findPage = function()
     // Simply iterate over the ready queue in an effort to find a free page.
     for(var index in this.readyQueue)
     {
-        if(this.readyQueue[index].page.toString().indexOf("@") === -1)
+        if(this.readyQueue[index].Base.toString().indexOf("@") === -1)
         {
             pcb = this.readyQueue[index];
             break;

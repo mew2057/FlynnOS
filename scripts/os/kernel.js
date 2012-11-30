@@ -443,7 +443,6 @@ function krnLoadProgram(priority)
  */
 function krnRunProgram(pid)
 {
-    //TODO make scheduler.
     // Pop the pid from the resident list and store the pcb to add to the ready queue.
     var pcb = _Residents.popBlock(pid);
     
@@ -526,47 +525,101 @@ function krnKillProcess(pid)
     _Scheduler.removeFromSchedule(_CPU, parseInt(pid,10));
 }
 
+/**
+ * Checks with the scheduler to see if a process is executing or queued to execute.
+ */
+function krnCheckExecution()
+{
+    return _Scheduler.processEnqueued;
+}
+
+/**
+ * Invokes the ISR for the fs with the create flag.
+ * 
+ * @param fileName The new file name.
+ * @param callBack The function the is to be invoked on completion.
+ */
 function krnDiskCreate(fileName, callBack)
 {
     _KernelInterruptQueue.enqueue(new Interrupt(DISK_IRQ,
         [FS_OPS.CREATE,fileName, null, callBack ? callBack : krnPutAndDrop]));
 }
 
+/**
+ * Invokes the ISR for the fs with the read flag.
+ * 
+ * @param fileName The file name.
+ * @param literal Sepcifies whether or no the response for be an array or string (true:array)
+ * @param callBack The function the is to be invoked on completion.
+ */
 function krnDiskRead(fileName, literal, callBack)
 {
     _KernelInterruptQueue.enqueue(new Interrupt(DISK_IRQ,
         [FS_OPS.READ, fileName, literal, callBack ? callBack : krnPutAndDrop]));
 }
+
+/**
+ * Invokes the ISR for the fs with the write flag.
+ * 
+ * @param fileName The file name.
+ * @param data The data to write to the file, is a string.
+ * @param callBack The function the is to be invoked on completion.
+ */
 function krnDiskWrite(fileName, data, callBack)
 {
     _KernelInterruptQueue.enqueue(new Interrupt(DISK_IRQ,
         [FS_OPS.WRITE, fileName, data, callBack ? callBack : krnPutAndDrop]));
 }
 
+/**
+ * Invokes the ISR for the fs with the delete flag.
+ * 
+ * @param fileName The file name.
+ * @param callBack The function the is to be invoked on completion.
+ */
 function krnDiskDelete(fileName, callBack)
 {
     _KernelInterruptQueue.enqueue(new Interrupt(DISK_IRQ,
         [FS_OPS.DELETE, fileName, null, callBack ? callBack : krnPutAndDrop]));
 }
 
+/**
+ * Invokes the ISR for the fs with the format flag.
+ * 
+ * @param callBack The function the is to be invoked on completion.
+ */
 function krnDiskFormat(callBack)
 {
     _KernelInterruptQueue.enqueue(new Interrupt(DISK_IRQ,
         [FS_OPS.FORMAT, null, null, callBack ? callBack : krnPutAndDrop]));
 }
 
+/**
+ * Invokes the ISR for the fs with the ls flag.
+ * 
+ * @param callBack The function the is to be invoked on completion.
+ */
 function krnDiskLS(callBack)
 {
     _KernelInterruptQueue.enqueue(new Interrupt(DISK_IRQ,
         [FS_OPS.LS, null, null, callBack ? callBack : krnPutAndDrop]));
 }
 
+/**
+ * Writes the text to the console and drops the line down.
+ * 
+ * @param text A message to output.
+ */
 function krnPutAndDrop(text)
 {
     _StdIn.putText(text);
     _OsShell.drop();
 }
 
+/**
+ * Sets the scheduler to the supplied, approved sceduler.
+ * @param newScheduler the new scheme for the scheduler.
+ */
 function krnSetScheduler(newScheduler)
 {
     if(_Scheduler.processEnqueued)
@@ -580,14 +633,17 @@ function krnSetScheduler(newScheduler)
     else if(newScheduler === "fcfs")
     {
         _Scheduler = new FCFS();
+        _StdIn.putText("New Scheduler is " + _Scheduler.name);
     }
     else if(newScheduler === "rr")
     {
         _Scheduler = new RoundRobin();
+        _StdIn.putText("New Scheduler is " + _Scheduler.name);
     }
     else if(newScheduler === "priority")
     {
         _Scheduler = new Priority();
+        _StdIn.putText("New Scheduler is " + _Scheduler.name);
     }
     else
     {
@@ -595,6 +651,9 @@ function krnSetScheduler(newScheduler)
     }
 }
 
+/**
+ * Retrieves and displayes the current scheduler type.
+ */
 function krnGetScheduler()
 {
     _StdIn.putText("Scheduler employed is " + _Scheduler.name);

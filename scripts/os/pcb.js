@@ -199,7 +199,7 @@ ResidentList.prototype.findPage = function()
 {
     for(var index = 0; index < this.residents.length;index++)
     {
-        if(this.residents[index].page.toString().indexOf("@") === -1)
+        if(this.residents[index].Base.toString().indexOf("@") === -1)
             return this.residents[index];
     }
     return null;

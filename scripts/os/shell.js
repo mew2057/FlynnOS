@@ -702,43 +702,91 @@ function shellKill(args)
     }
 }
 
+/**
+ * Invokes the file system create command.
+ * 
+ * @param args -0 The name of the file to create.
+ */
 function shellCreate(args)
-{
-    krnDiskCreate(args[0]);
+{    
+    if(args[0].indexOf("@") === 0)
+        _StdIn.putText("@ is a reserved leading character!");
+    else
+        krnDiskCreate(args[0]);
 }
 
+/**
+ * Invokes the file system read command.
+ * 
+ * @params args -0 The name of the file to read.
+ */
 function shellRead(args)
 {
     krnDiskRead(args[0]);
 }
 
+/**
+ * Invokes the file system write command.
+ * 
+ * @param args -0 The name of the file to write to.
+ *             -[1..] The data to write to the file. 
+ */
 function shellWrite(args)
 {
     var filename = args.shift();
     var data     = args.join(" ");
-    krnDiskWrite(filename, data);
+    
+    if(filename.indexOf("@") === 0)
+        _StdIn.putText("Editing of swap files is illegal!");
+    else
+        krnDiskWrite(filename, data);
 }
 
+/**
+ * Invokes the file system delete command.
+ * 
+ * @param args -0 The name of the file to delete.
+ */
 function shellDelete(args)
 {
-    krnDiskDelete(args[0]);
+    if(args[0].indexOf("@") === 0)
+        _StdIn.putText("Deletion of swap files is illegal!");
+    else
+        krnDiskDelete(args[0]);
 }
 
+/**
+ * Formats the file system, doesn't work if a process is executing 
+ * (prevents clobbering of the swap files).
+ */
 function shellFormat()
 {
-    krnDiskFormat();
+    if(krnCheckExecution())
+        _StdIn.putText("Please wait for the currently executing process to finish before formatting");
+    else
+        krnDiskFormat();
 }
 
+/**
+ * Lists the files currently on the file system.
+ */
 function shellLS()
 {
     krnDiskLS();
 }
 
+/**
+ * Sets the scheduler for the kernel.
+ * @param args -0: The scheduler that the kernel should be set to.
+ */
 function shellSetS(args)
 {
-    krnSetScheduler(args[0]);
+    krnSetScheduler(args[0].toLowerCase());
 }
 
+/**
+ * Retrieves the scheduler from the kernel.
+ */
 function shellGetS()
 {
     krnGetScheduler();
