@@ -119,8 +119,8 @@ DeviceDriverDisk.feedbackMessage={
         1:{"message": "File Creation Failed: Data Allocation failure", "retVal":false},
         2:{"message": "File Creation Failed: Handle Creation failure", "retVal":false},
         3:{"message": "File Creation Success", "retVal":true},
-        "-1":{"message": "Bad File Name, your file has bad characters (Quite frankly I'm impressed)", "retVal":false},
-        4:{"message": "Bad File Name, please ensure your file doesn't already exist", "retVal":false}
+        4:{"message": "Bad File Name", "retVal":false},
+        "-1":{"message": "Bad File Name, please ensure your file doesn't already exist", "retVal":false}
         },
     "WRITE":{
         0:{"message": "File Write Success", "retVal":true}, 
@@ -159,7 +159,7 @@ function krnDiskDispatch(params)
             response.retVal = true;
             
             if(results < 0)
-            {
+            {                
                 results *= -1;
                 response.message += DeviceDriverDisk.feedbackMessage.CREATE["-1"].message;
                 response.retVal = DeviceDriverDisk.feedbackMessage.CREATE["-1"].retVal;
@@ -173,11 +173,13 @@ function krnDiskDispatch(params)
                 response.retVal = response.retVal && DeviceDriverDisk.feedbackMessage.CREATE["4"].retVal;
             }
             
-            response.message = (response.message === "" ?  "" : "; ") + response.message;
-            response.message = DeviceDriverDisk.feedbackMessage.CREATE[results].message + response.message;
+            if(results !== 3 || response.retVal)
+            {
+                response.message = (response.message === "" ?  "" : "; ") + response.message;
+                response.message = DeviceDriverDisk.feedbackMessage.CREATE[results].message + response.message;
+            }
             response.retVal = response.retVal && DeviceDriverDisk.feedbackMessage.CREATE[results].retVal;
-            
-            
+
             break;
         case FS_OPS.READ:
             results = DiskReadFile(params[1],params[2]);
