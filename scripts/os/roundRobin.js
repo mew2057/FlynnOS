@@ -149,7 +149,7 @@ RoundRobin.prototype.processNext = function(cpu, finished, terminated)
             }
             else
             {
-                this.startSwap(cpu.pcb, tempPCB, cpu);
+                this.startSwap(cpu.pcb, tempPCB, cpu, !finished);
             }
         }
         else
@@ -331,16 +331,16 @@ RoundRobin.prototype.toString = function()
  */
 RoundRobin.prototype.swapComplete = function(args, status)
 {
-    // If the pcb has a page of -1 it exists on the HDD else the page is dead.
-    if(args[0].page === -1 && args[3])
-    {
+    // If this is specified, then the page still has some life left in it.
+    if(args[3])
+    {       
         this.readyQueue.push(args[0]);
     }
     
     // Set the cpu to the freshly swapped process.
     args[2].setStateFromPCB(args[1]);
     
-    Scheduler.log("PID " +  args[2].pcb.pid + " is now queued to execute");
+    Scheduler.log("PID " +  args[2].pcb.pid + " is now queued to execute. PC " + args[2].pcb.PC);
 };
 
 /**

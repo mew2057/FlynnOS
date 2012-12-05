@@ -157,12 +157,13 @@ Scheduler.prototype.toString = function(){};
  * @param pcbMem The pcb that resides in memory.
  * @param pcbFs The pcb that resides on the file system.
  * @param cpu The cpu state at time of invocation.
+ * @parma unfinished If true the process will be re added to the queue, if false the process is left off.
  */
-Scheduler.prototype.startSwap = function(pcbMem, pcbFs, cpu)
+Scheduler.prototype.startSwap = function(pcbMem, pcbFs, cpu, unFinished)
 {
-    Scheduler.log("Starting swap");
+    Scheduler.log("Starting swap: ", pcbMem.toString, "<br>", pcbFs.toString());
 
-    krnDiskRead(pcbFs.Base, true, [this, this.swapOut, [pcbMem, pcbFs, cpu, true]]);
+    krnDiskRead(pcbFs.Base, true, [this, this.swapOut, [pcbMem, pcbFs, cpu, unFinished]]);
 };
 
 /**
@@ -193,18 +194,20 @@ Scheduler.prototype.swapOut = function(args, fsData)
     
     // If a free page isn't available (and the pcb wasn't changed to reflect that)
     // copy the memory based pcb address data into the swapped pcb.
-    if(!_MemoryManager.findFreePage(args[1]))
+    if(!_MemoryManager.findFreePage(args[1], true))
     {
-        console.log("here");
         args[1].Base = args[0].Base;
         args[1].Limit = args[0].Limit;
         args[1].page = args[0].page;
     }
-    console.log(args[0]);
+    else
+    {
+        toDisk = null;
+    }
+    
     // Roll in the swapped out process.
     if(fsData !== null)
-    {
-        
+    {        
         _MemoryManager.store(0, fsData.slice(0,_MemoryManager.pageSize), args[1]);
         
         if(toDisk !== null)
@@ -217,7 +220,7 @@ Scheduler.prototype.swapOut = function(args, fsData)
         }
         else
         {
-            // Kill the file since we won't be needing it as the in memory process is done.
+            // Kill the file since we won't be needing it as the in memory process is done.            
             krnDiskDelete(tempBase,[this, this.swapComplete, args])
         }
     }
@@ -244,13 +247,10 @@ Scheduler.prototype.startInitialSwap = function(pcbFs, cpu)
     if(!_MemoryManager.findFreePage(tempPCB, false))
     {
         tempPCB = this.findPage();
-        
-      //  console.log("bam!");
     }
-    //console.log(tempPCB.Base);
-
+    
     Scheduler.log("Starting initial swap");
-console.log(tempPCB.Base);
+    
     // Execute a swap as normal with a "fake" process.
     krnDiskRead(pcbFs.Base, true, [this, this.swapOut, [tempPCB, pcbFs, cpu, false]]);
 };
