@@ -805,3 +805,38 @@ function DiskList()
     
     return fileList;
 }
+
+/**
+ * A helper method for the display (This is not technically a part of the driver).
+ * @return The disk table for display.
+ */
+function DiskCreateTable()
+{
+    var searchID = new FileID();
+    var block = null;
+    var diskTable ='<table id="fsTable">'+
+        '<tr class="fsHead"><td>TSB</td><td>St</td><td>TSB</td><td>Data</td></tr>';
+    var scratch = "";
+    
+    while (searchID.track < 4)
+    {
+        block = DiskRetrieveTSB(searchID);
+        
+        scratch = DiskConvertFromHex(block.data);
+        
+        if(scratch.length > 30)
+        {
+            scratch = scratch.substring(0, 30) + "<br>" + scratch.substring(30, scratch.length);
+        }
+
+        diskTable += '<tr class="fsRow"><td class="fsData"><a name="FS' + searchID.track + searchID.sector + searchID.block + '">' 
+            + searchID.track + searchID.sector + searchID.block + '</a></td><td class="fsData">' + 
+            block.statusBit + '</td><td class="fsData"><a class="fsTSB" href="#FS' +block.nextID.track + block.nextID.sector + block.nextID.block+'">' 
+            + block.nextID.track + block.nextID.sector + block.nextID.block + '</a></td><td class="fsData">' + scratch +  "</td></tr>";
+            
+        
+        searchID.increment();
+    }
+
+    return diskTable + "</table>";
+}

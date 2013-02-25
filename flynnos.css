@@ -72,7 +72,7 @@ div.textBox
 .memPageTab
 {
     display: inline;
-    padding: 5px;
+    padding: 4px;
     border-left: dotted 1px;
 }
 
@@ -93,18 +93,19 @@ ul#pages
     padding-bottom:3px;
 }
 
-.memPageTab a
-{
-    text-decoration: none; 
-    color: #b5ffff;
-    padding: 1px 3px 1px 3px;
-}
-
 .pageTable td
 {
     font-family:Monospace;
     font-size: 10pt;
     text-align:center; 
+}
+
+
+.memPageTab a
+{
+    text-decoration: none; 
+    color: #b5ffff;
+    padding: 1px 3px 1px 3px;
 }
 
 .memPageTab a:hover
@@ -113,6 +114,36 @@ ul#pages
     color: #040809;
     background-color: #b5ffff;
 }
+
+/* FS Table Stuff */
+
+.fsHead td
+{
+    border-bottom: 1px dotted #b5ffff;
+}
+
+#fsTable tr td
+{
+    font-family:Monospace;
+    font-size: 10pt;
+    text-align:center; 
+    border-bottom:1px solid #b5ffff;
+
+}
+
+.fsTSB
+{
+    text-decoration: none; 
+    color: #b5ffff;
+}
+
+a.fsTSB:hover
+{
+    text-decoration: none; 
+    color: #040809;
+    background-color: #b5ffff;
+}
+
 
 /* PCBs */
 .pcbTable td

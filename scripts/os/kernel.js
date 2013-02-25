@@ -64,6 +64,7 @@ function krnBootstrap()      // Page 8.
     // ... more?
     //
     initPCBDisplay();
+    getFSTable();
 
     // Enable the OS Interrupts.  (Not the CPU clock interrupt, as that is done in the hardware sim.)
     krnTrace("Enabling the interrupts.");
@@ -193,6 +194,8 @@ function krnInterruptHandler(irq, params)    // This is the Interrupt Handler Ro
             break;
         case DISK_IRQ:
             krnDiskDriver.isr(params);
+            // Update the display for the disk if a disk interrupt occurs, this probably shouldn't go here, but it works.
+            getFSTable();
             break;
         default: 
             krnTrapError("Invalid Interrupt Request. irq=" + irq + " params=[" + params + "]");

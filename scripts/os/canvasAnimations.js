@@ -360,8 +360,6 @@ function updateLogStyle(src)
  */
 function animateStart ()
 {
-    
-    
     $("#display").slideDown(300);
         
     $(".textBox").slideDown(300);
@@ -506,12 +504,27 @@ function initMemDisplay(memoryManager)
             
             $("#memCell").append('<div id="page'+page+'" class="tabBox">'+page+'</div>');
         }
+        
+        $("#pages").append('<li id="page-fs" class="memPageTab"><a class="pageLink" href="#pagefs">FS</a></li>'); 
+        $("#memCell").append('<div id="pagefs" class="tabBox"></div>');
+        
         // set up the tabs then specify the toggle for the tab cycling.
         $("#memCell").tabs();
-        $("#pages").append('<li id="autoSwitch" class="memPageTab"><a id="cycleButton" class="toggleButton" href="javascript:toggleCycle()">Cycling</a></li>');   
+        $("#pages").append('<li id="autoSwitch" class="memPageTab"><a id="cycleButton" class="toggleButton" href="javascript:toggleCycle()">Cycling</a></li>');  
+        
+   
+        
     }
     
     updateMemDisplay(memoryManager);
+}
+/**
+ * Retrieves the current state of the file system.
+ */
+function getFSTable()
+{
+    $('#pagefs').html(DiskCreateTable());
+    
 }
 
 /**
